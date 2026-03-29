@@ -14,6 +14,14 @@ use Google\Protobuf\RepeatedField;
  */
 class RawPutResponse extends \Google\Protobuf\Internal\Message
 {
+    /**
+     * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
+     */
+    protected $region_error = null;
+    /**
+     * Generated from protobuf field <code>string error = 2;</code>
+     */
+    protected $error = '';
 
     /**
      * Constructor.
@@ -21,11 +29,67 @@ class RawPutResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
+     *     @type \Errorpb\Error $region_error
+     *     @type string $error
      * }
      */
     public function __construct($data = NULL) {
         \GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
+    }
+
+    /**
+     * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
+     * @return \Errorpb\Error|null
+     */
+    public function getRegionError()
+    {
+        return $this->region_error;
+    }
+
+    public function hasRegionError()
+    {
+        return isset($this->region_error);
+    }
+
+    public function clearRegionError()
+    {
+        unset($this->region_error);
+    }
+
+    /**
+     * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
+     * @param \Errorpb\Error $var
+     * @return $this
+     */
+    public function setRegionError($var)
+    {
+        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        $this->region_error = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string error = 2;</code>
+     * @return string
+     */
+    public function getError()
+    {
+        return $this->error;
+    }
+
+    /**
+     * Generated from protobuf field <code>string error = 2;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setError($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->error = $var;
+
+        return $this;
     }
 
 }

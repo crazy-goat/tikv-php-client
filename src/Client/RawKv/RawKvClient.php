@@ -6,14 +6,14 @@ namespace CrazyGoat\TiKV\Client\RawKv;
 use CrazyGoat\TiKV\Client\Connection\PdClient;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
 use Kvrpcpb\Context;
-use Kvrpcpb\Peer;
-use Kvrpcpb\RegionEpoch;
 use Kvrpcpb\RawGetRequest;
 use Kvrpcpb\RawGetResponse;
 use Kvrpcpb\RawPutRequest;
 use Kvrpcpb\RawPutResponse;
 use Kvrpcpb\RawDeleteRequest;
 use Kvrpcpb\RawDeleteResponse;
+use Metapb\Peer;
+use Metapb\RegionEpoch;
 
 class RawKvClient
 {

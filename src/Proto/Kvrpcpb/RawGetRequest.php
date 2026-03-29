@@ -10,8 +10,6 @@ use Google\Protobuf\Internal\GPBUtil;
 use Google\Protobuf\RepeatedField;
 
 /**
- * RawKV Get
- *
  * Generated from protobuf message <code>kvrpcpb.RawGetRequest</code>
  */
 class RawGetRequest extends \Google\Protobuf\Internal\Message
@@ -24,6 +22,10 @@ class RawGetRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>bytes key = 2;</code>
      */
     protected $key = '';
+    /**
+     * Generated from protobuf field <code>string cf = 3;</code>
+     */
+    protected $cf = '';
 
     /**
      * Constructor.
@@ -33,6 +35,7 @@ class RawGetRequest extends \Google\Protobuf\Internal\Message
      *
      *     @type \Kvrpcpb\Context $context
      *     @type string $key
+     *     @type string $cf
      * }
      */
     public function __construct($data = NULL) {
@@ -90,6 +93,28 @@ class RawGetRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, False);
         $this->key = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string cf = 3;</code>
+     * @return string
+     */
+    public function getCf()
+    {
+        return $this->cf;
+    }
+
+    /**
+     * Generated from protobuf field <code>string cf = 3;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setCf($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->cf = $var;
 
         return $this;
     }

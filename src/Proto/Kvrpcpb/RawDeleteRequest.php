@@ -10,8 +10,6 @@ use Google\Protobuf\Internal\GPBUtil;
 use Google\Protobuf\RepeatedField;
 
 /**
- * RawKV Delete
- *
  * Generated from protobuf message <code>kvrpcpb.RawDeleteRequest</code>
  */
 class RawDeleteRequest extends \Google\Protobuf\Internal\Message
@@ -24,6 +22,14 @@ class RawDeleteRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>bytes key = 2;</code>
      */
     protected $key = '';
+    /**
+     * Generated from protobuf field <code>string cf = 3;</code>
+     */
+    protected $cf = '';
+    /**
+     * Generated from protobuf field <code>bool for_cas = 4;</code>
+     */
+    protected $for_cas = false;
 
     /**
      * Constructor.
@@ -33,6 +39,8 @@ class RawDeleteRequest extends \Google\Protobuf\Internal\Message
      *
      *     @type \Kvrpcpb\Context $context
      *     @type string $key
+     *     @type string $cf
+     *     @type bool $for_cas
      * }
      */
     public function __construct($data = NULL) {
@@ -90,6 +98,50 @@ class RawDeleteRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, False);
         $this->key = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string cf = 3;</code>
+     * @return string
+     */
+    public function getCf()
+    {
+        return $this->cf;
+    }
+
+    /**
+     * Generated from protobuf field <code>string cf = 3;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setCf($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->cf = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool for_cas = 4;</code>
+     * @return bool
+     */
+    public function getForCas()
+    {
+        return $this->for_cas;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool for_cas = 4;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setForCas($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->for_cas = $var;
 
         return $this;
     }

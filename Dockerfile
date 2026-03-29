@@ -4,7 +4,7 @@ FROM alpine:edge
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories && \
     echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
 
-# Install PHP 8.4 + pre-built grpc extension + protoc
+# Install PHP 8.4 + pre-built grpc extension + protoc + grpc_php_plugin
 RUN apk add --no-cache \
     php84 \
     php84-pecl-grpc \
@@ -21,7 +21,8 @@ RUN apk add --no-cache \
     php84-zip \
     composer \
     protobuf \
-    protobuf-dev
+    protobuf-dev \
+    grpc-plugins
 
 # Create symlink for php command
 RUN ln -sf /usr/bin/php84 /usr/bin/php

@@ -18,11 +18,23 @@
     "autoload": {
         "psr-4": {
             "CrazyGoat\\TiKV\\Client\\": "src/Client/",
+            "Coprocessor\\": "src/Proto/Coprocessor/",
+            "Deadlock\\": "src/Proto/Deadlock/",
+            "Disaggregated\\": "src/Proto/Disaggregated/",
+            "Disk_usage\\": "src/Proto/Disk_usage/",
+            "Encryptionpb\\": "src/Proto/Encryptionpb/",
+            "Eraftpb\\": "src/Proto/Eraftpb/",
+            "Errorpb\\": "src/Proto/Errorpb/",
             "Kvrpcpb\\": "src/Proto/Kvrpcpb/",
-            "Pdpb\\": "src/Proto/Pdpb/",
             "Metapb\\": "src/Proto/Metapb/",
-            "GPBMetadata\\": "src/Proto/GPBMetadata/",
-            "GPBMetadata\\Gogoproto\\": "src/Proto/GPBMetadata/Gogoproto/"
+            "Mpp\\": "src/Proto/Mpp/",
+            "Pdpb\\": "src/Proto/Pdpb/",
+            "Raft_serverpb\\": "src/Proto/Raft_serverpb/",
+            "Replication_modepb\\": "src/Proto/Replication_modepb/",
+            "Resource_manager\\": "src/Proto/Resource_manager/",
+            "Tikvpb\\": "src/Proto/Tikvpb/",
+            "Tracepb\\": "src/Proto/Tracepb/",
+            "GPBMetadata\\": "src/Proto/GPBMetadata/"
         }
     },
     "autoload-dev": {

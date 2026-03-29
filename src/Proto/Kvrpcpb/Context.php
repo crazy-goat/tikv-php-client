@@ -10,7 +10,7 @@ use Google\Protobuf\Internal\GPBUtil;
 use Google\Protobuf\RepeatedField;
 
 /**
- * Minimal Context for RawKV
+ * Miscellaneous metadata attached to most requests.
  *
  * Generated from protobuf message <code>kvrpcpb.Context</code>
  */
@@ -21,17 +21,196 @@ class Context extends \Google\Protobuf\Internal\Message
      */
     protected $region_id = 0;
     /**
-     * Generated from protobuf field <code>.kvrpcpb.RegionEpoch region_epoch = 2;</code>
+     * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
      */
     protected $region_epoch = null;
     /**
-     * Generated from protobuf field <code>.kvrpcpb.Peer peer = 3;</code>
+     * Generated from protobuf field <code>.metapb.Peer peer = 3;</code>
      */
     protected $peer = null;
     /**
      * Generated from protobuf field <code>uint64 term = 5;</code>
      */
     protected $term = 0;
+    /**
+     * Generated from protobuf field <code>.kvrpcpb.CommandPri priority = 6;</code>
+     */
+    protected $priority = 0;
+    /**
+     * Generated from protobuf field <code>.kvrpcpb.IsolationLevel isolation_level = 7;</code>
+     */
+    protected $isolation_level = 0;
+    /**
+     * Generated from protobuf field <code>bool not_fill_cache = 8;</code>
+     */
+    protected $not_fill_cache = false;
+    /**
+     * Generated from protobuf field <code>bool sync_log = 9;</code>
+     */
+    protected $sync_log = false;
+    /**
+     * True means execution time statistics should be recorded and returned.
+     *
+     * Generated from protobuf field <code>bool record_time_stat = 10;</code>
+     */
+    protected $record_time_stat = false;
+    /**
+     * True means RocksDB scan statistics should be recorded and returned.
+     *
+     * Generated from protobuf field <code>bool record_scan_stat = 11;</code>
+     */
+    protected $record_scan_stat = false;
+    /**
+     * Generated from protobuf field <code>bool replica_read = 12;</code>
+     */
+    protected $replica_read = false;
+    /**
+     * Read requests can ignore locks belonging to these transactions because either
+     * these transactions are rolled back or theirs commit_ts > read request's start_ts.
+     *
+     * Generated from protobuf field <code>repeated uint64 resolved_locks = 13;</code>
+     */
+    private $resolved_locks;
+    /**
+     * Generated from protobuf field <code>uint64 max_execution_duration_ms = 14;</code>
+     */
+    protected $max_execution_duration_ms = 0;
+    /**
+     * After a region applies to `applied_index`, we can get a
+     * snapshot for the region even if the peer is a follower.
+     *
+     * Generated from protobuf field <code>uint64 applied_index = 15;</code>
+     */
+    protected $applied_index = 0;
+    /**
+     * A hint for TiKV to schedule tasks more fairly. Query with same task ID
+     * may share same priority and resource quota.
+     *
+     * Generated from protobuf field <code>uint64 task_id = 16;</code>
+     */
+    protected $task_id = 0;
+    /**
+     * Not required to read the most up-to-date data, replicas with `safe_ts` >= `start_ts`
+     * can handle read request directly
+     *
+     * Generated from protobuf field <code>bool stale_read = 17;</code>
+     */
+    protected $stale_read = false;
+    /**
+     * Any additional serialized information about the request.
+     *
+     * Generated from protobuf field <code>bytes resource_group_tag = 18;</code>
+     */
+    protected $resource_group_tag = '';
+    /**
+     * Used to tell TiKV whether operations are allowed or not on different disk usages.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.DiskFullOpt disk_full_opt = 19;</code>
+     */
+    protected $disk_full_opt = 0;
+    /**
+     * Indicates the request is a retry request and the same request may have been sent before.
+     *
+     * Generated from protobuf field <code>bool is_retry_request = 20;</code>
+     */
+    protected $is_retry_request = false;
+    /**
+     * API version implies the encode of the key and value.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.APIVersion api_version = 21;</code>
+     */
+    protected $api_version = 0;
+    /**
+     * Read request should read through locks belonging to these transactions because these
+     * transactions are committed and theirs commit_ts <= read request's start_ts.
+     *
+     * Generated from protobuf field <code>repeated uint64 committed_locks = 22;</code>
+     */
+    private $committed_locks;
+    /**
+     * The informantion to trace a request sent to TiKV.
+     *
+     * Generated from protobuf field <code>.tracepb.TraceContext trace_context = 23;</code>
+     */
+    protected $trace_context = null;
+    /**
+     * The source of the request, will be used as the tag of the metrics reporting.
+     * This field can be set for any requests that require to report metrics with any extra labels.
+     *
+     * Generated from protobuf field <code>string request_source = 24;</code>
+     */
+    protected $request_source = '';
+    /**
+     * The source of the current transaction.
+     *
+     * Generated from protobuf field <code>uint64 txn_source = 25;</code>
+     */
+    protected $txn_source = 0;
+    /**
+     * If `busy_threshold_ms` is given, TiKV can reject the request and return a `ServerIsBusy`
+     * error before processing if the estimated waiting duration exceeds the threshold.
+     *
+     * Generated from protobuf field <code>uint32 busy_threshold_ms = 27;</code>
+     */
+    protected $busy_threshold_ms = 0;
+    /**
+     * Some information used for resource control.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.ResourceControlContext resource_control_context = 28;</code>
+     */
+    protected $resource_control_context = null;
+    /**
+     * The keyspace that the request is sent to.
+     * NOTE: This field is only meaningful while the api_version is V2.
+     *
+     * Generated from protobuf field <code>string keyspace_name = 31;</code>
+     */
+    protected $keyspace_name = '';
+    /**
+     * The keyspace that the request is sent to.
+     * NOTE: This field is only meaningful while the api_version is V2.
+     *
+     * Generated from protobuf field <code>uint32 keyspace_id = 32;</code>
+     */
+    protected $keyspace_id = 0;
+    /**
+     * The buckets version that the request is sent to.
+     * NOTE: This field is only meaningful while enable buckets.
+     *
+     * Generated from protobuf field <code>uint64 buckets_version = 33;</code>
+     */
+    protected $buckets_version = 0;
+    /**
+     * It tells us where the request comes from in TiDB. If it isn't from TiDB, leave it blank.
+     * This is for tests only and thus can be safely changed/removed without affecting compatibility.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.SourceStmt source_stmt = 34;</code>
+     */
+    protected $source_stmt = null;
+    /**
+     * The cluster id of the request
+     *
+     * Generated from protobuf field <code>uint64 cluster_id = 35;</code>
+     */
+    protected $cluster_id = 0;
+    /**
+     * The trace id of the request, will be used for tracing the request's execution's inner steps.
+     *
+     * Generated from protobuf field <code>bytes trace_id = 36;</code>
+     */
+    protected $trace_id = '';
+    /**
+     * Control flags for trace logging behavior.
+     * Bit 0: immediate_log - Force immediate logging without buffering
+     * Bit 1: category_req_resp - Enable request/response tracing
+     * Bit 2: category_write_details - Enable detailed write tracing
+     * Bit 3: category_read_details - Enable detailed read tracing
+     * Bits 4-63: Reserved for future use
+     * This field is set by client-go based on an extractor function provided by TiDB.
+     *
+     * Generated from protobuf field <code>uint64 trace_control_flags = 37;</code>
+     */
+    protected $trace_control_flags = 0;
 
     /**
      * Constructor.
@@ -40,9 +219,78 @@ class Context extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int|string $region_id
-     *     @type \Kvrpcpb\RegionEpoch $region_epoch
-     *     @type \Kvrpcpb\Peer $peer
+     *     @type \Metapb\RegionEpoch $region_epoch
+     *     @type \Metapb\Peer $peer
      *     @type int|string $term
+     *     @type int $priority
+     *     @type int $isolation_level
+     *     @type bool $not_fill_cache
+     *     @type bool $sync_log
+     *     @type bool $record_time_stat
+     *           True means execution time statistics should be recorded and returned.
+     *     @type bool $record_scan_stat
+     *           True means RocksDB scan statistics should be recorded and returned.
+     *     @type bool $replica_read
+     *     @type int[]|string[] $resolved_locks
+     *           Read requests can ignore locks belonging to these transactions because either
+     *           these transactions are rolled back or theirs commit_ts > read request's start_ts.
+     *     @type int|string $max_execution_duration_ms
+     *     @type int|string $applied_index
+     *           After a region applies to `applied_index`, we can get a
+     *           snapshot for the region even if the peer is a follower.
+     *     @type int|string $task_id
+     *           A hint for TiKV to schedule tasks more fairly. Query with same task ID
+     *           may share same priority and resource quota.
+     *     @type bool $stale_read
+     *           Not required to read the most up-to-date data, replicas with `safe_ts` >= `start_ts`
+     *           can handle read request directly
+     *     @type string $resource_group_tag
+     *           Any additional serialized information about the request.
+     *     @type int $disk_full_opt
+     *           Used to tell TiKV whether operations are allowed or not on different disk usages.
+     *     @type bool $is_retry_request
+     *           Indicates the request is a retry request and the same request may have been sent before.
+     *     @type int $api_version
+     *           API version implies the encode of the key and value.
+     *     @type int[]|string[] $committed_locks
+     *           Read request should read through locks belonging to these transactions because these
+     *           transactions are committed and theirs commit_ts <= read request's start_ts.
+     *     @type \Tracepb\TraceContext $trace_context
+     *           The informantion to trace a request sent to TiKV.
+     *     @type string $request_source
+     *           The source of the request, will be used as the tag of the metrics reporting.
+     *           This field can be set for any requests that require to report metrics with any extra labels.
+     *     @type int|string $txn_source
+     *           The source of the current transaction.
+     *     @type int $busy_threshold_ms
+     *           If `busy_threshold_ms` is given, TiKV can reject the request and return a `ServerIsBusy`
+     *           error before processing if the estimated waiting duration exceeds the threshold.
+     *     @type \Kvrpcpb\ResourceControlContext $resource_control_context
+     *           Some information used for resource control.
+     *     @type string $keyspace_name
+     *           The keyspace that the request is sent to.
+     *           NOTE: This field is only meaningful while the api_version is V2.
+     *     @type int $keyspace_id
+     *           The keyspace that the request is sent to.
+     *           NOTE: This field is only meaningful while the api_version is V2.
+     *     @type int|string $buckets_version
+     *           The buckets version that the request is sent to.
+     *           NOTE: This field is only meaningful while enable buckets.
+     *     @type \Kvrpcpb\SourceStmt $source_stmt
+     *           It tells us where the request comes from in TiDB. If it isn't from TiDB, leave it blank.
+     *           This is for tests only and thus can be safely changed/removed without affecting compatibility.
+     *     @type int|string $cluster_id
+     *           The cluster id of the request
+     *     @type string $trace_id
+     *           The trace id of the request, will be used for tracing the request's execution's inner steps.
+     *     @type int|string $trace_control_flags
+     *           Control flags for trace logging behavior.
+     *           Bit 0: immediate_log - Force immediate logging without buffering
+     *           Bit 1: category_req_resp - Enable request/response tracing
+     *           Bit 2: category_write_details - Enable detailed write tracing
+     *           Bit 3: category_read_details - Enable detailed read tracing
+     *           Bits 4-63: Reserved for future use
+     *           This field is set by client-go based on an extractor function provided by TiDB.
      * }
      */
     public function __construct($data = NULL) {
@@ -73,8 +321,8 @@ class Context extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.kvrpcpb.RegionEpoch region_epoch = 2;</code>
-     * @return \Kvrpcpb\RegionEpoch|null
+     * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
+     * @return \Metapb\RegionEpoch|null
      */
     public function getRegionEpoch()
     {
@@ -92,21 +340,21 @@ class Context extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.kvrpcpb.RegionEpoch region_epoch = 2;</code>
-     * @param \Kvrpcpb\RegionEpoch $var
+     * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
+     * @param \Metapb\RegionEpoch $var
      * @return $this
      */
     public function setRegionEpoch($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RegionEpoch::class);
+        GPBUtil::checkMessage($var, \Metapb\RegionEpoch::class);
         $this->region_epoch = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>.kvrpcpb.Peer peer = 3;</code>
-     * @return \Kvrpcpb\Peer|null
+     * Generated from protobuf field <code>.metapb.Peer peer = 3;</code>
+     * @return \Metapb\Peer|null
      */
     public function getPeer()
     {
@@ -124,13 +372,13 @@ class Context extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.kvrpcpb.Peer peer = 3;</code>
-     * @param \Kvrpcpb\Peer $var
+     * Generated from protobuf field <code>.metapb.Peer peer = 3;</code>
+     * @param \Metapb\Peer $var
      * @return $this
      */
     public function setPeer($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\Peer::class);
+        GPBUtil::checkMessage($var, \Metapb\Peer::class);
         $this->peer = $var;
 
         return $this;
@@ -154,6 +402,800 @@ class Context extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkUint64($var);
         $this->term = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.kvrpcpb.CommandPri priority = 6;</code>
+     * @return int
+     */
+    public function getPriority()
+    {
+        return $this->priority;
+    }
+
+    /**
+     * Generated from protobuf field <code>.kvrpcpb.CommandPri priority = 6;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setPriority($var)
+    {
+        GPBUtil::checkEnum($var, \Kvrpcpb\CommandPri::class);
+        $this->priority = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.kvrpcpb.IsolationLevel isolation_level = 7;</code>
+     * @return int
+     */
+    public function getIsolationLevel()
+    {
+        return $this->isolation_level;
+    }
+
+    /**
+     * Generated from protobuf field <code>.kvrpcpb.IsolationLevel isolation_level = 7;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setIsolationLevel($var)
+    {
+        GPBUtil::checkEnum($var, \Kvrpcpb\IsolationLevel::class);
+        $this->isolation_level = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool not_fill_cache = 8;</code>
+     * @return bool
+     */
+    public function getNotFillCache()
+    {
+        return $this->not_fill_cache;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool not_fill_cache = 8;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setNotFillCache($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->not_fill_cache = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool sync_log = 9;</code>
+     * @return bool
+     */
+    public function getSyncLog()
+    {
+        return $this->sync_log;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool sync_log = 9;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setSyncLog($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->sync_log = $var;
+
+        return $this;
+    }
+
+    /**
+     * True means execution time statistics should be recorded and returned.
+     *
+     * Generated from protobuf field <code>bool record_time_stat = 10;</code>
+     * @return bool
+     */
+    public function getRecordTimeStat()
+    {
+        return $this->record_time_stat;
+    }
+
+    /**
+     * True means execution time statistics should be recorded and returned.
+     *
+     * Generated from protobuf field <code>bool record_time_stat = 10;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setRecordTimeStat($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->record_time_stat = $var;
+
+        return $this;
+    }
+
+    /**
+     * True means RocksDB scan statistics should be recorded and returned.
+     *
+     * Generated from protobuf field <code>bool record_scan_stat = 11;</code>
+     * @return bool
+     */
+    public function getRecordScanStat()
+    {
+        return $this->record_scan_stat;
+    }
+
+    /**
+     * True means RocksDB scan statistics should be recorded and returned.
+     *
+     * Generated from protobuf field <code>bool record_scan_stat = 11;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setRecordScanStat($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->record_scan_stat = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool replica_read = 12;</code>
+     * @return bool
+     */
+    public function getReplicaRead()
+    {
+        return $this->replica_read;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool replica_read = 12;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setReplicaRead($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->replica_read = $var;
+
+        return $this;
+    }
+
+    /**
+     * Read requests can ignore locks belonging to these transactions because either
+     * these transactions are rolled back or theirs commit_ts > read request's start_ts.
+     *
+     * Generated from protobuf field <code>repeated uint64 resolved_locks = 13;</code>
+     * @return RepeatedField<int>|RepeatedField<string>
+     */
+    public function getResolvedLocks()
+    {
+        return $this->resolved_locks;
+    }
+
+    /**
+     * Read requests can ignore locks belonging to these transactions because either
+     * these transactions are rolled back or theirs commit_ts > read request's start_ts.
+     *
+     * Generated from protobuf field <code>repeated uint64 resolved_locks = 13;</code>
+     * @param int[]|string[] $var
+     * @return $this
+     */
+    public function setResolvedLocks($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::UINT64);
+        $this->resolved_locks = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 max_execution_duration_ms = 14;</code>
+     * @return int|string
+     */
+    public function getMaxExecutionDurationMs()
+    {
+        return $this->max_execution_duration_ms;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 max_execution_duration_ms = 14;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setMaxExecutionDurationMs($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->max_execution_duration_ms = $var;
+
+        return $this;
+    }
+
+    /**
+     * After a region applies to `applied_index`, we can get a
+     * snapshot for the region even if the peer is a follower.
+     *
+     * Generated from protobuf field <code>uint64 applied_index = 15;</code>
+     * @return int|string
+     */
+    public function getAppliedIndex()
+    {
+        return $this->applied_index;
+    }
+
+    /**
+     * After a region applies to `applied_index`, we can get a
+     * snapshot for the region even if the peer is a follower.
+     *
+     * Generated from protobuf field <code>uint64 applied_index = 15;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setAppliedIndex($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->applied_index = $var;
+
+        return $this;
+    }
+
+    /**
+     * A hint for TiKV to schedule tasks more fairly. Query with same task ID
+     * may share same priority and resource quota.
+     *
+     * Generated from protobuf field <code>uint64 task_id = 16;</code>
+     * @return int|string
+     */
+    public function getTaskId()
+    {
+        return $this->task_id;
+    }
+
+    /**
+     * A hint for TiKV to schedule tasks more fairly. Query with same task ID
+     * may share same priority and resource quota.
+     *
+     * Generated from protobuf field <code>uint64 task_id = 16;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setTaskId($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->task_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Not required to read the most up-to-date data, replicas with `safe_ts` >= `start_ts`
+     * can handle read request directly
+     *
+     * Generated from protobuf field <code>bool stale_read = 17;</code>
+     * @return bool
+     */
+    public function getStaleRead()
+    {
+        return $this->stale_read;
+    }
+
+    /**
+     * Not required to read the most up-to-date data, replicas with `safe_ts` >= `start_ts`
+     * can handle read request directly
+     *
+     * Generated from protobuf field <code>bool stale_read = 17;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setStaleRead($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->stale_read = $var;
+
+        return $this;
+    }
+
+    /**
+     * Any additional serialized information about the request.
+     *
+     * Generated from protobuf field <code>bytes resource_group_tag = 18;</code>
+     * @return string
+     */
+    public function getResourceGroupTag()
+    {
+        return $this->resource_group_tag;
+    }
+
+    /**
+     * Any additional serialized information about the request.
+     *
+     * Generated from protobuf field <code>bytes resource_group_tag = 18;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setResourceGroupTag($var)
+    {
+        GPBUtil::checkString($var, False);
+        $this->resource_group_tag = $var;
+
+        return $this;
+    }
+
+    /**
+     * Used to tell TiKV whether operations are allowed or not on different disk usages.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.DiskFullOpt disk_full_opt = 19;</code>
+     * @return int
+     */
+    public function getDiskFullOpt()
+    {
+        return $this->disk_full_opt;
+    }
+
+    /**
+     * Used to tell TiKV whether operations are allowed or not on different disk usages.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.DiskFullOpt disk_full_opt = 19;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setDiskFullOpt($var)
+    {
+        GPBUtil::checkEnum($var, \Kvrpcpb\DiskFullOpt::class);
+        $this->disk_full_opt = $var;
+
+        return $this;
+    }
+
+    /**
+     * Indicates the request is a retry request and the same request may have been sent before.
+     *
+     * Generated from protobuf field <code>bool is_retry_request = 20;</code>
+     * @return bool
+     */
+    public function getIsRetryRequest()
+    {
+        return $this->is_retry_request;
+    }
+
+    /**
+     * Indicates the request is a retry request and the same request may have been sent before.
+     *
+     * Generated from protobuf field <code>bool is_retry_request = 20;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setIsRetryRequest($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->is_retry_request = $var;
+
+        return $this;
+    }
+
+    /**
+     * API version implies the encode of the key and value.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.APIVersion api_version = 21;</code>
+     * @return int
+     */
+    public function getApiVersion()
+    {
+        return $this->api_version;
+    }
+
+    /**
+     * API version implies the encode of the key and value.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.APIVersion api_version = 21;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setApiVersion($var)
+    {
+        GPBUtil::checkEnum($var, \Kvrpcpb\APIVersion::class);
+        $this->api_version = $var;
+
+        return $this;
+    }
+
+    /**
+     * Read request should read through locks belonging to these transactions because these
+     * transactions are committed and theirs commit_ts <= read request's start_ts.
+     *
+     * Generated from protobuf field <code>repeated uint64 committed_locks = 22;</code>
+     * @return RepeatedField<int>|RepeatedField<string>
+     */
+    public function getCommittedLocks()
+    {
+        return $this->committed_locks;
+    }
+
+    /**
+     * Read request should read through locks belonging to these transactions because these
+     * transactions are committed and theirs commit_ts <= read request's start_ts.
+     *
+     * Generated from protobuf field <code>repeated uint64 committed_locks = 22;</code>
+     * @param int[]|string[] $var
+     * @return $this
+     */
+    public function setCommittedLocks($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::UINT64);
+        $this->committed_locks = $arr;
+
+        return $this;
+    }
+
+    /**
+     * The informantion to trace a request sent to TiKV.
+     *
+     * Generated from protobuf field <code>.tracepb.TraceContext trace_context = 23;</code>
+     * @return \Tracepb\TraceContext|null
+     */
+    public function getTraceContext()
+    {
+        return $this->trace_context;
+    }
+
+    public function hasTraceContext()
+    {
+        return isset($this->trace_context);
+    }
+
+    public function clearTraceContext()
+    {
+        unset($this->trace_context);
+    }
+
+    /**
+     * The informantion to trace a request sent to TiKV.
+     *
+     * Generated from protobuf field <code>.tracepb.TraceContext trace_context = 23;</code>
+     * @param \Tracepb\TraceContext $var
+     * @return $this
+     */
+    public function setTraceContext($var)
+    {
+        GPBUtil::checkMessage($var, \Tracepb\TraceContext::class);
+        $this->trace_context = $var;
+
+        return $this;
+    }
+
+    /**
+     * The source of the request, will be used as the tag of the metrics reporting.
+     * This field can be set for any requests that require to report metrics with any extra labels.
+     *
+     * Generated from protobuf field <code>string request_source = 24;</code>
+     * @return string
+     */
+    public function getRequestSource()
+    {
+        return $this->request_source;
+    }
+
+    /**
+     * The source of the request, will be used as the tag of the metrics reporting.
+     * This field can be set for any requests that require to report metrics with any extra labels.
+     *
+     * Generated from protobuf field <code>string request_source = 24;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setRequestSource($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->request_source = $var;
+
+        return $this;
+    }
+
+    /**
+     * The source of the current transaction.
+     *
+     * Generated from protobuf field <code>uint64 txn_source = 25;</code>
+     * @return int|string
+     */
+    public function getTxnSource()
+    {
+        return $this->txn_source;
+    }
+
+    /**
+     * The source of the current transaction.
+     *
+     * Generated from protobuf field <code>uint64 txn_source = 25;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setTxnSource($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->txn_source = $var;
+
+        return $this;
+    }
+
+    /**
+     * If `busy_threshold_ms` is given, TiKV can reject the request and return a `ServerIsBusy`
+     * error before processing if the estimated waiting duration exceeds the threshold.
+     *
+     * Generated from protobuf field <code>uint32 busy_threshold_ms = 27;</code>
+     * @return int
+     */
+    public function getBusyThresholdMs()
+    {
+        return $this->busy_threshold_ms;
+    }
+
+    /**
+     * If `busy_threshold_ms` is given, TiKV can reject the request and return a `ServerIsBusy`
+     * error before processing if the estimated waiting duration exceeds the threshold.
+     *
+     * Generated from protobuf field <code>uint32 busy_threshold_ms = 27;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setBusyThresholdMs($var)
+    {
+        GPBUtil::checkUint32($var);
+        $this->busy_threshold_ms = $var;
+
+        return $this;
+    }
+
+    /**
+     * Some information used for resource control.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.ResourceControlContext resource_control_context = 28;</code>
+     * @return \Kvrpcpb\ResourceControlContext|null
+     */
+    public function getResourceControlContext()
+    {
+        return $this->resource_control_context;
+    }
+
+    public function hasResourceControlContext()
+    {
+        return isset($this->resource_control_context);
+    }
+
+    public function clearResourceControlContext()
+    {
+        unset($this->resource_control_context);
+    }
+
+    /**
+     * Some information used for resource control.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.ResourceControlContext resource_control_context = 28;</code>
+     * @param \Kvrpcpb\ResourceControlContext $var
+     * @return $this
+     */
+    public function setResourceControlContext($var)
+    {
+        GPBUtil::checkMessage($var, \Kvrpcpb\ResourceControlContext::class);
+        $this->resource_control_context = $var;
+
+        return $this;
+    }
+
+    /**
+     * The keyspace that the request is sent to.
+     * NOTE: This field is only meaningful while the api_version is V2.
+     *
+     * Generated from protobuf field <code>string keyspace_name = 31;</code>
+     * @return string
+     */
+    public function getKeyspaceName()
+    {
+        return $this->keyspace_name;
+    }
+
+    /**
+     * The keyspace that the request is sent to.
+     * NOTE: This field is only meaningful while the api_version is V2.
+     *
+     * Generated from protobuf field <code>string keyspace_name = 31;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setKeyspaceName($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->keyspace_name = $var;
+
+        return $this;
+    }
+
+    /**
+     * The keyspace that the request is sent to.
+     * NOTE: This field is only meaningful while the api_version is V2.
+     *
+     * Generated from protobuf field <code>uint32 keyspace_id = 32;</code>
+     * @return int
+     */
+    public function getKeyspaceId()
+    {
+        return $this->keyspace_id;
+    }
+
+    /**
+     * The keyspace that the request is sent to.
+     * NOTE: This field is only meaningful while the api_version is V2.
+     *
+     * Generated from protobuf field <code>uint32 keyspace_id = 32;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setKeyspaceId($var)
+    {
+        GPBUtil::checkUint32($var);
+        $this->keyspace_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * The buckets version that the request is sent to.
+     * NOTE: This field is only meaningful while enable buckets.
+     *
+     * Generated from protobuf field <code>uint64 buckets_version = 33;</code>
+     * @return int|string
+     */
+    public function getBucketsVersion()
+    {
+        return $this->buckets_version;
+    }
+
+    /**
+     * The buckets version that the request is sent to.
+     * NOTE: This field is only meaningful while enable buckets.
+     *
+     * Generated from protobuf field <code>uint64 buckets_version = 33;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setBucketsVersion($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->buckets_version = $var;
+
+        return $this;
+    }
+
+    /**
+     * It tells us where the request comes from in TiDB. If it isn't from TiDB, leave it blank.
+     * This is for tests only and thus can be safely changed/removed without affecting compatibility.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.SourceStmt source_stmt = 34;</code>
+     * @return \Kvrpcpb\SourceStmt|null
+     */
+    public function getSourceStmt()
+    {
+        return $this->source_stmt;
+    }
+
+    public function hasSourceStmt()
+    {
+        return isset($this->source_stmt);
+    }
+
+    public function clearSourceStmt()
+    {
+        unset($this->source_stmt);
+    }
+
+    /**
+     * It tells us where the request comes from in TiDB. If it isn't from TiDB, leave it blank.
+     * This is for tests only and thus can be safely changed/removed without affecting compatibility.
+     *
+     * Generated from protobuf field <code>.kvrpcpb.SourceStmt source_stmt = 34;</code>
+     * @param \Kvrpcpb\SourceStmt $var
+     * @return $this
+     */
+    public function setSourceStmt($var)
+    {
+        GPBUtil::checkMessage($var, \Kvrpcpb\SourceStmt::class);
+        $this->source_stmt = $var;
+
+        return $this;
+    }
+
+    /**
+     * The cluster id of the request
+     *
+     * Generated from protobuf field <code>uint64 cluster_id = 35;</code>
+     * @return int|string
+     */
+    public function getClusterId()
+    {
+        return $this->cluster_id;
+    }
+
+    /**
+     * The cluster id of the request
+     *
+     * Generated from protobuf field <code>uint64 cluster_id = 35;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setClusterId($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->cluster_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * The trace id of the request, will be used for tracing the request's execution's inner steps.
+     *
+     * Generated from protobuf field <code>bytes trace_id = 36;</code>
+     * @return string
+     */
+    public function getTraceId()
+    {
+        return $this->trace_id;
+    }
+
+    /**
+     * The trace id of the request, will be used for tracing the request's execution's inner steps.
+     *
+     * Generated from protobuf field <code>bytes trace_id = 36;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setTraceId($var)
+    {
+        GPBUtil::checkString($var, False);
+        $this->trace_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Control flags for trace logging behavior.
+     * Bit 0: immediate_log - Force immediate logging without buffering
+     * Bit 1: category_req_resp - Enable request/response tracing
+     * Bit 2: category_write_details - Enable detailed write tracing
+     * Bit 3: category_read_details - Enable detailed read tracing
+     * Bits 4-63: Reserved for future use
+     * This field is set by client-go based on an extractor function provided by TiDB.
+     *
+     * Generated from protobuf field <code>uint64 trace_control_flags = 37;</code>
+     * @return int|string
+     */
+    public function getTraceControlFlags()
+    {
+        return $this->trace_control_flags;
+    }
+
+    /**
+     * Control flags for trace logging behavior.
+     * Bit 0: immediate_log - Force immediate logging without buffering
+     * Bit 1: category_req_resp - Enable request/response tracing
+     * Bit 2: category_write_details - Enable detailed write tracing
+     * Bit 3: category_read_details - Enable detailed read tracing
+     * Bits 4-63: Reserved for future use
+     * This field is set by client-go based on an extractor function provided by TiDB.
+     *
+     * Generated from protobuf field <code>uint64 trace_control_flags = 37;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setTraceControlFlags($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->trace_control_flags = $var;
 
         return $this;
     }

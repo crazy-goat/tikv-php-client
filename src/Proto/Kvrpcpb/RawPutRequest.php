@@ -10,8 +10,6 @@ use Google\Protobuf\Internal\GPBUtil;
 use Google\Protobuf\RepeatedField;
 
 /**
- * RawKV Put  
- *
  * Generated from protobuf message <code>kvrpcpb.RawPutRequest</code>
  */
 class RawPutRequest extends \Google\Protobuf\Internal\Message
@@ -28,6 +26,18 @@ class RawPutRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>bytes value = 3;</code>
      */
     protected $value = '';
+    /**
+     * Generated from protobuf field <code>string cf = 4;</code>
+     */
+    protected $cf = '';
+    /**
+     * Generated from protobuf field <code>uint64 ttl = 5;</code>
+     */
+    protected $ttl = 0;
+    /**
+     * Generated from protobuf field <code>bool for_cas = 6;</code>
+     */
+    protected $for_cas = false;
 
     /**
      * Constructor.
@@ -38,6 +48,9 @@ class RawPutRequest extends \Google\Protobuf\Internal\Message
      *     @type \Kvrpcpb\Context $context
      *     @type string $key
      *     @type string $value
+     *     @type string $cf
+     *     @type int|string $ttl
+     *     @type bool $for_cas
      * }
      */
     public function __construct($data = NULL) {
@@ -117,6 +130,72 @@ class RawPutRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, False);
         $this->value = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string cf = 4;</code>
+     * @return string
+     */
+    public function getCf()
+    {
+        return $this->cf;
+    }
+
+    /**
+     * Generated from protobuf field <code>string cf = 4;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setCf($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->cf = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 ttl = 5;</code>
+     * @return int|string
+     */
+    public function getTtl()
+    {
+        return $this->ttl;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 ttl = 5;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setTtl($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->ttl = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool for_cas = 6;</code>
+     * @return bool
+     */
+    public function getForCas()
+    {
+        return $this->for_cas;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool for_cas = 6;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setForCas($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->for_cas = $var;
 
         return $this;
     }
