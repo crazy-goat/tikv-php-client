@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace TiKvPhp\RawKv;
+namespace CrazyGoat\TiKV\RawKv;
 
-use TiKvPhp\Connection\PdClient;
-use TiKvPhp\Grpc\GrpcClient;
+use CrazyGoat\TiKV\Connection\PdClient;
+use CrazyGoat\TiKV\Grpc\GrpcClient;
 use Kvrpcpb\Context;
 use Kvrpcpb\Peer;
 use Kvrpcpb\RegionEpoch;

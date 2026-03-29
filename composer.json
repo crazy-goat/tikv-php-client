@@ -1,6 +1,6 @@
 {
-    "name": "tikv/php-client",
-    "description": "PHP TiKV RawKV client using gRPC extension",
+    "name": "crazy-goat/tikv-client",
+    "description": "PHP client for TiKV RawKV API using gRPC extension",
     "type": "library",
     "require": {
         "php": ">=8.2",
@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "TiKvPhp\\": "src/",
+            "CrazyGoat\\TiKV\\": "src/",
             "Kvrpcpb\\": "src/Proto/Kvrpcpb/",
             "Pdpb\\": "src/Proto/Pdpb/",
             "GPBMetadata\\": "src/Proto/GPBMetadata/"

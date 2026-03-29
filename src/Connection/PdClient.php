@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace TiKvPhp\Connection;
+namespace CrazyGoat\TiKV\Connection;
 
-use TiKvPhp\Grpc\GrpcClient;
+use CrazyGoat\TiKV\Grpc\GrpcClient;
 use Pdpb\GetRegionRequest;
 use Pdpb\GetRegionResponse;
 use Pdpb\RequestHeader;
