@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   pd:
-    image: pingcap/pd:v7.1.0
+    image: pingcap/pd:v8.5.5
     ports:
       - "2379:2379"
     command: >
@@ -22,7 +22,7 @@ services:
       retries: 5
 
   tikv1:
-    image: pingcap/tikv:v7.1.0
+    image: pingcap/tikv:v8.5.5
     ports:
       - "20160:20160"
     command: >
@@ -37,7 +37,7 @@ services:
         condition: service_healthy
 
   tikv2:
-    image: pingcap/tikv:v7.1.0
+    image: pingcap/tikv:v8.5.5
     ports:
       - "20161:20161"
     command: >
@@ -52,7 +52,7 @@ services:
         condition: service_healthy
 
   tikv3:
-    image: pingcap/tikv:v7.1.0
+    image: pingcap/tikv:v8.5.5
     ports:
       - "20162:20162"
     command: >
