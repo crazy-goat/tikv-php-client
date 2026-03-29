@@ -44,7 +44,7 @@ examples/
 ## Usage
 
 ```php
-use TiKvPhp\RawKv\RawKvClient;
+use CrazyGoat\TiKV\RawKv\RawKvClient;
 
 // Connect to TiKV cluster
 $client = RawKvClient::create(['127.0.0.1:2379']);
