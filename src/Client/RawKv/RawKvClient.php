@@ -26,6 +26,12 @@ use CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawCASRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawCASResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawChecksumRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawChecksumResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawBatchScanRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawBatchScanResponse;
+use CrazyGoat\Proto\Kvrpcpb\ChecksumAlgorithm;
+use CrazyGoat\Proto\Kvrpcpb\KeyRange;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
 use CrazyGoat\Proto\Metapb\Peer;
 use CrazyGoat\Proto\Metapb\RegionEpoch;
@@ -288,6 +294,145 @@ class RawKvClient
         
         // Key already existed — return the existing value
         return $result->previousValue;
+    }
+    
+    /**
+     * Compute a CRC64-XOR checksum over all key-value pairs in a range
+     * 
+     * The checksum is computed server-side by TiKV. For ranges spanning multiple
+     * regions, individual region checksums are XOR-merged (CRC64-XOR is associative
+     * and commutative), and key/byte counts are summed.
+     * 
+     * This is useful for data integrity verification, backup validation, and
+     * detecting data drift between replicas or after migration.
+     * 
+     * @param string $startKey Start key (inclusive)
+     * @param string $endKey End key (exclusive), empty string means no upper bound
+     * @return ChecksumResult Contains checksum, total key count, and total byte count
+     */
+    public function checksum(string $startKey, string $endKey): ChecksumResult
+    {
+        $this->ensureOpen();
+        
+        // Get all regions covering the range
+        $regions = $this->pdClient->scanRegions($startKey, $endKey, 0);
+        
+        $mergedChecksum = 0;
+        $mergedTotalKvs = 0;
+        $mergedTotalBytes = 0;
+        
+        foreach ($regions as $regionInfo) {
+            $regionStart = $regionInfo['start_key'];
+            $regionEnd = $regionInfo['end_key'];
+            
+            // Clamp range to region boundaries
+            $rangeStart = ($startKey > $regionStart) ? $startKey : $regionStart;
+            $rangeEnd = ($endKey === '' || ($regionEnd !== '' && $endKey > $regionEnd)) ? $regionEnd : $endKey;
+            
+            if ($rangeStart >= $rangeEnd && $rangeEnd !== '') {
+                continue;
+            }
+            
+            $regionResult = $this->executeChecksumForRegion($regionInfo, $rangeStart, $rangeEnd);
+            
+            // XOR-merge checksums (CRC64-XOR is associative and commutative)
+            $mergedChecksum ^= $regionResult->checksum;
+            $mergedTotalKvs += $regionResult->totalKvs;
+            $mergedTotalBytes += $regionResult->totalBytes;
+        }
+        
+        return new ChecksumResult(
+            checksum: $mergedChecksum,
+            totalKvs: $mergedTotalKvs,
+            totalBytes: $mergedTotalBytes,
+        );
+    }
+    
+    private function executeChecksumForRegion(array $regionInfo, string $startKey, string $endKey): ChecksumResult
+    {
+        return $this->executeWithRetry($startKey, function() use ($regionInfo, $startKey, $endKey) {
+            $tikvAddress = $this->getTikvAddress($regionInfo['leader_store_id']);
+            
+            $range = new KeyRange();
+            $range->setStartKey($startKey);
+            if ($endKey !== '') {
+                $range->setEndKey($endKey);
+            }
+            
+            $request = new RawChecksumRequest();
+            $request->setContext($this->createContext($regionInfo));
+            $request->setAlgorithm(ChecksumAlgorithm::Crc64_Xor);
+            $request->setRanges([$range]);
+            
+            /** @var RawChecksumResponse $response */
+            $response = $this->grpc->call(
+                $tikvAddress,
+                'tikvpb.Tikv',
+                'RawChecksum',
+                $request,
+                RawChecksumResponse::class
+            );
+            
+            $error = $response->getError();
+            if ($error !== '') {
+                throw new \RuntimeException("RawChecksum failed: {$error}");
+            }
+            
+            return new ChecksumResult(
+                checksum: (int) $response->getChecksum(),
+                totalKvs: (int) $response->getTotalKvs(),
+                totalBytes: (int) $response->getTotalBytes(),
+            );
+        });
+    }
+    
+    /**
+     * Scan multiple non-contiguous key ranges in a single operation
+     * 
+     * Each range is defined as [startKey, endKey) and scanned independently with
+     * its own limit. Results are returned as an array of arrays, one per input range,
+     * preserving the input order.
+     * 
+     * For ranges spanning multiple regions, the request is split per-region and
+     * results are merged transparently.
+     * 
+     * @param array<array{0: string, 1: string}> $ranges Array of [startKey, endKey] pairs
+     * @param int $eachLimit Maximum number of key-value pairs to return per range
+     * @param bool $keyOnly If true, return only keys without values
+     * @return array<array<array{key: string, value: ?string}>> Array of results per range
+     */
+    public function batchScan(array $ranges, int $eachLimit, bool $keyOnly = false): array
+    {
+        $this->ensureOpen();
+        
+        if (empty($ranges)) {
+            return [];
+        }
+        
+        if ($eachLimit <= 0) {
+            throw new \InvalidArgumentException('eachLimit must be greater than 0');
+        }
+        
+        // For each input range, perform a scan (reusing existing scan logic)
+        // This is more robust than trying to group ranges by region and use
+        // the RawBatchScan RPC, because:
+        // 1. Ranges may span multiple regions
+        // 2. The RawBatchScan response returns a flat list without range delimiters
+        // 3. The existing scan() method already handles multi-region correctly
+        //
+        // The RawBatchScan RPC is a single-region operation — it doesn't handle
+        // cross-region ranges. So we'd need the same splitting logic anyway.
+        // Using scan() per range is simpler and equally correct.
+        $results = [];
+        foreach ($ranges as $range) {
+            if (!is_array($range) || count($range) !== 2) {
+                throw new \InvalidArgumentException('Each range must be an array of [startKey, endKey]');
+            }
+            [$startKey, $endKey] = $range;
+            $results[] = $this->scan($startKey, $endKey, $eachLimit, $keyOnly);
+        }
+        
+        return $results;
     }
     
     /**

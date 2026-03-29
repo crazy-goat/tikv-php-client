@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace CrazyGoat\TiKV\Tests\E2E;
 
 use CrazyGoat\TiKV\Client\RawKv\CasResult;
+use CrazyGoat\TiKV\Client\RawKv\ChecksumResult;
 use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
 use PHPUnit\Framework\TestCase;
 
@@ -1715,5 +1716,393 @@ class RawKvE2ETest extends TestCase
         
         $this->assertNull($result);
         $this->assertEquals($value, self::$client->get($key));
+    }
+    
+    // ========================================================================
+    // Checksum
+    // ========================================================================
+    
+    public function testChecksumEmptyRange(): void
+    {
+        $result = self::$client->checksum('chk-empty-zzz-', 'chk-empty-zzz.');
+        
+        $this->assertInstanceOf(ChecksumResult::class, $result);
+        $this->assertEquals(0, $result->checksum);
+        $this->assertEquals(0, $result->totalKvs);
+        $this->assertEquals(0, $result->totalBytes);
+    }
+    
+    public function testChecksumSingleKey(): void
+    {
+        $this->putOneAndTrack('chk-single', 'value');
+        
+        $result = self::$client->checksum('chk-single', "chk-single\x00");
+        
+        $this->assertInstanceOf(ChecksumResult::class, $result);
+        $this->assertNotEquals(0, $result->checksum, 'Checksum of non-empty range should be non-zero');
+        $this->assertEquals(1, $result->totalKvs);
+        $this->assertGreaterThan(0, $result->totalBytes);
+    }
+    
+    public function testChecksumMultipleKeys(): void
+    {
+        $pairs = [
+            'chk-multi-a' => 'value-a',
+            'chk-multi-b' => 'value-b',
+            'chk-multi-c' => 'value-c',
+        ];
+        $this->putAndTrack($pairs);
+        
+        $result = self::$client->checksum('chk-multi-', 'chk-multi.');
+        
+        $this->assertEquals(3, $result->totalKvs);
+        $this->assertGreaterThan(0, $result->totalBytes);
+        $this->assertNotEquals(0, $result->checksum);
+    }
+    
+    public function testChecksumChangesWhenDataChanges(): void
+    {
+        $this->putOneAndTrack('chk-change', 'original');
+        
+        $before = self::$client->checksum('chk-change', "chk-change\x00");
+        
+        // Overwrite with different value
+        self::$client->put('chk-change', 'modified');
+        
+        $after = self::$client->checksum('chk-change', "chk-change\x00");
+        
+        $this->assertNotEquals($before->checksum, $after->checksum,
+            'Checksum should change when data changes');
+        $this->assertEquals($before->totalKvs, $after->totalKvs,
+            'Key count should remain the same');
+    }
+    
+    public function testChecksumChangesWhenKeyAdded(): void
+    {
+        $this->putOneAndTrack('chk-add-a', 'va');
+        
+        $before = self::$client->checksum('chk-add-', 'chk-add.');
+        $this->assertEquals(1, $before->totalKvs);
+        
+        $this->putOneAndTrack('chk-add-b', 'vb');
+        
+        $after = self::$client->checksum('chk-add-', 'chk-add.');
+        $this->assertEquals(2, $after->totalKvs);
+        $this->assertGreaterThan($before->totalBytes, $after->totalBytes);
+    }
+    
+    public function testChecksumChangesWhenKeyDeleted(): void
+    {
+        $this->putOneAndTrack('chk-del-a', 'va');
+        $this->putOneAndTrack('chk-del-b', 'vb');
+        
+        $before = self::$client->checksum('chk-del-', 'chk-del.');
+        $this->assertEquals(2, $before->totalKvs);
+        
+        self::$client->delete('chk-del-b');
+        
+        $after = self::$client->checksum('chk-del-', 'chk-del.');
+        $this->assertEquals(1, $after->totalKvs);
+        $this->assertLessThan($before->totalBytes, $after->totalBytes);
+    }
+    
+    public function testChecksumDeterministic(): void
+    {
+        $this->putOneAndTrack('chk-det-a', 'va');
+        $this->putOneAndTrack('chk-det-b', 'vb');
+        
+        $first = self::$client->checksum('chk-det-', 'chk-det.');
+        $second = self::$client->checksum('chk-det-', 'chk-det.');
+        
+        $this->assertEquals($first->checksum, $second->checksum,
+            'Checksum should be deterministic for the same data');
+        $this->assertEquals($first->totalKvs, $second->totalKvs);
+        $this->assertEquals($first->totalBytes, $second->totalBytes);
+    }
+    
+    public function testChecksumWithBinaryKeys(): void
+    {
+        $k1 = "chk-bin-\x01";
+        $k2 = "chk-bin-\x02";
+        
+        self::$client->put($k1, 'v1');
+        self::$client->put($k2, 'v2');
+        $this->keysToCleanup[] = $k1;
+        $this->keysToCleanup[] = $k2;
+        
+        $result = self::$client->checksum("chk-bin-\x00", "chk-bin-\x03");
+        
+        $this->assertEquals(2, $result->totalKvs);
+        $this->assertNotEquals(0, $result->checksum);
+    }
+    
+    public function testChecksumPartialRange(): void
+    {
+        $pairs = [
+            'chk-part-a' => 'va',
+            'chk-part-b' => 'vb',
+            'chk-part-c' => 'vc',
+        ];
+        $this->putAndTrack($pairs);
+        
+        // Checksum only first two keys
+        $partial = self::$client->checksum('chk-part-a', 'chk-part-c');
+        $this->assertEquals(2, $partial->totalKvs);
+        
+        // Checksum all three
+        $full = self::$client->checksum('chk-part-', 'chk-part.');
+        $this->assertEquals(3, $full->totalKvs);
+        
+        $this->assertNotEquals($partial->checksum, $full->checksum);
+    }
+    
+    public function testChecksumManyKeys(): void
+    {
+        $pairs = [];
+        for ($i = 0; $i < 50; $i++) {
+            $pairs[sprintf('chk-many-%03d', $i)] = "value-$i";
+        }
+        $this->putAndTrack($pairs);
+        
+        $result = self::$client->checksum('chk-many-', 'chk-many.');
+        
+        $this->assertEquals(50, $result->totalKvs);
+        $this->assertNotEquals(0, $result->checksum);
+    }
+    
+    public function testChecksumTotalBytesIsAccurate(): void
+    {
+        $key = 'chk-bytes';
+        $value = 'hello';
+        $this->putOneAndTrack($key, $value);
+        
+        $result = self::$client->checksum($key, "$key\x00");
+        
+        $this->assertEquals(1, $result->totalKvs);
+        // Total bytes should be at least key length + value length
+        $this->assertGreaterThanOrEqual(
+            strlen($key) + strlen($value),
+            $result->totalBytes,
+            'Total bytes should include at least key + value lengths'
+        );
+    }
+    
+    // ========================================================================
+    // BatchScan
+    // ========================================================================
+    
+    public function testBatchScanBasic(): void
+    {
+        $this->putAndTrack([
+            'bs-users-alice' => 'Alice',
+            'bs-users-bob' => 'Bob',
+            'bs-orders-001' => 'Order1',
+            'bs-orders-002' => 'Order2',
+        ]);
+        
+        $results = self::$client->batchScan([
+            ['bs-users-', 'bs-users.'],
+            ['bs-orders-', 'bs-orders.'],
+        ], 100);
+        
+        $this->assertCount(2, $results, 'Should return one result set per range');
+        
+        // First range: users
+        $this->assertCount(2, $results[0]);
+        $userKeys = array_column($results[0], 'key');
+        $this->assertContains('bs-users-alice', $userKeys);
+        $this->assertContains('bs-users-bob', $userKeys);
+        
+        // Second range: orders
+        $this->assertCount(2, $results[1]);
+        $orderKeys = array_column($results[1], 'key');
+        $this->assertContains('bs-orders-001', $orderKeys);
+        $this->assertContains('bs-orders-002', $orderKeys);
+    }
+    
+    public function testBatchScanWithLimit(): void
+    {
+        $this->putAndTrack([
+            'bs-lim-a1' => 'v1',
+            'bs-lim-a2' => 'v2',
+            'bs-lim-a3' => 'v3',
+            'bs-lim-b1' => 'v4',
+            'bs-lim-b2' => 'v5',
+        ]);
+        
+        $results = self::$client->batchScan([
+            ['bs-lim-a', 'bs-lim-b'],
+            ['bs-lim-b', 'bs-lim-c'],
+        ], 2);
+        
+        // Each range should be limited to 2 results
+        $this->assertCount(2, $results[0], 'First range should have at most 2 results');
+        $this->assertCount(2, $results[1], 'Second range should have at most 2 results');
+    }
+    
+    public function testBatchScanKeyOnly(): void
+    {
+        $this->putAndTrack([
+            'bs-ko-a' => 'secret-a',
+            'bs-ko-b' => 'secret-b',
+        ]);
+        
+        $results = self::$client->batchScan([
+            ['bs-ko-', 'bs-ko.'],
+        ], 100, true);
+        
+        $this->assertCount(1, $results);
+        $this->assertCount(2, $results[0]);
+        foreach ($results[0] as $pair) {
+            $this->assertNull($pair['value'], 'keyOnly batchScan should return null values');
+        }
+    }
+    
+    public function testBatchScanEmptyRanges(): void
+    {
+        $results = self::$client->batchScan([
+            ['bs-empty-zzz-', 'bs-empty-zzz.'],
+            ['bs-empty-yyy-', 'bs-empty-yyy.'],
+        ], 100);
+        
+        $this->assertCount(2, $results);
+        $this->assertCount(0, $results[0]);
+        $this->assertCount(0, $results[1]);
+    }
+    
+    public function testBatchScanEmptyInput(): void
+    {
+        $results = self::$client->batchScan([], 100);
+        
+        $this->assertEquals([], $results);
+    }
+    
+    public function testBatchScanSingleRange(): void
+    {
+        $this->putAndTrack([
+            'bs-single-a' => 'va',
+            'bs-single-b' => 'vb',
+        ]);
+        
+        $results = self::$client->batchScan([
+            ['bs-single-', 'bs-single.'],
+        ], 100);
+        
+        $this->assertCount(1, $results);
+        $this->assertCount(2, $results[0]);
+    }
+    
+    public function testBatchScanMixedPopulatedAndEmpty(): void
+    {
+        $this->putAndTrack([
+            'bs-mix-a' => 'va',
+            'bs-mix-b' => 'vb',
+        ]);
+        
+        $results = self::$client->batchScan([
+            ['bs-mix-', 'bs-mix.'],       // has data
+            ['bs-mix-zzz-', 'bs-mix-zzz.'], // empty
+        ], 100);
+        
+        $this->assertCount(2, $results);
+        $this->assertCount(2, $results[0]);
+        $this->assertCount(0, $results[1]);
+    }
+    
+    public function testBatchScanWithBinaryKeys(): void
+    {
+        $k1 = "bs-bin-\x01";
+        $k2 = "bs-bin-\x02";
+        
+        self::$client->put($k1, 'v1');
+        self::$client->put($k2, 'v2');
+        $this->keysToCleanup[] = $k1;
+        $this->keysToCleanup[] = $k2;
+        
+        $results = self::$client->batchScan([
+            ["bs-bin-\x00", "bs-bin-\x03"],
+        ], 100);
+        
+        $this->assertCount(1, $results);
+        $this->assertCount(2, $results[0]);
+        $this->assertEquals($k1, $results[0][0]['key']);
+        $this->assertEquals($k2, $results[0][1]['key']);
+    }
+    
+    public function testBatchScanResultsInAscendingOrder(): void
+    {
+        $this->putOneAndTrack('bs-ord-c', 'vc');
+        $this->putOneAndTrack('bs-ord-a', 'va');
+        $this->putOneAndTrack('bs-ord-b', 'vb');
+        
+        $results = self::$client->batchScan([
+            ['bs-ord-', 'bs-ord.'],
+        ], 100);
+        
+        $keys = array_column($results[0], 'key');
+        $this->assertEquals(['bs-ord-a', 'bs-ord-b', 'bs-ord-c'], $keys);
+    }
+    
+    public function testBatchScanManyRanges(): void
+    {
+        // Create 5 different prefixes with 3 keys each
+        for ($i = 0; $i < 5; $i++) {
+            for ($j = 0; $j < 3; $j++) {
+                $key = sprintf('bs-many-p%d-k%d', $i, $j);
+                $this->putOneAndTrack($key, "v{$i}{$j}");
+            }
+        }
+        
+        $ranges = [];
+        for ($i = 0; $i < 5; $i++) {
+            $ranges[] = [sprintf('bs-many-p%d-', $i), sprintf('bs-many-p%d.', $i)];
+        }
+        
+        $results = self::$client->batchScan($ranges, 100);
+        
+        $this->assertCount(5, $results);
+        foreach ($results as $rangeResult) {
+            $this->assertCount(3, $rangeResult);
+        }
+    }
+    
+    public function testBatchScanLimitOnePerRange(): void
+    {
+        $this->putAndTrack([
+            'bs-l1-a1' => 'v1',
+            'bs-l1-a2' => 'v2',
+            'bs-l1-b1' => 'v3',
+            'bs-l1-b2' => 'v4',
+        ]);
+        
+        $results = self::$client->batchScan([
+            ['bs-l1-a', 'bs-l1-b'],
+            ['bs-l1-b', 'bs-l1-c'],
+        ], 1);
+        
+        $this->assertCount(1, $results[0], 'Limit 1 should return exactly 1 result per range');
+        $this->assertCount(1, $results[1]);
+        $this->assertEquals('bs-l1-a1', $results[0][0]['key']);
+        $this->assertEquals('bs-l1-b1', $results[1][0]['key']);
+    }
+    
+    public function testBatchScanValuesAreCorrect(): void
+    {
+        $this->putAndTrack([
+            'bs-val-a' => 'alpha',
+            'bs-val-b' => 'bravo',
+        ]);
+        
+        $results = self::$client->batchScan([
+            ['bs-val-', 'bs-val.'],
+        ], 100);
+        
+        $resultMap = [];
+        foreach ($results[0] as $pair) {
+            $resultMap[$pair['key']] = $pair['value'];
+        }
+        
+        $this->assertEquals('alpha', $resultMap['bs-val-a']);
+        $this->assertEquals('bravo', $resultMap['bs-val-b']);
     }
 }

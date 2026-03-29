@@ -23,6 +23,8 @@ This directory contains detailed implementation plans for all RawKV features.
 16. **GetKeyTTL** - Get remaining TTL ✅
 17. **CompareAndSwap** - Atomic CAS operation ✅
 18. **PutIfAbsent** - Conditional insert (built on CAS) ✅
+19. **Checksum** - CRC64-XOR data integrity verification ✅
+20. **BatchScan** - Multiple non-contiguous range scanning ✅
 
 ### 🚧 Planned (in priority order)
 
@@ -44,11 +46,11 @@ This directory contains detailed implementation plans for all RawKV features.
 - ~~[07-put-with-ttl.md](07-put-with-ttl.md) - Store with expiration~~
 - ~~[08-get-key-ttl.md](08-get-key-ttl.md) - Get remaining TTL~~
 
-#### Phase 5: Advanced Operations (Low Priority) — In Progress
+#### Phase 5: Advanced Operations (Low Priority) ✅ COMPLETED
 - ~~[09-compare-and-swap.md](09-compare-and-swap.md) - Atomic CAS~~ ✅
 - ~~[13-put-if-absent.md](13-put-if-absent.md) - Conditional insert~~ ✅
-- [10-checksum.md](10-checksum.md) - Data integrity
-- [14-batch-scan.md](14-batch-scan.md) - Multiple range scan
+- ~~[10-checksum.md](10-checksum.md) - Data integrity~~ ✅
+- ~~[14-batch-scan.md](14-batch-scan.md) - Multiple range scan~~ ✅
 
 #### Phase 6: Future (Not Planned)
 - [15-transaction-support.md](15-transaction-support.md) - Full ACID transactions
