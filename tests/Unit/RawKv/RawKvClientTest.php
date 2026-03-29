@@ -84,4 +84,40 @@ class RawKvClientTest extends TestCase
         
         $client->batchDelete(['key1', 'key2']);
     }
+    
+    public function testScanThrowsWhenClosed(): void
+    {
+        $pdClient = $this->createMock(PdClient::class);
+        $client = new RawKvClient($pdClient);
+        $client->close();
+        
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Client is closed');
+        
+        $client->scan('start', 'end');
+    }
+    
+    public function testScanPrefixThrowsWhenClosed(): void
+    {
+        $pdClient = $this->createMock(PdClient::class);
+        $client = new RawKvClient($pdClient);
+        $client->close();
+        
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Client is closed');
+        
+        $client->scanPrefix('prefix');
+    }
+    
+    public function testReverseScanThrowsWhenClosed(): void
+    {
+        $pdClient = $this->createMock(PdClient::class);
+        $client = new RawKvClient($pdClient);
+        $client->close();
+        
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Client is closed');
+        
+        $client->reverseScan('start', 'end');
+    }
 }

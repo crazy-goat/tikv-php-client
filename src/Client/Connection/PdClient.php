@@ -9,6 +9,8 @@ use CrazyGoat\Proto\Pdpb\GetRegionResponse;
 use CrazyGoat\Proto\Pdpb\GetStoreRequest;
 use CrazyGoat\Proto\Pdpb\GetStoreResponse;
 use CrazyGoat\Proto\Pdpb\RequestHeader;
+use CrazyGoat\Proto\Pdpb\ScanRegionsRequest;
+use CrazyGoat\Proto\Pdpb\ScanRegionsResponse;
 use CrazyGoat\Proto\Metapb\Store;
 
 class PdClient
@@ -132,5 +134,71 @@ class PdClient
     public function close(): void
     {
         $this->grpc->close();
+    }
+    
+    /**
+     * Scan regions in a key range
+     * 
+     * @param string $startKey Start key of the range
+     * @param string $endKey End key of the range (empty means +inf)
+     * @param int $limit Maximum number of regions to return (0 = no limit)
+     * @return array Array of region info arrays
+     */
+    public function scanRegions(string $startKey, string $endKey, int $limit = 0): array
+    {
+        $request = new ScanRegionsRequest();
+        $request->setHeader($this->createHeader());
+        $request->setStartKey($startKey);
+        $request->setEndKey($endKey);
+        $request->setLimit($limit);
+        
+        try {
+            $response = $this->grpc->call(
+                $this->pdAddress,
+                'pdpb.PD',
+                'ScanRegions',
+                $request,
+                ScanRegionsResponse::class
+            );
+            
+            // Extract cluster_id from response for future requests
+            $respHeader = $response->getHeader();
+            if ($respHeader && $this->clusterId === null) {
+                $this->clusterId = $respHeader->getClusterId();
+            }
+            
+            $regions = [];
+            $regionMetas = $response->getRegionMetas();
+            $leaders = $response->getLeaders();
+            
+            // Combine region metas with leaders
+            foreach ($regionMetas as $index => $region) {
+                $leader = $leaders[$index] ?? null;
+                $regionEpoch = $region ? $region->getRegionEpoch() : null;
+                
+                $regions[] = [
+                    'region_id' => $region ? $region->getId() : 0,
+                    'leader_peer_id' => $leader ? $leader->getId() : 0,
+                    'leader_store_id' => $leader ? $leader->getStoreId() : 1,
+                    'region_epoch_conf_ver' => $regionEpoch ? $regionEpoch->getConfVer() : 0,
+                    'region_epoch_version' => $regionEpoch ? $regionEpoch->getVersion() : 0,
+                    'start_key' => $region ? $region->getStartKey() : '',
+                    'end_key' => $region ? $region->getEndKey() : '',
+                ];
+            }
+            
+            return $regions;
+        } catch (\RuntimeException $e) {
+            // If we got cluster_id mismatch, extract it from error and retry
+            if (strpos($e->getMessage(), 'mismatch cluster id') !== false) {
+                preg_match('/need (\d+) but got/', $e->getMessage(), $matches);
+                if (isset($matches[1])) {
+                    $this->clusterId = (int)$matches[1];
+                    // Retry with correct cluster_id
+                    return $this->scanRegions($startKey, $endKey, $limit);
+                }
+            }
+            throw $e;
+        }
     }
 }
