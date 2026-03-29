@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  pd:
+    image: pingcap/pd:v7.1.0
+    ports:
+      - "2379:2379"
+    command: >
+      --name=pd
+      --client-urls=http://0.0.0.0:2379
+      --peer-urls=http://0.0.0.0:2380
+      --advertise-client-urls=http://pd:2379
+      --advertise-peer-urls=http://pd:2380
+      --initial-cluster=pd=http://pd:2380
+      --data-dir=/data/pd
+    volumes:
+      - pd-data:/data/pd
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2379/pd/api/v1/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  tikv1:
+    image: pingcap/tikv:v7.1.0
+    ports:
+      - "20160:20160"
+    command: >
+      --addr=0.0.0.0:20160
+      --advertise-addr=tikv1:20160
+      --pd-endpoints=pd:2379
+      --data-dir=/data/tikv1
+    volumes:
+      - tikv1-data:/data/tikv1
+    depends_on:
+      pd:
+        condition: service_healthy
+
+  tikv2:
+    image: pingcap/tikv:v7.1.0
+    ports:
+      - "20161:20161"
+    command: >
+      --addr=0.0.0.0:20161
+      --advertise-addr=tikv2:20161
+      --pd-endpoints=pd:2379
+      --data-dir=/data/tikv2
+    volumes:
+      - tikv2-data:/data/tikv2
+    depends_on:
+      pd:
+        condition: service_healthy
+
+  tikv3:
+    image: pingcap/tikv:v7.1.0
+    ports:
+      - "20162:20162"
+    command: >
+      --addr=0.0.0.0:20162
+      --advertise-addr=tikv3:20162
+      --pd-endpoints=pd:2379
+      --data-dir=/data/tikv3
+    volumes:
+      - tikv3-data:/data/tikv3
+    depends_on:
+      pd:
+        condition: service_healthy
+
+  php-client:
+    build: .
+    volumes:
+      - .:/app
+    depends_on:
+      - pd
+      - tikv1
+      - tikv2
+      - tikv3
+    environment:
+      - PD_ENDPOINTS=pd:2379
+      - TIKV_ENDPOINTS=tikv1:20160
+    command: php examples/basic.php
+
+volumes:
+  pd-data:
+  tikv1-data:
+  tikv2-data:
+  tikv3-data:

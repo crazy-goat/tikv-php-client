@@ -1,0 +1,23 @@
+{
+    "name": "tikv/php-client",
+    "description": "PHP TiKV RawKV client using gRPC extension",
+    "type": "library",
+    "require": {
+        "php": ">=8.2",
+        "grpc/grpc": "^1.57",
+        "google/protobuf": "^3.25"
+    },
+    "config": {
+        "audit": {
+            "block-insecure": false
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "TiKvPhp\\": "src/",
+            "Kvrpcpb\\": "src/Proto/Kvrpcpb/",
+            "Pdpb\\": "src/Proto/Pdpb/",
+            "GPBMetadata\\": "src/Proto/GPBMetadata/"
+        }
+    }
+}

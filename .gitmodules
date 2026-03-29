@@ -1,0 +1,9 @@
+[submodule "proto/kvproto"]
+	path = proto/kvproto
+	url = https://github.com/pingcap/kvproto.git
+[submodule "proto/gogo"]
+	path = proto/gogo
+	url = https://github.com/gogo/protobuf.git
+[submodule "proto/googleapis"]
+	path = proto/googleapis
+	url = https://github.com/googleapis/googleapis.git
