@@ -493,7 +493,7 @@ class RawKvClient
      * Reverse scan a range of keys from TiKV (descending order)
      * 
      * Note: This implementation uses forward scan and reverses the results,
-     * as TiKV RawScan with reverse=true may not be supported in all versions.
+     * as TiKV RawScan with reverse=true has compatibility issues in v7.1.0.
      * 
      * @param string $startKey Start key (inclusive, upper bound in reverse scan)
      * @param string $endKey End key (exclusive, lower bound in reverse scan), empty string means no lower bound
@@ -505,11 +505,8 @@ class RawKvClient
     {
         $this->ensureOpen();
         
-        // For reverse scan from startKey down to endKey:
-        // We need to scan [endKey, startKey+] where startKey+ is the next key after startKey
-        // to include startKey in the results
-        
-        // Calculate the end key for forward scan to include startKey
+        // Use forward scan and reverse results
+        // To include startKey, we scan [endKey, startKey+] where startKey+ is the next key after startKey
         $scanEndKey = $this->nextKey($startKey);
         
         // Get all results from forward scan [endKey, scanEndKey)
