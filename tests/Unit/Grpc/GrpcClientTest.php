@@ -3,53 +3,53 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Tests\Unit\Grpc;
 
+use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
+use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use PHPUnit\Framework\TestCase;
 
 class GrpcClientTest extends TestCase
 {
     private ?GrpcClient $client = null;
-    
+
     protected function setUp(): void
     {
-        // Skip tests if gRPC extension is not available
         if (!extension_loaded('grpc')) {
             $this->markTestSkipped('gRPC extension not available');
         }
         $this->client = new GrpcClient();
     }
-    
+
     protected function tearDown(): void
     {
-        if ($this->client !== null) {
-            $this->client->close();
-        }
+        $this->client?->close();
     }
-    
-    public function testClientCanBeCreated(): void
+
+    public function testImplementsInterface(): void
     {
-        $this->assertInstanceOf(GrpcClient::class, $this->client);
+        $this->assertInstanceOf(GrpcClientInterface::class, $this->client);
     }
-    
-    public function testClientCanBeClosed(): void
+
+    public function testCloseIsIdempotent(): void
     {
         $this->client->close();
-        $this->assertTrue(true); // No exception means success
+        $this->client->close();
+        $this->expectNotToPerformAssertions();
     }
-    
-    public function testCallWithInvalidAddressThrowsException(): void
+
+    public function testCallWithInvalidAddressThrowsGrpcException(): void
     {
-        $this->expectException(\RuntimeException::class);
-        
+        $this->expectException(GrpcException::class);
+
         $request = new \CrazyGoat\Proto\Kvrpcpb\RawGetRequest();
         $request->setKey('test');
-        
+
         $this->client->call(
             'invalid-address:99999',
             'tikvpb.Tikv',
             'RawGet',
             $request,
-            \CrazyGoat\Proto\Kvrpcpb\RawGetResponse::class
+            \CrazyGoat\Proto\Kvrpcpb\RawGetResponse::class,
         );
     }
 }
