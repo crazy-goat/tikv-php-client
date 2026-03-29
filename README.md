@@ -125,3 +125,69 @@ docker-compose up --build php-client
 ## License
 
 MIT
+
+## Testing
+
+### Run Unit Tests
+
+```bash
+# Run unit tests only (no TiKV required)
+composer install
+vendor/bin/phpunit --testsuite Unit
+```
+
+### Run E2E Tests
+
+```bash
+# Option 1: Using the test script (recommended)
+./scripts/test-e2e.sh
+
+# Option 2: Using docker-compose profile
+docker-compose --profile test up --build php-test
+
+# Option 3: Manual steps
+docker-compose up -d pd tikv1 tikv2 tikv3
+docker-compose run --rm -e PD_ENDPOINTS=pd:2379 php-client vendor/bin/phpunit --testsuite E2E
+docker-compose down
+```
+
+### Test Structure
+
+```
+tests/
+├── Unit/                    # Unit tests (no external dependencies)
+│   ├── Grpc/
+│   ├── Connection/
+│   └── RawKv/
+├── Integration/             # Integration tests
+└── E2E/                     # End-to-end tests (requires TiKV)
+    └── RawKvE2ETest.php
+```
+
+### Test Coverage
+
+- ✅ **Unit Tests**: Test individual classes in isolation
+- ✅ **E2E Tests**: Test full workflow with real TiKV cluster
+- 🔄 **Integration Tests**: Test component interactions (planned)
+
+## Development
+
+### Generate PHP Classes from Proto
+
+```bash
+# Generate from TiKV proto files
+docker-compose run --rm php-client protoc \
+  --php_out=src/Proto \
+  -I proto/kvproto/proto \
+  -I proto/gogo \
+  -I proto/googleapis \
+  proto/kvproto/proto/kvrpcpb.proto \
+  proto/kvproto/proto/pdpb.proto
+```
+
+### Code Style
+
+```bash
+# Check code style
+vendor/bin/phpunit --testsuite Unit
+```

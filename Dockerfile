@@ -13,6 +13,9 @@ RUN apk add --no-cache \
     php84-openssl \
     php84-curl \
     php84-ctype \
+    php84-dom \
+    php84-xml \
+    php84-xmlwriter \
     composer \
     protobuf \
     protobuf-dev
@@ -35,5 +38,5 @@ COPY . .
 # Generate autoloader
 RUN composer dump-autoload
 
-# Run example by default
-CMD ["php", "examples/basic.php"]
+# Run tests by default
+CMD ["vendor/bin/phpunit", "--testsuite", "E2E", "--testdox"]

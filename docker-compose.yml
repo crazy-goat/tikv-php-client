@@ -80,6 +80,21 @@ services:
       - TIKV_ENDPOINTS=tikv1:20160
     command: php examples/basic.php
 
+  php-test:
+    build: .
+    volumes:
+      - .:/app
+    depends_on:
+      - pd
+      - tikv1
+      - tikv2
+      - tikv3
+    environment:
+      - PD_ENDPOINTS=pd:2379
+    profiles:
+      - test
+    command: vendor/bin/phpunit --testsuite E2E --testdox
+
 volumes:
   pd-data:
   tikv1-data:
