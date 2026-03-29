@@ -154,4 +154,16 @@ class RawKvClientTest extends TestCase
         
         $client->deletePrefix('');
     }
+    
+    public function testGetKeyTTLThrowsWhenClosed(): void
+    {
+        $pdClient = $this->createMock(PdClient::class);
+        $client = new RawKvClient($pdClient);
+        $client->close();
+        
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Client is closed');
+        
+        $client->getKeyTTL('key');
+    }
 }

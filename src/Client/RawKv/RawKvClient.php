@@ -22,6 +22,8 @@ use CrazyGoat\Proto\Kvrpcpb\RawScanRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawScanResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLResponse;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
 use CrazyGoat\Proto\Metapb\Peer;
 use CrazyGoat\Proto\Metapb\RegionEpoch;
@@ -153,11 +155,60 @@ class RawKvClient
         });
     }
     
-    public function put(string $key, string $value): void
+    /**
+     * Get the remaining TTL (time-to-live) for a key
+     * 
+     * @param string $key Key to check
+     * @return int|null Remaining TTL in seconds, or null if key not found or has no TTL
+     */
+    public function getKeyTTL(string $key): ?int
     {
         $this->ensureOpen();
         
-        $this->executeWithRetry($key, function() use ($key, $value) {
+        return $this->executeWithRetry($key, function() use ($key) {
+            $regionInfo = $this->getRegionInfo($key);
+            $tikvAddress = $this->getTikvAddress($regionInfo['leader_store_id']);
+            
+            $request = new RawGetKeyTTLRequest();
+            $request->setContext($this->createContext($regionInfo));
+            $request->setKey($key);
+            
+            $response = $this->grpc->call(
+                $tikvAddress,
+                'tikvpb.Tikv',
+                'RawGetKeyTTL',
+                $request,
+                RawGetKeyTTLResponse::class
+            );
+            
+            $error = $response->getError();
+            if ($error !== '') {
+                throw new \RuntimeException("RawGetKeyTTL failed: {$error}");
+            }
+            
+            if ($response->getNotFound()) {
+                return null;
+            }
+            
+            $ttl = (int) $response->getTtl();
+            
+            // TTL of 0 means no expiration set
+            return $ttl > 0 ? $ttl : null;
+        });
+    }
+    
+    /**
+     * Store a key-value pair in TiKV
+     * 
+     * @param string $key Key to store
+     * @param string $value Value to store
+     * @param int $ttl Time-to-live in seconds (0 = no expiration)
+     */
+    public function put(string $key, string $value, int $ttl = 0): void
+    {
+        $this->ensureOpen();
+        
+        $this->executeWithRetry($key, function() use ($key, $value, $ttl) {
             $regionInfo = $this->getRegionInfo($key);
             $tikvAddress = $this->getTikvAddress($regionInfo['leader_store_id']);
             
@@ -165,6 +216,9 @@ class RawKvClient
             $request->setContext($this->createContext($regionInfo));
             $request->setKey($key);
             $request->setValue($value);
+            if ($ttl > 0) {
+                $request->setTtl($ttl);
+            }
             
             $this->grpc->call(
                 $tikvAddress,
@@ -277,9 +331,10 @@ class RawKvClient
      * Batch put multiple key-value pairs to TiKV
      * 
      * @param array $keyValuePairs Associative array of key => value pairs
+     * @param int $ttl Time-to-live in seconds applied to all keys (0 = no expiration)
      * @throws \RuntimeException If any region fails after retries
      */
-    public function batchPut(array $keyValuePairs): void
+    public function batchPut(array $keyValuePairs, int $ttl = 0): void
     {
         $this->ensureOpen();
         
@@ -306,18 +361,22 @@ class RawKvClient
         
         // Execute batch put for each region
         foreach ($pairsByRegion as $regionData) {
-            $this->executeBatchPutForRegion($regionData['region_info'], $regionData['pairs']);
+            $this->executeBatchPutForRegion($regionData['region_info'], $regionData['pairs'], $ttl);
         }
     }
     
-    private function executeBatchPutForRegion(array $regionInfo, array $pairs): void
+    private function executeBatchPutForRegion(array $regionInfo, array $pairs, int $ttl = 0): void
     {
-        $this->executeWithRetry($pairs[0]->getKey(), function() use ($regionInfo, $pairs) {
+        $this->executeWithRetry($pairs[0]->getKey(), function() use ($regionInfo, $pairs, $ttl) {
             $tikvAddress = $this->getTikvAddress($regionInfo['leader_store_id']);
             
             $request = new RawBatchPutRequest();
             $request->setContext($this->createContext($regionInfo));
             $request->setPairs($pairs);
+            if ($ttl > 0) {
+                // Use the new `ttls` field (repeated) with a single value applied to all keys
+                $request->setTtls([$ttl]);
+            }
             
             $this->grpc->call(
                 $tikvAddress,

@@ -30,8 +30,10 @@ services:
       --advertise-addr=tikv1:20160
       --pd-endpoints=pd:2379
       --data-dir=/data/tikv1
+      --config=/etc/tikv/tikv.toml
     volumes:
       - tikv1-data:/data/tikv1
+      - ./tikv.toml:/etc/tikv/tikv.toml:ro
     depends_on:
       pd:
         condition: service_healthy
@@ -45,8 +47,10 @@ services:
       --advertise-addr=tikv2:20161
       --pd-endpoints=pd:2379
       --data-dir=/data/tikv2
+      --config=/etc/tikv/tikv.toml
     volumes:
       - tikv2-data:/data/tikv2
+      - ./tikv.toml:/etc/tikv/tikv.toml:ro
     depends_on:
       pd:
         condition: service_healthy
@@ -60,8 +64,10 @@ services:
       --advertise-addr=tikv3:20162
       --pd-endpoints=pd:2379
       --data-dir=/data/tikv3
+      --config=/etc/tikv/tikv.toml
     volumes:
       - tikv3-data:/data/tikv3
+      - ./tikv.toml:/etc/tikv/tikv.toml:ro
     depends_on:
       pd:
         condition: service_healthy

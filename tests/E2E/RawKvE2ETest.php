@@ -1147,4 +1147,191 @@ class RawKvE2ETest extends TestCase
         $this->assertNull(self::$client->get('dp-sib-aab-1'));
         $this->assertEquals('v3', self::$client->get('dp-sib-aac-1'));
     }
+    
+    // ========================================================================
+    // TTL Operations
+    // ========================================================================
+    
+    public function testPutWithTtl(): void
+    {
+        // Put with 60 second TTL
+        self::$client->put('ttl-basic', 'value', 60);
+        $this->keysToCleanup[] = 'ttl-basic';
+        
+        $this->assertEquals('value', self::$client->get('ttl-basic'));
+    }
+    
+    public function testPutWithTtlKeyExpires(): void
+    {
+        // Put with 2 second TTL
+        self::$client->put('ttl-expire', 'temporary', 2);
+        $this->keysToCleanup[] = 'ttl-expire';
+        
+        // Key should exist immediately
+        $this->assertEquals('temporary', self::$client->get('ttl-expire'));
+        
+        // Wait for expiration
+        sleep(3);
+        
+        // Key should be gone
+        $this->assertNull(self::$client->get('ttl-expire'), 'Key should expire after TTL');
+    }
+    
+    public function testPutWithoutTtlDoesNotExpire(): void
+    {
+        // Put without TTL (default = 0 = no expiration)
+        $this->putOneAndTrack('ttl-none', 'permanent');
+        
+        $this->assertEquals('permanent', self::$client->get('ttl-none'));
+        
+        // getKeyTTL should return null for keys without TTL
+        $ttl = self::$client->getKeyTTL('ttl-none');
+        $this->assertNull($ttl, 'Key without TTL should return null from getKeyTTL');
+    }
+    
+    public function testGetKeyTtlReturnsRemainingTime(): void
+    {
+        // Put with 60 second TTL
+        self::$client->put('ttl-remaining', 'value', 60);
+        $this->keysToCleanup[] = 'ttl-remaining';
+        
+        $ttl = self::$client->getKeyTTL('ttl-remaining');
+        
+        $this->assertNotNull($ttl, 'Key with TTL should return a value');
+        $this->assertGreaterThan(0, $ttl, 'Remaining TTL should be positive');
+        $this->assertLessThanOrEqual(60, $ttl, 'Remaining TTL should not exceed original TTL');
+    }
+    
+    public function testGetKeyTtlNonExistentKey(): void
+    {
+        $ttl = self::$client->getKeyTTL('ttl-nonexistent-' . uniqid());
+        
+        $this->assertNull($ttl, 'Non-existent key should return null');
+    }
+    
+    public function testGetKeyTtlAfterExpiration(): void
+    {
+        self::$client->put('ttl-expired', 'temp', 2);
+        $this->keysToCleanup[] = 'ttl-expired';
+        
+        // Wait for expiration
+        sleep(3);
+        
+        $ttl = self::$client->getKeyTTL('ttl-expired');
+        $this->assertNull($ttl, 'Expired key should return null from getKeyTTL');
+    }
+    
+    public function testPutWithTtlOverwriteRefreshesTtl(): void
+    {
+        // Put with short TTL
+        self::$client->put('ttl-refresh', 'old', 2);
+        $this->keysToCleanup[] = 'ttl-refresh';
+        
+        // Overwrite with longer TTL
+        self::$client->put('ttl-refresh', 'new', 60);
+        
+        // Wait past original TTL
+        sleep(3);
+        
+        // Key should still exist with new value
+        $this->assertEquals('new', self::$client->get('ttl-refresh'), 'Overwritten key should survive past original TTL');
+        
+        $ttl = self::$client->getKeyTTL('ttl-refresh');
+        $this->assertNotNull($ttl);
+        $this->assertGreaterThan(0, $ttl);
+    }
+    
+    public function testPutWithTtlZeroMeansNoExpiration(): void
+    {
+        // Explicit TTL=0 should behave same as no TTL
+        self::$client->put('ttl-zero', 'permanent', 0);
+        $this->keysToCleanup[] = 'ttl-zero';
+        
+        $this->assertEquals('permanent', self::$client->get('ttl-zero'));
+        
+        $ttl = self::$client->getKeyTTL('ttl-zero');
+        $this->assertNull($ttl, 'TTL=0 should mean no expiration');
+    }
+    
+    public function testBatchPutWithTtl(): void
+    {
+        $pairs = [
+            'ttl-batch-a' => 'va',
+            'ttl-batch-b' => 'vb',
+        ];
+        self::$client->batchPut($pairs, 60);
+        $this->keysToCleanup[] = 'ttl-batch-a';
+        $this->keysToCleanup[] = 'ttl-batch-b';
+        
+        $this->assertEquals('va', self::$client->get('ttl-batch-a'));
+        $this->assertEquals('vb', self::$client->get('ttl-batch-b'));
+        
+        // Both should have TTL
+        $ttlA = self::$client->getKeyTTL('ttl-batch-a');
+        $ttlB = self::$client->getKeyTTL('ttl-batch-b');
+        $this->assertNotNull($ttlA);
+        $this->assertNotNull($ttlB);
+        $this->assertGreaterThan(0, $ttlA);
+        $this->assertGreaterThan(0, $ttlB);
+    }
+    
+    public function testBatchPutWithTtlExpires(): void
+    {
+        $pairs = [
+            'ttl-bexp-a' => 'va',
+            'ttl-bexp-b' => 'vb',
+        ];
+        self::$client->batchPut($pairs, 2);
+        $this->keysToCleanup[] = 'ttl-bexp-a';
+        $this->keysToCleanup[] = 'ttl-bexp-b';
+        
+        // Should exist immediately
+        $this->assertEquals('va', self::$client->get('ttl-bexp-a'));
+        
+        // Wait for expiration
+        sleep(3);
+        
+        $this->assertNull(self::$client->get('ttl-bexp-a'), 'Batch put key should expire after TTL');
+        $this->assertNull(self::$client->get('ttl-bexp-b'), 'Batch put key should expire after TTL');
+    }
+    
+    public function testBatchPutWithoutTtl(): void
+    {
+        $pairs = ['ttl-bnone-a' => 'va', 'ttl-bnone-b' => 'vb'];
+        self::$client->batchPut($pairs); // no TTL
+        $this->keysToCleanup[] = 'ttl-bnone-a';
+        $this->keysToCleanup[] = 'ttl-bnone-b';
+        
+        $ttl = self::$client->getKeyTTL('ttl-bnone-a');
+        $this->assertNull($ttl, 'batchPut without TTL should not set expiration');
+    }
+    
+    public function testScanIncludesKeysWithTtl(): void
+    {
+        self::$client->put('ttl-scan-a', 'va', 60);
+        self::$client->put('ttl-scan-b', 'vb', 60);
+        $this->keysToCleanup[] = 'ttl-scan-a';
+        $this->keysToCleanup[] = 'ttl-scan-b';
+        
+        $results = self::$client->scan('ttl-scan-', 'ttl-scan.');
+        
+        $this->assertCount(2, $results);
+        $this->assertEquals('ttl-scan-a', $results[0]['key']);
+        $this->assertEquals('va', $results[0]['value']);
+    }
+    
+    public function testScanExcludesExpiredKeys(): void
+    {
+        self::$client->put('ttl-scanexp-a', 'va', 2);
+        $this->putOneAndTrack('ttl-scanexp-b', 'vb'); // no TTL
+        $this->keysToCleanup[] = 'ttl-scanexp-a';
+        
+        sleep(3);
+        
+        $results = self::$client->scan('ttl-scanexp-', 'ttl-scanexp.');
+        $keys = array_column($results, 'key');
+        
+        $this->assertNotContains('ttl-scanexp-a', $keys, 'Expired key should not appear in scan');
+        $this->assertContains('ttl-scanexp-b', $keys, 'Non-expired key should appear in scan');
+    }
 }
