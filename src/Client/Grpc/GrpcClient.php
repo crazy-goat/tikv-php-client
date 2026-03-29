@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace CrazyGoat\TiKV\Grpc;
+namespace CrazyGoat\TiKV\Client\Grpc;
 
 use Grpc\Channel;
 use Grpc\ChannelCredentials;

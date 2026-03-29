@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "CrazyGoat\\TiKV\\": "src/",
+            "CrazyGoat\\TiKV\\Client\\": "src/Client/",
             "Kvrpcpb\\": "src/Proto/Kvrpcpb/",
             "Pdpb\\": "src/Proto/Pdpb/",
             "GPBMetadata\\": "src/Proto/GPBMetadata/"

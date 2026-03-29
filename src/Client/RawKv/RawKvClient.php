@@ -1,11 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace CrazyGoat\TiKV\RawKv;
+namespace CrazyGoat\TiKV\Client\RawKv;
 
-use CrazyGoat\TiKV\Connection\PdClient;
-use CrazyGoat\TiKV\Grpc\GrpcClient;
+use CrazyGoat\TiKV\Client\Connection\PdClient;
+use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
 use Kvrpcpb\Context;
+use Kvrpcpb\KvPair;
 use Kvrpcpb\Peer;
 use Kvrpcpb\RegionEpoch;
 use Kvrpcpb\RawGetRequest;
@@ -14,6 +15,8 @@ use Kvrpcpb\RawPutRequest;
 use Kvrpcpb\RawPutResponse;
 use Kvrpcpb\RawDeleteRequest;
 use Kvrpcpb\RawDeleteResponse;
+use Kvrpcpb\RawBatchGetRequest;
+use Kvrpcpb\RawBatchGetResponse;
 
 class RawKvClient
 {
@@ -134,6 +137,71 @@ class RawKvClient
             $value = $response->getValue();
             return $value !== '' ? $value : null;
         });
+    }
+    
+    /**
+     * Batch get multiple keys
+     * 
+     * @param array $keys Array of keys to retrieve
+     * @return array Array of values (null for missing keys)
+     */
+    public function batchGet(array $keys): array
+    {
+        $this->ensureOpen();
+        
+        if (empty($keys)) {
+            return [];
+        }
+        
+        // Group keys by region
+        $keysByRegion = [];
+        foreach ($keys as $key) {
+            $regionInfo = $this->getRegionInfo($key);
+            $regionId = $regionInfo['region_id'];
+            $storeId = $regionInfo['leader_store_id'];
+            
+            if (!isset($keysByRegion[$regionId])) {
+                $keysByRegion[$regionId] = [
+                    'keys' => [],
+                    'region_info' => $regionInfo,
+                    'store_id' => $storeId,
+                ];
+            }
+            $keysByRegion[$regionId]['keys'][] = $key;
+        }
+        
+        // Send batch requests to each region
+        $results = [];
+        foreach ($keysByRegion as $regionData) {
+            $tikvAddress = $this->getTikvAddress($regionData['store_id']);
+            $regionInfo = $regionData['region_info'];
+            $regionKeys = $regionData['keys'];
+            
+            $request = new RawBatchGetRequest();
+            $request->setContext($this->createContext($regionInfo));
+            $request->setKeys($regionKeys);
+            
+            $response = $this->grpc->call(
+                $tikvAddress,
+                'tikvpb.Tikv',
+                'RawBatchGet',
+                $request,
+                RawBatchGetResponse::class
+            );
+            
+            // Process response
+            foreach ($response->getPairs() as $pair) {
+                $results[$pair->getKey()] = $pair->getValue() !== '' ? $pair->getValue() : null;
+            }
+        }
+        
+        // Return values in the same order as input keys
+        $orderedResults = [];
+        foreach ($keys as $key) {
+            $orderedResults[] = $results[$key] ?? null;
+        }
+        
+        return $orderedResults;
     }
     
     public function put(string $key, string $value): void

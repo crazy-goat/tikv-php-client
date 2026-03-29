@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
-use CrazyGoat\TiKV\RawKv\RawKvClient;
+use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
 
 $pdEndpoints = getenv('PD_ENDPOINTS') ? explode(',', getenv('PD_ENDPOINTS')) : ['127.0.0.1:2379'];
 $client = RawKvClient::create($pdEndpoints);

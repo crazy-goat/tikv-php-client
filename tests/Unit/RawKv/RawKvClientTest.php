@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Tests\Unit\RawKv;
 
-use CrazyGoat\TiKV\Connection\PdClient;
-use CrazyGoat\TiKV\RawKv\RawKvClient;
+use CrazyGoat\TiKV\Client\Connection\PdClient;
+use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
 use PHPUnit\Framework\TestCase;
 
 class RawKvClientTest extends TestCase
