@@ -69,14 +69,20 @@ class RawKvClient
     
     private function getTikvAddress(int $storeId): string
     {
-        // PD store mapping (dynamic - check logs for actual values):
-        // store-id=1: tikv2:20161
-        // store-id=4: tikv3:20162
-        // store-id=5: tikv1:20160
+        // TODO: Get store address from PD via GetStore() instead of hardcoding
+        // This requires metapb.Store proto to be generated
+        // For now, we use hardcoded mapping from docker-compose:
+        // - tikv1:20160, tikv2:20161, tikv3:20162
+        // Store IDs are assigned by PD dynamically
+        
+        // Current mapping (check PD logs if tests fail):
+        // store-id=1: tikv1:20160
+        // store-id=4: tikv2:20161  
+        // store-id=5: tikv3:20162
         $storeMap = [
-            1 => "tikv1:20160",
-            4 => "tikv2:20161",
-            5 => "tikv3:20162",
+            1 => 'tikv1:20160',
+            4 => 'tikv2:20161',
+            5 => 'tikv3:20162',
         ];
         
         return $storeMap[$storeId] ?? 'tikv1:20160';
