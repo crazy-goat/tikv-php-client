@@ -69,13 +69,13 @@ class RawKvClient
     
     private function getTikvAddress(int $storeId): string
     {
-        // PD store mapping (from logs):
-        // store-id=1: tikv3:20162
-        // store-id=2: tikv2:20161  
+        // PD store mapping (dynamic - check logs for actual values):
+        // store-id=1: tikv2:20161
+        // store-id=4: tikv3:20162
         // store-id=5: tikv1:20160
         $storeMap = [
-            1 => 'tikv3:20162',
-            2 => 'tikv2:20161',
+            1 => 'tikv2:20161',
+            4 => 'tikv3:20162',
             5 => 'tikv1:20160',
         ];
         
