@@ -7,12 +7,21 @@ use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
 use PHPUnit\Framework\TestCase;
 
 /**
- * End-to-end tests requiring running TiKV cluster
- * Run with: docker-compose up --build php-client
+ * End-to-end tests requiring running TiKV cluster.
+ * 
+ * Run with: docker-compose --profile test up --build php-test
+ * 
+ * Reverse scan semantics (per kvrpcpb.proto and Go client-go):
+ *   reverseScan(startKey, endKey) scans [endKey, startKey) in descending order
+ *   - startKey = upper bound (exclusive)
+ *   - endKey   = lower bound (inclusive)
  */
 class RawKvE2ETest extends TestCase
 {
     private static ?RawKvClient $client = null;
+    
+    /** @var string[] Keys created during the current test, cleaned up in tearDown */
+    private array $keysToCleanup = [];
     
     public static function setUpBeforeClass(): void
     {
@@ -33,24 +42,12 @@ class RawKvE2ETest extends TestCase
         if (self::$client === null) {
             $this->markTestSkipped('TiKV cluster not available');
         }
+        $this->keysToCleanup = [];
     }
     
     protected function tearDown(): void
     {
-        // Clean up test keys after each test
-        $testKeys = [
-            'test-key', 'test-key-1', 'test-key-2', 'hello',
-            'batch-key-1', 'batch-key-2', 'batch-key-3',
-            'scan-a', 'scan-b', 'scan-c',
-            'scan-limit-1', 'scan-limit-2', 'scan-limit-3',
-            'scan-keyonly',
-            'user:alice', 'user:bob', 'user:charlie', 'other:data',
-            'pref-limit-1', 'pref-limit-2', 'pref-limit-3',
-            'rev-z', 'rev-y', 'rev-x',
-            'rev-limit-a', 'rev-limit-b', 'rev-limit-c',
-            'consist-1', 'consist-2', 'consist-3',
-        ];
-        foreach ($testKeys as $key) {
+        foreach ($this->keysToCleanup as $key) {
             try {
                 self::$client->delete($key);
             } catch (\Exception $e) {
@@ -59,71 +56,75 @@ class RawKvE2ETest extends TestCase
         }
     }
     
+    /**
+     * Helper: put key-value pairs and register them for cleanup.
+     * 
+     * @param array<string, string> $pairs
+     */
+    private function putAndTrack(array $pairs): void
+    {
+        self::$client->batchPut($pairs);
+        foreach (array_keys($pairs) as $key) {
+            $this->keysToCleanup[] = $key;
+        }
+    }
+    
+    /**
+     * Helper: put a single key-value pair and register for cleanup.
+     */
+    private function putOneAndTrack(string $key, string $value): void
+    {
+        self::$client->put($key, $value);
+        $this->keysToCleanup[] = $key;
+    }
+    
+    // ========================================================================
+    // Basic CRUD
+    // ========================================================================
+    
     public function testPutAndGet(): void
     {
-        $key = 'test-key';
-        $value = 'test-value';
+        $this->putOneAndTrack('test-key', 'test-value');
         
-        self::$client->put($key, $value);
-        $result = self::$client->get($key);
-        
-        $this->assertEquals($value, $result);
+        $this->assertEquals('test-value', self::$client->get('test-key'));
     }
     
     public function testGetNonExistentKey(): void
     {
-        $key = 'non-existent-key-' . uniqid();
-        $result = self::$client->get($key);
-        
-        $this->assertNull($result);
+        $this->assertNull(self::$client->get('non-existent-key-' . uniqid()));
     }
     
     public function testPutOverwrite(): void
     {
-        $key = 'test-key';
-        $value1 = 'value-1';
-        $value2 = 'value-2';
+        $this->putOneAndTrack('test-key', 'value-1');
+        $this->putOneAndTrack('test-key', 'value-2');
         
-        self::$client->put($key, $value1);
-        self::$client->put($key, $value2);
-        
-        $result = self::$client->get($key);
-        $this->assertEquals($value2, $result);
+        $this->assertEquals('value-2', self::$client->get('test-key'));
     }
     
     public function testDelete(): void
     {
-        $key = 'test-key';
-        $value = 'test-value';
+        $this->putOneAndTrack('test-key', 'test-value');
+        $this->assertEquals('test-value', self::$client->get('test-key'));
         
-        self::$client->put($key, $value);
-        $this->assertEquals($value, self::$client->get($key));
-        
-        self::$client->delete($key);
-        $this->assertNull(self::$client->get($key));
+        self::$client->delete('test-key');
+        $this->assertNull(self::$client->get('test-key'));
     }
     
     public function testDeleteNonExistentKey(): void
     {
-        $key = 'non-existent-key-' . uniqid();
-        
         // Should not throw
-        self::$client->delete($key);
-        
+        self::$client->delete('non-existent-key-' . uniqid());
         $this->assertTrue(true);
     }
     
     public function testMultipleKeys(): void
     {
-        $keys = ['test-key-1', 'test-key-2', 'test-key-3'];
-        $values = ['value-1', 'value-2', 'value-3'];
+        $pairs = ['test-key-1' => 'value-1', 'test-key-2' => 'value-2'];
+        $this->putAndTrack($pairs);
         
-        foreach ($keys as $i => $key) {
-            self::$client->put($key, $values[$i]);
-        }
-        
-        foreach ($keys as $i => $key) {
-            $this->assertEquals($values[$i], self::$client->get($key));
+        foreach ($pairs as $key => $value) {
+            $this->assertEquals($value, self::$client->get($key));
         }
     }
     
@@ -132,10 +133,8 @@ class RawKvE2ETest extends TestCase
         $key = 'binary-key';
         $value = "\x00\x01\x02\x03\xff\xfe\xfd\xfc";
         
-        self::$client->put($key, $value);
-        $result = self::$client->get($key);
-        
-        $this->assertEquals($value, $result);
+        $this->putOneAndTrack($key, $value);
+        $this->assertEquals($value, self::$client->get($key));
     }
     
     public function testLargeValue(): void
@@ -143,22 +142,21 @@ class RawKvE2ETest extends TestCase
         $key = 'large-key';
         $value = str_repeat('x', 1024 * 1024); // 1MB
         
-        self::$client->put($key, $value);
-        $result = self::$client->get($key);
-        
-        $this->assertEquals($value, $result);
+        $this->putOneAndTrack($key, $value);
+        $this->assertEquals($value, self::$client->get($key));
     }
     
     public function testEmptyValue(): void
     {
         $key = 'empty-key';
-        $value = '';
+        $this->putOneAndTrack($key, '');
         
-        self::$client->put($key, $value);
-        $result = self::$client->get($key);
-        
-        $this->assertEquals($value, $result);
+        $this->assertEquals('', self::$client->get($key));
     }
+    
+    // ========================================================================
+    // Batch operations
+    // ========================================================================
     
     public function testBatchPutAndBatchGet(): void
     {
@@ -167,74 +165,54 @@ class RawKvE2ETest extends TestCase
             'batch-key-2' => 'value-2',
             'batch-key-3' => 'value-3',
         ];
-        
-        self::$client->batchPut($pairs);
+        $this->putAndTrack($pairs);
         
         $results = self::$client->batchGet(array_keys($pairs));
-        
         $this->assertEquals($pairs, $results);
     }
     
     public function testBatchGetWithMissingKeys(): void
     {
-        $existingKey = 'batch-key-1';
+        $this->putOneAndTrack('batch-key-1', 'value-1');
         $missingKey = 'non-existent-batch-key-' . uniqid();
         
-        self::$client->put($existingKey, 'value-1');
+        $results = self::$client->batchGet(['batch-key-1', $missingKey]);
         
-        $results = self::$client->batchGet([$existingKey, $missingKey]);
-        
-        $this->assertEquals('value-1', $results[$existingKey]);
+        $this->assertEquals('value-1', $results['batch-key-1']);
         $this->assertNull($results[$missingKey]);
     }
     
     public function testBatchGetReturnsKeysInOrder(): void
     {
-        $pairs = [
-            'batch-key-1' => 'value-1',
-            'batch-key-2' => 'value-2',
-        ];
-        
-        self::$client->batchPut($pairs);
+        $pairs = ['batch-key-1' => 'value-1', 'batch-key-2' => 'value-2'];
+        $this->putAndTrack($pairs);
         
         // Request in reverse order
         $results = self::$client->batchGet(['batch-key-2', 'batch-key-1']);
-        
         $this->assertEquals(['batch-key-2' => 'value-2', 'batch-key-1' => 'value-1'], $results);
     }
     
     public function testBatchGetEmptyArray(): void
     {
-        $results = self::$client->batchGet([]);
-        
-        $this->assertEquals([], $results);
+        $this->assertEquals([], self::$client->batchGet([]));
     }
     
     public function testBatchPutEmptyArray(): void
     {
-        // Should not throw
         self::$client->batchPut([]);
-        
         $this->assertTrue(true);
     }
     
     public function testBatchDelete(): void
     {
-        $pairs = [
-            'batch-key-1' => 'value-1',
-            'batch-key-2' => 'value-2',
-        ];
+        $pairs = ['batch-key-1' => 'value-1', 'batch-key-2' => 'value-2'];
+        $this->putAndTrack($pairs);
         
-        self::$client->batchPut($pairs);
-        
-        // Verify keys exist
         $results = self::$client->batchGet(array_keys($pairs));
         $this->assertEquals($pairs, $results);
         
-        // Delete keys
         self::$client->batchDelete(array_keys($pairs));
         
-        // Verify keys are deleted
         $results = self::$client->batchGet(array_keys($pairs));
         $this->assertNull($results['batch-key-1']);
         $this->assertNull($results['batch-key-2']);
@@ -242,34 +220,23 @@ class RawKvE2ETest extends TestCase
     
     public function testBatchDeleteNonExistentKeys(): void
     {
-        $keys = [
-            'non-existent-key-' . uniqid(),
-            'non-existent-key-' . uniqid(),
-        ];
-        
-        // Should not throw
-        self::$client->batchDelete($keys);
-        
+        self::$client->batchDelete(['non-existent-key-' . uniqid(), 'non-existent-key-' . uniqid()]);
         $this->assertTrue(true);
     }
     
     public function testBatchDeleteEmptyArray(): void
     {
-        // Should not throw
         self::$client->batchDelete([]);
-        
         $this->assertTrue(true);
     }
     
     public function testBatchPutOverwritesExistingKeys(): void
     {
-        $key = 'batch-key-1';
+        $this->putOneAndTrack('batch-key-1', 'old-value');
+        $this->assertEquals('old-value', self::$client->get('batch-key-1'));
         
-        self::$client->put($key, 'old-value');
-        $this->assertEquals('old-value', self::$client->get($key));
-        
-        self::$client->batchPut([$key => 'new-value']);
-        $this->assertEquals('new-value', self::$client->get($key));
+        self::$client->batchPut(['batch-key-1' => 'new-value']);
+        $this->assertEquals('new-value', self::$client->get('batch-key-1'));
     }
     
     public function testBatchOperationsWithBinaryData(): void
@@ -278,24 +245,20 @@ class RawKvE2ETest extends TestCase
             'batch-key-1' => "\x00\x01\x02\x03",
             'batch-key-2' => "\xff\xfe\xfd\xfc",
         ];
+        $this->putAndTrack($pairs);
         
-        self::$client->batchPut($pairs);
-        $results = self::$client->batchGet(array_keys($pairs));
-        
-        $this->assertEquals($pairs, $results);
+        $this->assertEquals($pairs, self::$client->batchGet(array_keys($pairs)));
     }
+    
+    // ========================================================================
+    // Forward scan
+    // ========================================================================
     
     public function testScan(): void
     {
-        // Insert test data
-        $pairs = [
-            'scan-a' => 'value-a',
-            'scan-b' => 'value-b',
-            'scan-c' => 'value-c',
-        ];
-        self::$client->batchPut($pairs);
+        $pairs = ['scan-a' => 'value-a', 'scan-b' => 'value-b', 'scan-c' => 'value-c'];
+        $this->putAndTrack($pairs);
         
-        // Scan the range
         $results = self::$client->scan('scan-a', 'scan-d');
         
         $this->assertCount(3, $results);
@@ -305,28 +268,69 @@ class RawKvE2ETest extends TestCase
         $this->assertEquals('scan-c', $results[2]['key']);
     }
     
+    public function testScanStartKeyIsInclusive(): void
+    {
+        $pairs = ['scan-inc-a' => 'va', 'scan-inc-b' => 'vb', 'scan-inc-c' => 'vc'];
+        $this->putAndTrack($pairs);
+        
+        // Start exactly at 'scan-inc-a' — it should be included
+        $results = self::$client->scan('scan-inc-a', 'scan-inc-d');
+        $keys = array_column($results, 'key');
+        
+        $this->assertContains('scan-inc-a', $keys, 'startKey should be inclusive in forward scan');
+    }
+    
+    public function testScanEndKeyIsExclusive(): void
+    {
+        $pairs = ['scan-exc-a' => 'va', 'scan-exc-b' => 'vb', 'scan-exc-c' => 'vc'];
+        $this->putAndTrack($pairs);
+        
+        // End exactly at 'scan-exc-c' — it should NOT be included
+        $results = self::$client->scan('scan-exc-a', 'scan-exc-c');
+        $keys = array_column($results, 'key');
+        
+        $this->assertContains('scan-exc-a', $keys);
+        $this->assertContains('scan-exc-b', $keys);
+        $this->assertNotContains('scan-exc-c', $keys, 'endKey should be exclusive in forward scan');
+    }
+    
     public function testScanWithLimit(): void
     {
-        // Insert test data
-        $pairs = [
-            'scan-limit-1' => 'value-1',
-            'scan-limit-2' => 'value-2',
-            'scan-limit-3' => 'value-3',
-        ];
-        self::$client->batchPut($pairs);
+        $pairs = ['scan-limit-1' => 'v1', 'scan-limit-2' => 'v2', 'scan-limit-3' => 'v3'];
+        $this->putAndTrack($pairs);
         
-        // Scan with limit
         $results = self::$client->scan('scan-limit-', 'scan-limit.', 2);
         
         $this->assertCount(2, $results);
+        $this->assertEquals('scan-limit-1', $results[0]['key']);
+        $this->assertEquals('scan-limit-2', $results[1]['key']);
+    }
+    
+    public function testScanLimitZeroReturnsAll(): void
+    {
+        $pairs = ['scan-all-a' => 'va', 'scan-all-b' => 'vb', 'scan-all-c' => 'vc'];
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->scan('scan-all-', 'scan-all.', 0);
+        
+        $this->assertCount(3, $results);
+    }
+    
+    public function testScanLimitOne(): void
+    {
+        $pairs = ['scan-one-a' => 'va', 'scan-one-b' => 'vb'];
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->scan('scan-one-', 'scan-one.', 1);
+        
+        $this->assertCount(1, $results);
+        $this->assertEquals('scan-one-a', $results[0]['key']);
     }
     
     public function testScanKeyOnly(): void
     {
-        // Insert test data
-        self::$client->put('scan-keyonly', 'secret-value');
+        $this->putOneAndTrack('scan-keyonly', 'secret-value');
         
-        // Scan key only
         $results = self::$client->scan('scan-keyonly', 'scan-keyonly.', 0, true);
         
         $this->assertCount(1, $results);
@@ -342,18 +346,63 @@ class RawKvE2ETest extends TestCase
         $this->assertEquals([], $results);
     }
     
+    public function testScanReturnsAscendingOrder(): void
+    {
+        // Insert in random order
+        $this->putOneAndTrack('scan-ord-c', 'vc');
+        $this->putOneAndTrack('scan-ord-a', 'va');
+        $this->putOneAndTrack('scan-ord-b', 'vb');
+        
+        $results = self::$client->scan('scan-ord-', 'scan-ord.');
+        $keys = array_column($results, 'key');
+        
+        $this->assertEquals(['scan-ord-a', 'scan-ord-b', 'scan-ord-c'], $keys);
+    }
+    
+    public function testScanWithBinaryKeys(): void
+    {
+        // Keys with binary content, lexicographically ordered
+        $k1 = "scan-bin-\x01";
+        $k2 = "scan-bin-\x02";
+        $k3 = "scan-bin-\x03";
+        
+        $this->putOneAndTrack($k1, 'v1');
+        $this->putOneAndTrack($k2, 'v2');
+        $this->putOneAndTrack($k3, 'v3');
+        
+        $results = self::$client->scan("scan-bin-\x00", "scan-bin-\x04");
+        
+        $this->assertCount(3, $results);
+        $this->assertEquals($k1, $results[0]['key']);
+        $this->assertEquals($k2, $results[1]['key']);
+        $this->assertEquals($k3, $results[2]['key']);
+    }
+    
+    public function testScanSingleKeyRange(): void
+    {
+        $this->putOneAndTrack('scan-single', 'val');
+        
+        // Range that contains exactly one key: [scan-single, scan-single\x00)
+        $results = self::$client->scan('scan-single', "scan-single\x00");
+        
+        $this->assertCount(1, $results);
+        $this->assertEquals('scan-single', $results[0]['key']);
+    }
+    
+    // ========================================================================
+    // Scan prefix
+    // ========================================================================
+    
     public function testScanPrefix(): void
     {
-        // Insert test data with prefix
         $pairs = [
             'user:alice' => 'Alice',
             'user:bob' => 'Bob',
             'user:charlie' => 'Charlie',
             'other:data' => 'Other',
         ];
-        self::$client->batchPut($pairs);
+        $this->putAndTrack($pairs);
         
-        // Scan prefix
         $results = self::$client->scanPrefix('user:');
         
         $this->assertCount(3, $results);
@@ -366,81 +415,479 @@ class RawKvE2ETest extends TestCase
     
     public function testScanPrefixWithLimit(): void
     {
-        // Insert test data
-        $pairs = [
-            'pref-limit-1' => 'value-1',
-            'pref-limit-2' => 'value-2',
-            'pref-limit-3' => 'value-3',
-        ];
-        self::$client->batchPut($pairs);
+        $pairs = ['pref-limit-1' => 'v1', 'pref-limit-2' => 'v2', 'pref-limit-3' => 'v3'];
+        $this->putAndTrack($pairs);
         
-        // Scan prefix with limit
         $results = self::$client->scanPrefix('pref-limit-', 2);
         
         $this->assertCount(2, $results);
     }
     
-    public function testReverseScan(): void
+    public function testScanPrefixNoMatches(): void
     {
-        // Insert test data
-        $pairs = [
-            'rev-z' => 'value-z',
-            'rev-y' => 'value-y',
-            'rev-x' => 'value-x',
-        ];
-        self::$client->batchPut($pairs);
+        $results = self::$client->scanPrefix('zzz-no-match-' . uniqid());
         
-        // Reverse scan
-        $results = self::$client->reverseScan('rev-z', 'rev-w');
+        $this->assertCount(0, $results);
+    }
+    
+    public function testScanPrefixKeyOnly(): void
+    {
+        $pairs = ['pref-ko-a' => 'secret-a', 'pref-ko-b' => 'secret-b'];
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->scanPrefix('pref-ko-', 0, true);
+        
+        $this->assertCount(2, $results);
+        foreach ($results as $result) {
+            $this->assertNull($result['value'], 'keyOnly scan should return null values');
+        }
+    }
+    
+    // ========================================================================
+    // Reverse scan — native TiKV reverse=true
+    //
+    // Protocol semantics (kvrpcpb.proto):
+    //   reverseScan(startKey, endKey) scans [endKey, startKey) in descending order
+    //   startKey = upper bound (exclusive)
+    //   endKey   = lower bound (inclusive)
+    // ========================================================================
+    
+    public function testReverseScanBasic(): void
+    {
+        $pairs = ['rev-x' => 'value-x', 'rev-y' => 'value-y', 'rev-z' => 'value-z'];
+        $this->putAndTrack($pairs);
+        
+        // reverseScan(startKey='rev-z\x00', endKey='rev-w')
+        // scans [rev-w, rev-z\x00) in descending order => rev-z, rev-y, rev-x
+        $results = self::$client->reverseScan("rev-z\x00", 'rev-w');
         
         $this->assertCount(3, $results);
-        // Results should be in reverse order
         $this->assertEquals('rev-z', $results[0]['key']);
+        $this->assertEquals('value-z', $results[0]['value']);
         $this->assertEquals('rev-y', $results[1]['key']);
         $this->assertEquals('rev-x', $results[2]['key']);
     }
     
-    public function testReverseScanWithLimit(): void
+    public function testReverseScanStartKeyIsExclusive(): void
     {
-        // Insert test data
-        $pairs = [
-            'rev-limit-a' => 'value-a',
-            'rev-limit-b' => 'value-b',
-            'rev-limit-c' => 'value-c',
-        ];
-        self::$client->batchPut($pairs);
+        $pairs = ['rev-exc-a' => 'va', 'rev-exc-b' => 'vb', 'rev-exc-c' => 'vc'];
+        $this->putAndTrack($pairs);
         
-        // Reverse scan with limit
-        $results = self::$client->reverseScan('rev-limit-c', 'rev-limit-', 2);
+        // startKey='rev-exc-c' is exclusive, so 'rev-exc-c' should NOT appear
+        $results = self::$client->reverseScan('rev-exc-c', 'rev-exc-a');
+        $keys = array_column($results, 'key');
         
-        $this->assertCount(2, $results);
-        $this->assertEquals('rev-limit-c', $results[0]['key']);
-        $this->assertEquals('rev-limit-b', $results[1]['key']);
+        $this->assertNotContains('rev-exc-c', $keys, 'startKey should be exclusive in reverse scan');
+        $this->assertContains('rev-exc-b', $keys);
+        $this->assertContains('rev-exc-a', $keys);
     }
     
-    public function testScanAndReverseScanConsistency(): void
+    public function testReverseScanEndKeyIsInclusive(): void
     {
-        // Insert test data
+        $pairs = ['rev-inc-a' => 'va', 'rev-inc-b' => 'vb', 'rev-inc-c' => 'vc'];
+        $this->putAndTrack($pairs);
+        
+        // endKey='rev-inc-a' is inclusive, so 'rev-inc-a' SHOULD appear
+        $results = self::$client->reverseScan("rev-inc-c\x00", 'rev-inc-a');
+        $keys = array_column($results, 'key');
+        
+        $this->assertContains('rev-inc-a', $keys, 'endKey should be inclusive in reverse scan');
+    }
+    
+    public function testReverseScanWithLimit(): void
+    {
+        $pairs = ['rev-lim-a' => 'va', 'rev-lim-b' => 'vb', 'rev-lim-c' => 'vc'];
+        $this->putAndTrack($pairs);
+        
+        // Scan from above 'rev-lim-c' down to 'rev-lim-', limit 2
+        $results = self::$client->reverseScan("rev-lim-c\x00", 'rev-lim-', 2);
+        
+        $this->assertCount(2, $results);
+        $this->assertEquals('rev-lim-c', $results[0]['key']);
+        $this->assertEquals('rev-lim-b', $results[1]['key']);
+    }
+    
+    public function testReverseScanLimitOne(): void
+    {
+        $pairs = ['rev-l1-a' => 'va', 'rev-l1-b' => 'vb', 'rev-l1-c' => 'vc'];
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->reverseScan("rev-l1-c\x00", 'rev-l1-', 1);
+        
+        $this->assertCount(1, $results);
+        $this->assertEquals('rev-l1-c', $results[0]['key']);
+    }
+    
+    public function testReverseScanEmptyRange(): void
+    {
+        $results = self::$client->reverseScan('zzz-no-match.', 'zzz-no-match-');
+        
+        $this->assertCount(0, $results);
+    }
+    
+    public function testReverseScanKeyOnly(): void
+    {
+        $pairs = ['rev-ko-a' => 'secret-a', 'rev-ko-b' => 'secret-b'];
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->reverseScan("rev-ko-b\x00", 'rev-ko-a', 0, true);
+        
+        $this->assertCount(2, $results);
+        $this->assertEquals('rev-ko-b', $results[0]['key']);
+        $this->assertNull($results[0]['value'], 'keyOnly reverse scan should return null values');
+        $this->assertEquals('rev-ko-a', $results[1]['key']);
+        $this->assertNull($results[1]['value']);
+    }
+    
+    public function testReverseScanReturnsDescendingOrder(): void
+    {
+        // Insert in random order
+        $this->putOneAndTrack('rev-ord-b', 'vb');
+        $this->putOneAndTrack('rev-ord-d', 'vd');
+        $this->putOneAndTrack('rev-ord-a', 'va');
+        $this->putOneAndTrack('rev-ord-c', 'vc');
+        
+        $results = self::$client->reverseScan('rev-ord-e', 'rev-ord-');
+        $keys = array_column($results, 'key');
+        
+        $this->assertEquals(
+            ['rev-ord-d', 'rev-ord-c', 'rev-ord-b', 'rev-ord-a'],
+            $keys,
+            'Reverse scan must return keys in descending lexicographic order'
+        );
+    }
+    
+    public function testReverseScanWithBinaryKeys(): void
+    {
+        $k1 = "rev-bin-\x01";
+        $k2 = "rev-bin-\x02";
+        $k3 = "rev-bin-\x03";
+        
+        $this->putOneAndTrack($k1, 'v1');
+        $this->putOneAndTrack($k2, 'v2');
+        $this->putOneAndTrack($k3, 'v3');
+        
+        $results = self::$client->reverseScan("rev-bin-\x04", "rev-bin-\x00");
+        
+        $this->assertCount(3, $results);
+        $this->assertEquals($k3, $results[0]['key']);
+        $this->assertEquals($k2, $results[1]['key']);
+        $this->assertEquals($k1, $results[2]['key']);
+    }
+    
+    public function testReverseScanSingleKey(): void
+    {
+        $this->putOneAndTrack('rev-single', 'val');
+        
+        // Range [rev-single, rev-single\x00) contains exactly one key
+        $results = self::$client->reverseScan("rev-single\x00", 'rev-single');
+        
+        $this->assertCount(1, $results);
+        $this->assertEquals('rev-single', $results[0]['key']);
+        $this->assertEquals('val', $results[0]['value']);
+    }
+    
+    public function testReverseScanLimitZeroReturnsAll(): void
+    {
+        $pairs = ['rev-all-a' => 'va', 'rev-all-b' => 'vb', 'rev-all-c' => 'vc'];
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->reverseScan('rev-all-d', 'rev-all-', 0);
+        
+        $this->assertCount(3, $results);
+    }
+    
+    public function testReverseScanValuesAreCorrect(): void
+    {
+        $pairs = ['rev-val-a' => 'alpha', 'rev-val-b' => 'bravo', 'rev-val-c' => 'charlie'];
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->reverseScan('rev-val-d', 'rev-val-');
+        
+        $this->assertCount(3, $results);
+        // Verify each key has the correct value
+        $resultMap = [];
+        foreach ($results as $r) {
+            $resultMap[$r['key']] = $r['value'];
+        }
+        $this->assertEquals('alpha', $resultMap['rev-val-a']);
+        $this->assertEquals('bravo', $resultMap['rev-val-b']);
+        $this->assertEquals('charlie', $resultMap['rev-val-c']);
+    }
+    
+    // ========================================================================
+    // Forward scan ↔ Reverse scan consistency
+    // ========================================================================
+    
+    public function testScanAndReverseScanReturnSameKeys(): void
+    {
         $pairs = [
             'consist-1' => 'value-1',
             'consist-2' => 'value-2',
             'consist-3' => 'value-3',
         ];
-        self::$client->batchPut($pairs);
+        $this->putAndTrack($pairs);
         
-        // Forward scan
+        // Forward scan [consist-, consist.)
         $forward = self::$client->scan('consist-', 'consist.');
         
-        // Reverse scan
-        $reverse = self::$client->reverseScan('consist-3', 'consist-');
+        // Reverse scan [consist-, consist.) — same logical range, reversed
+        $reverse = self::$client->reverseScan('consist.', 'consist-');
         
-        // Both should return same number of results
-        $this->assertCount(3, $forward);
-        $this->assertCount(3, $reverse);
+        $this->assertCount(3, $forward, 'Forward scan should find 3 keys');
+        $this->assertCount(3, $reverse, 'Reverse scan should find 3 keys');
         
-        // Reverse should be opposite order
         $forwardKeys = array_column($forward, 'key');
         $reverseKeys = array_column($reverse, 'key');
-        $this->assertEquals(array_reverse($forwardKeys), $reverseKeys);
+        
+        $this->assertEquals(
+            array_reverse($forwardKeys),
+            $reverseKeys,
+            'Reverse scan keys should be the mirror of forward scan keys'
+        );
+    }
+    
+    public function testScanAndReverseScanReturnSameValues(): void
+    {
+        $pairs = [
+            'val-consist-a' => 'alpha',
+            'val-consist-b' => 'bravo',
+            'val-consist-c' => 'charlie',
+        ];
+        $this->putAndTrack($pairs);
+        
+        $forward = self::$client->scan('val-consist-', 'val-consist.');
+        $reverse = self::$client->reverseScan('val-consist.', 'val-consist-');
+        
+        // Build key=>value maps from both
+        $forwardMap = [];
+        foreach ($forward as $r) {
+            $forwardMap[$r['key']] = $r['value'];
+        }
+        $reverseMap = [];
+        foreach ($reverse as $r) {
+            $reverseMap[$r['key']] = $r['value'];
+        }
+        
+        $this->assertEquals($forwardMap, $reverseMap, 'Both scans should return identical key-value pairs');
+    }
+    
+    public function testScanAndReverseScanWithLimitAreComplementary(): void
+    {
+        $pairs = [
+            'comp-a' => 'va',
+            'comp-b' => 'vb',
+            'comp-c' => 'vc',
+            'comp-d' => 'vd',
+            'comp-e' => 've',
+        ];
+        $this->putAndTrack($pairs);
+        
+        // Forward scan first 2
+        $forwardFirst2 = self::$client->scan('comp-', 'comp.', 2);
+        // Reverse scan last 2
+        $reverseLast2 = self::$client->reverseScan('comp.', 'comp-', 2);
+        
+        $forwardKeys = array_column($forwardFirst2, 'key');
+        $reverseKeys = array_column($reverseLast2, 'key');
+        
+        $this->assertEquals(['comp-a', 'comp-b'], $forwardKeys, 'Forward limit=2 should return first 2');
+        $this->assertEquals(['comp-e', 'comp-d'], $reverseKeys, 'Reverse limit=2 should return last 2');
+        
+        // They should not overlap
+        $this->assertEmpty(
+            array_intersect($forwardKeys, $reverseKeys),
+            'First 2 forward and last 2 reverse should not overlap with 5 keys'
+        );
+    }
+    
+    // ========================================================================
+    // Edge cases and boundary conditions
+    // ========================================================================
+    
+    public function testScanAdjacentKeys(): void
+    {
+        // Keys that are lexicographically adjacent
+        $this->putOneAndTrack("adj-\x00", 'v0');
+        $this->putOneAndTrack("adj-\x01", 'v1');
+        
+        $results = self::$client->scan("adj-\x00", "adj-\x02");
+        
+        $this->assertCount(2, $results);
+    }
+    
+    public function testReverseScanAdjacentKeys(): void
+    {
+        $this->putOneAndTrack("rev-adj-\x00", 'v0');
+        $this->putOneAndTrack("rev-adj-\x01", 'v1');
+        
+        $results = self::$client->reverseScan("rev-adj-\x02", "rev-adj-\x00");
+        
+        $this->assertCount(2, $results);
+        $this->assertEquals("rev-adj-\x01", $results[0]['key']);
+        $this->assertEquals("rev-adj-\x00", $results[1]['key']);
+    }
+    
+    public function testScanAfterDeleteReturnsNothing(): void
+    {
+        $this->putOneAndTrack('scan-del-a', 'va');
+        $this->putOneAndTrack('scan-del-b', 'vb');
+        
+        self::$client->delete('scan-del-a');
+        self::$client->delete('scan-del-b');
+        
+        $results = self::$client->scan('scan-del-', 'scan-del.');
+        $this->assertCount(0, $results);
+    }
+    
+    public function testReverseScanAfterDeleteReturnsNothing(): void
+    {
+        $this->putOneAndTrack('rev-del-a', 'va');
+        $this->putOneAndTrack('rev-del-b', 'vb');
+        
+        self::$client->delete('rev-del-a');
+        self::$client->delete('rev-del-b');
+        
+        $results = self::$client->reverseScan('rev-del.', 'rev-del-');
+        $this->assertCount(0, $results);
+    }
+    
+    public function testScanAfterOverwriteReturnsNewValues(): void
+    {
+        $this->putOneAndTrack('scan-ow-a', 'old-a');
+        $this->putOneAndTrack('scan-ow-b', 'old-b');
+        
+        // Overwrite
+        self::$client->put('scan-ow-a', 'new-a');
+        self::$client->put('scan-ow-b', 'new-b');
+        
+        $results = self::$client->scan('scan-ow-', 'scan-ow.');
+        
+        $this->assertCount(2, $results);
+        $this->assertEquals('new-a', $results[0]['value']);
+        $this->assertEquals('new-b', $results[1]['value']);
+    }
+    
+    public function testReverseScanAfterOverwriteReturnsNewValues(): void
+    {
+        $this->putOneAndTrack('rev-ow-a', 'old-a');
+        $this->putOneAndTrack('rev-ow-b', 'old-b');
+        
+        self::$client->put('rev-ow-a', 'new-a');
+        self::$client->put('rev-ow-b', 'new-b');
+        
+        $results = self::$client->reverseScan('rev-ow.', 'rev-ow-');
+        
+        $this->assertCount(2, $results);
+        $this->assertEquals('new-b', $results[0]['value']);
+        $this->assertEquals('new-a', $results[1]['value']);
+    }
+    
+    public function testScanPartialDeleteShowsRemainingKeys(): void
+    {
+        $this->putOneAndTrack('scan-pd-a', 'va');
+        $this->putOneAndTrack('scan-pd-b', 'vb');
+        $this->putOneAndTrack('scan-pd-c', 'vc');
+        
+        self::$client->delete('scan-pd-b');
+        
+        $results = self::$client->scan('scan-pd-', 'scan-pd.');
+        $keys = array_column($results, 'key');
+        
+        $this->assertCount(2, $results);
+        $this->assertContains('scan-pd-a', $keys);
+        $this->assertNotContains('scan-pd-b', $keys);
+        $this->assertContains('scan-pd-c', $keys);
+    }
+    
+    public function testReverseScanPartialDeleteShowsRemainingKeys(): void
+    {
+        $this->putOneAndTrack('rev-pd-a', 'va');
+        $this->putOneAndTrack('rev-pd-b', 'vb');
+        $this->putOneAndTrack('rev-pd-c', 'vc');
+        
+        self::$client->delete('rev-pd-b');
+        
+        $results = self::$client->reverseScan('rev-pd.', 'rev-pd-');
+        $keys = array_column($results, 'key');
+        
+        $this->assertCount(2, $results);
+        $this->assertEquals('rev-pd-c', $keys[0]);
+        $this->assertEquals('rev-pd-a', $keys[1]);
+    }
+    
+    public function testScanLimitExceedingTotalKeysReturnsAll(): void
+    {
+        $pairs = ['scan-big-a' => 'va', 'scan-big-b' => 'vb'];
+        $this->putAndTrack($pairs);
+        
+        // Limit 100 but only 2 keys exist
+        $results = self::$client->scan('scan-big-', 'scan-big.', 100);
+        
+        $this->assertCount(2, $results);
+    }
+    
+    public function testReverseScanLimitExceedingTotalKeysReturnsAll(): void
+    {
+        $pairs = ['rev-big-a' => 'va', 'rev-big-b' => 'vb'];
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->reverseScan('rev-big.', 'rev-big-', 100);
+        
+        $this->assertCount(2, $results);
+    }
+    
+    public function testScanManyKeys(): void
+    {
+        $pairs = [];
+        for ($i = 0; $i < 50; $i++) {
+            $pairs[sprintf('scan-many-%03d', $i)] = "value-$i";
+        }
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->scan('scan-many-', 'scan-many.');
+        
+        $this->assertCount(50, $results);
+        
+        // Verify ascending order
+        $keys = array_column($results, 'key');
+        $sorted = $keys;
+        sort($sorted);
+        $this->assertEquals($sorted, $keys, 'Forward scan of many keys should be in ascending order');
+    }
+    
+    public function testReverseScanManyKeys(): void
+    {
+        $pairs = [];
+        for ($i = 0; $i < 50; $i++) {
+            $pairs[sprintf('rev-many-%03d', $i)] = "value-$i";
+        }
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->reverseScan('rev-many.', 'rev-many-');
+        
+        $this->assertCount(50, $results);
+        
+        // Verify descending order
+        $keys = array_column($results, 'key');
+        $sorted = $keys;
+        rsort($sorted);
+        $this->assertEquals($sorted, $keys, 'Reverse scan of many keys should be in descending order');
+    }
+    
+    public function testReverseScanManyKeysWithLimit(): void
+    {
+        $pairs = [];
+        for ($i = 0; $i < 50; $i++) {
+            $pairs[sprintf('rev-ml-%03d', $i)] = "value-$i";
+        }
+        $this->putAndTrack($pairs);
+        
+        $results = self::$client->reverseScan('rev-ml.', 'rev-ml-', 10);
+        
+        $this->assertCount(10, $results);
+        // Should be the last 10 keys in descending order
+        $this->assertEquals('rev-ml-049', $results[0]['key']);
+        $this->assertEquals('rev-ml-040', $results[9]['key']);
     }
 }

@@ -492,32 +492,65 @@ class RawKvClient
     /**
      * Reverse scan a range of keys from TiKV (descending order)
      * 
-     * Note: This implementation uses forward scan and reverses the results,
-     * as TiKV RawScan with reverse=true has compatibility issues in v7.1.0.
+     * Uses TiKV's native reverse=true flag with correct key semantics.
+     * Per the protobuf contract (kvrpcpb.proto RawScanRequest):
+     *   "when scanning backward, it scans [end_key, start_key) in descending order, where end_key < start_key"
      * 
-     * @param string $startKey Start key (inclusive, upper bound in reverse scan)
-     * @param string $endKey End key (exclusive, lower bound in reverse scan), empty string means no lower bound
+     * So start_key is the upper bound (exclusive) and end_key is the lower bound (inclusive).
+     * This matches the Go client (client-go) ReverseScan implementation.
+     * 
+     * @param string $startKey Upper bound key (exclusive), the cursor starts here going backwards
+     * @param string $endKey Lower bound key (inclusive), the cursor stops here
      * @param int $limit Maximum number of keys to return (0 = unlimited)
      * @param bool $keyOnly If true, return only keys without values
-     * @return array Array of ['key' => key, 'value' => value] pairs in reverse order
+     * @return array Array of ['key' => key, 'value' => value] pairs in descending order
      */
     public function reverseScan(string $startKey, string $endKey, int $limit = 0, bool $keyOnly = false): array
     {
         $this->ensureOpen();
         
-        // Use forward scan and reverse results
-        // To include startKey, we scan [endKey, startKey+] where startKey+ is the next key after startKey
-        $scanEndKey = $this->nextKey($startKey);
+        // Get all regions covering the range (endKey..startKey since endKey < startKey)
+        $regions = $this->pdClient->scanRegions($endKey, $startKey, 0);
         
-        // Get all results from forward scan [endKey, scanEndKey)
-        $results = $this->scan($endKey, $scanEndKey, 0, $keyOnly);
+        $results = [];
+        $remainingLimit = $limit;
         
-        // Reverse the results to get descending order
-        $results = array_reverse($results);
+        // Iterate regions in reverse order (from highest to lowest) for reverse scan
+        $regions = array_reverse($regions);
         
-        // Apply limit if specified
-        if ($limit > 0 && count($results) > $limit) {
-            $results = array_slice($results, 0, $limit);
+        foreach ($regions as $regionInfo) {
+            $regionStart = $regionInfo['start_key'];
+            $regionEnd = $regionInfo['end_key'];
+            
+            // For reverse scan, start_key is upper bound, end_key is lower bound
+            // Clamp to the region boundaries
+            $scanStartKey = ($regionEnd === '' || $startKey < $regionEnd) ? $startKey : $regionEnd;
+            $scanEndKey = ($endKey > $regionStart) ? $endKey : $regionStart;
+            
+            // Skip if range is invalid (end must be < start for reverse)
+            if ($scanEndKey >= $scanStartKey && $scanEndKey !== '') {
+                continue;
+            }
+            
+            $regionLimit = $remainingLimit === 0 ? PHP_INT_MAX : $remainingLimit;
+            
+            $regionResults = $this->executeScanForRegion(
+                $regionInfo,
+                $scanStartKey,
+                $scanEndKey,
+                $regionLimit,
+                $keyOnly,
+                true // native reverse scan
+            );
+            
+            $results = array_merge($results, $regionResults);
+            
+            if ($remainingLimit > 0) {
+                $remainingLimit -= count($regionResults);
+                if ($remainingLimit <= 0) {
+                    break;
+                }
+            }
         }
         
         return $results;
