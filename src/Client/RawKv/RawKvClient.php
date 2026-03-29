@@ -74,9 +74,9 @@ class RawKvClient
         // store-id=4: tikv3:20162
         // store-id=5: tikv1:20160
         $storeMap = [
-            1 => 'tikv2:20161',
-            4 => 'tikv3:20162',
-            5 => 'tikv1:20160',
+            1 => "tikv1:20160",
+            4 => "tikv2:20161",
+            5 => "tikv3:20162",
         ];
         
         return $storeMap[$storeId] ?? 'tikv1:20160';
