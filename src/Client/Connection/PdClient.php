@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\Connection;
 
-use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
+use CrazyGoat\TiKV\Client\Exception\GrpcException;
+use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
+use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
+use CrazyGoat\Proto\Metapb\Store;
 use CrazyGoat\Proto\Pdpb\GetRegionRequest;
 use CrazyGoat\Proto\Pdpb\GetRegionResponse;
 use CrazyGoat\Proto\Pdpb\GetStoreRequest;
@@ -11,138 +14,74 @@ use CrazyGoat\Proto\Pdpb\GetStoreResponse;
 use CrazyGoat\Proto\Pdpb\RequestHeader;
 use CrazyGoat\Proto\Pdpb\ScanRegionsRequest;
 use CrazyGoat\Proto\Pdpb\ScanRegionsResponse;
-use CrazyGoat\Proto\Metapb\Store;
+use Google\Protobuf\Internal\Message;
 
-class PdClient
+final class PdClient implements PdClientInterface
 {
-    private GrpcClient $grpc;
-    private string $pdAddress;
     private ?int $clusterId = null;
+
+    /** @var array<int, Store> */
     private array $storeCache = [];
-    
-    public function __construct(string $pdAddress)
-    {
-        $this->grpc = new GrpcClient();
-        $this->pdAddress = $pdAddress;
+
+    public function __construct(
+        private readonly GrpcClientInterface $grpc,
+        private readonly string $pdAddress,
+    ) {
     }
-    
-    private function createHeader(): RequestHeader
-    {
-        $header = new RequestHeader();
-        $header->setClusterId($this->clusterId ?? 0);
-        return $header;
-    }
-    
-    public function getRegion(string $key): array
+
+    public function getRegion(string $key): RegionInfo
     {
         $request = new GetRegionRequest();
         $request->setHeader($this->createHeader());
         $request->setRegionKey($key);
-        
-        try {
-            $response = $this->grpc->call(
-                $this->pdAddress,
-                'pdpb.PD',
-                'GetRegion',
-                $request,
-                GetRegionResponse::class
-            );
-            
-            // Extract cluster_id from response for future requests
-            $respHeader = $response->getHeader();
-            if ($respHeader && $this->clusterId === null) {
-                $this->clusterId = $respHeader->getClusterId();
-            }
-            
-            $region = $response->getRegion();
-            $leader = $response->getLeader();
-            $regionEpoch = $region ? $region->getRegionEpoch() : null;
-            
-            return [
-                'region_id' => $region ? $region->getId() : 0,
-                'leader_peer_id' => $leader ? $leader->getId() : 0,
-                'leader_store_id' => $leader ? $leader->getStoreId() : 1,
-                'region_epoch_conf_ver' => $regionEpoch ? $regionEpoch->getConfVer() : 0,
-                'region_epoch_version' => $regionEpoch ? $regionEpoch->getVersion() : 0,
-            ];
-        } catch (\RuntimeException $e) {
-            // If we got cluster_id mismatch, extract it from error and retry
-            if (strpos($e->getMessage(), 'mismatch cluster id') !== false) {
-                preg_match('/need (\d+) but got/', $e->getMessage(), $matches);
-                if (isset($matches[1])) {
-                    $this->clusterId = (int)$matches[1];
-                    // Retry with correct cluster_id
-                    return $this->getRegion($key);
-                }
-            }
-            throw $e;
-        }
+
+        /** @var GetRegionResponse $response */
+        $response = $this->callWithClusterIdRetry(
+            'GetRegion',
+            $request,
+            GetRegionResponse::class,
+        );
+
+        $region = $response->getRegion();
+        $leader = $response->getLeader();
+        $regionEpoch = $region?->getRegionEpoch();
+
+        return new RegionInfo(
+            regionId: $region ? $region->getId() : 0,
+            leaderPeerId: $leader ? $leader->getId() : 0,
+            leaderStoreId: $leader ? $leader->getStoreId() : 1,
+            epochConfVer: $regionEpoch ? $regionEpoch->getConfVer() : 0,
+            epochVersion: $regionEpoch ? $regionEpoch->getVersion() : 0,
+        );
     }
-    
-    /**
-     * Get store information from PD
-     * 
-     * @param int $storeId Store ID
-     * @return Store|null Store information or null if not found
-     */
+
     public function getStore(int $storeId): ?Store
     {
-        // Check cache first
         if (isset($this->storeCache[$storeId])) {
             return $this->storeCache[$storeId];
         }
-        
+
         $request = new GetStoreRequest();
         $request->setHeader($this->createHeader());
         $request->setStoreId($storeId);
-        
-        try {
-            $response = $this->grpc->call(
-                $this->pdAddress,
-                'pdpb.PD',
-                'GetStore',
-                $request,
-                GetStoreResponse::class
-            );
-            
-            // Extract cluster_id from response for future requests
-            $respHeader = $response->getHeader();
-            if ($respHeader && $this->clusterId === null) {
-                $this->clusterId = $respHeader->getClusterId();
-            }
-            
-            $store = $response->getStore();
-            if ($store) {
-                $this->storeCache[$storeId] = $store;
-            }
-            
-            return $store;
-        } catch (\RuntimeException $e) {
-            // If we got cluster_id mismatch, extract it from error and retry
-            if (strpos($e->getMessage(), 'mismatch cluster id') !== false) {
-                preg_match('/need (\d+) but got/', $e->getMessage(), $matches);
-                if (isset($matches[1])) {
-                    $this->clusterId = (int)$matches[1];
-                    // Retry with correct cluster_id
-                    return $this->getStore($storeId);
-                }
-            }
-            throw $e;
+
+        /** @var GetStoreResponse $response */
+        $response = $this->callWithClusterIdRetry(
+            'GetStore',
+            $request,
+            GetStoreResponse::class,
+        );
+
+        $store = $response->getStore();
+        if ($store !== null) {
+            $this->storeCache[$storeId] = $store;
         }
+
+        return $store;
     }
-    
-    public function close(): void
-    {
-        $this->grpc->close();
-    }
-    
+
     /**
-     * Scan regions in a key range
-     * 
-     * @param string $startKey Start key of the range
-     * @param string $endKey End key of the range (empty means +inf)
-     * @param int $limit Maximum number of regions to return (0 = no limit)
-     * @return array Array of region info arrays
+     * @return RegionInfo[]
      */
     public function scanRegions(string $startKey, string $endKey, int $limit = 0): array
     {
@@ -151,54 +90,124 @@ class PdClient
         $request->setStartKey($startKey);
         $request->setEndKey($endKey);
         $request->setLimit($limit);
-        
+
+        /** @var ScanRegionsResponse $response */
+        $response = $this->callWithClusterIdRetry(
+            'ScanRegions',
+            $request,
+            ScanRegionsResponse::class,
+        );
+
+        $regions = [];
+        $regionMetas = $response->getRegionMetas();
+        $leaders = $response->getLeaders();
+
+        foreach ($regionMetas as $index => $region) {
+            $leader = $leaders[$index] ?? null;
+            $regionEpoch = $region?->getRegionEpoch();
+
+            $regions[] = new RegionInfo(
+                regionId: $region ? $region->getId() : 0,
+                leaderPeerId: $leader ? $leader->getId() : 0,
+                leaderStoreId: $leader ? $leader->getStoreId() : 1,
+                epochConfVer: $regionEpoch ? $regionEpoch->getConfVer() : 0,
+                epochVersion: $regionEpoch ? $regionEpoch->getVersion() : 0,
+                startKey: $region ? $region->getStartKey() : '',
+                endKey: $region ? $region->getEndKey() : '',
+            );
+        }
+
+        return $regions;
+    }
+
+    public function close(): void
+    {
+        $this->grpc->close();
+    }
+
+    private function createHeader(): RequestHeader
+    {
+        $header = new RequestHeader();
+        $header->setClusterId($this->clusterId ?? 0);
+        return $header;
+    }
+
+    /**
+     * Execute a PD gRPC call with automatic cluster ID mismatch retry.
+     *
+     * On first connect the client sends cluster_id=0. PD may reject with
+     * "mismatch cluster id, need X but got 0". We extract X, cache it,
+     * and retry exactly once.
+     *
+     * @template T of Message
+     * @param class-string<T> $responseClass
+     * @return T
+     */
+    private function callWithClusterIdRetry(
+        string $method,
+        Message $request,
+        string $responseClass,
+    ): Message {
         try {
             $response = $this->grpc->call(
                 $this->pdAddress,
                 'pdpb.PD',
-                'ScanRegions',
+                $method,
                 $request,
-                ScanRegionsResponse::class
+                $responseClass,
             );
-            
-            // Extract cluster_id from response for future requests
-            $respHeader = $response->getHeader();
-            if ($respHeader && $this->clusterId === null) {
-                $this->clusterId = $respHeader->getClusterId();
+
+            $this->learnClusterId($response);
+
+            return $response;
+        } catch (GrpcException $e) {
+            $extractedId = $this->extractClusterIdFromError($e->getMessage());
+            if ($extractedId !== null) {
+                $this->clusterId = $extractedId;
+                $request->setHeader($this->createHeader());
+
+                $response = $this->grpc->call(
+                    $this->pdAddress,
+                    'pdpb.PD',
+                    $method,
+                    $request,
+                    $responseClass,
+                );
+
+                $this->learnClusterId($response);
+
+                return $response;
             }
-            
-            $regions = [];
-            $regionMetas = $response->getRegionMetas();
-            $leaders = $response->getLeaders();
-            
-            // Combine region metas with leaders
-            foreach ($regionMetas as $index => $region) {
-                $leader = $leaders[$index] ?? null;
-                $regionEpoch = $region ? $region->getRegionEpoch() : null;
-                
-                $regions[] = [
-                    'region_id' => $region ? $region->getId() : 0,
-                    'leader_peer_id' => $leader ? $leader->getId() : 0,
-                    'leader_store_id' => $leader ? $leader->getStoreId() : 1,
-                    'region_epoch_conf_ver' => $regionEpoch ? $regionEpoch->getConfVer() : 0,
-                    'region_epoch_version' => $regionEpoch ? $regionEpoch->getVersion() : 0,
-                    'start_key' => $region ? $region->getStartKey() : '',
-                    'end_key' => $region ? $region->getEndKey() : '',
-                ];
-            }
-            
-            return $regions;
-        } catch (\RuntimeException $e) {
-            // If we got cluster_id mismatch, extract it from error and retry
-            if (strpos($e->getMessage(), 'mismatch cluster id') !== false) {
-                preg_match('/need (\d+) but got/', $e->getMessage(), $matches);
-                if (isset($matches[1])) {
-                    $this->clusterId = (int)$matches[1];
-                    // Retry with correct cluster_id
-                    return $this->scanRegions($startKey, $endKey, $limit);
-                }
-            }
+
             throw $e;
         }
+    }
+
+    /**
+     * Learn cluster ID from a successful PD response header.
+     */
+    private function learnClusterId(Message $response): void
+    {
+        if ($this->clusterId !== null) {
+            return;
+        }
+
+        if (method_exists($response, 'getHeader')) {
+            $header = $response->getHeader();
+            if ($header !== null && method_exists($header, 'getClusterId')) {
+                $this->clusterId = $header->getClusterId();
+            }
+        }
+    }
+
+    private function extractClusterIdFromError(string $message): ?int
+    {
+        if (str_contains($message, 'mismatch cluster id')) {
+            if (preg_match('/need (\d+) but got/', $message, $matches)) {
+                return (int) $matches[1];
+            }
+        }
+
+        return null;
     }
 }
