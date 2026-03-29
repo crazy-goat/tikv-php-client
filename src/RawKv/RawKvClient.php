@@ -71,12 +71,12 @@ class RawKvClient
     {
         // PD store mapping (from logs):
         // store-id=1: tikv3:20162
-        // store-id=2: tikv2:20161
-        // store-id=3: tikv1:20160
+        // store-id=2: tikv2:20161  
+        // store-id=5: tikv1:20160
         $storeMap = [
             1 => 'tikv3:20162',
             2 => 'tikv2:20161',
-            3 => 'tikv1:20160',
+            5 => 'tikv1:20160',
         ];
         
         return $storeMap[$storeId] ?? 'tikv1:20160';

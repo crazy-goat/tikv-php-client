@@ -16,6 +16,9 @@ RUN apk add --no-cache \
     php84-dom \
     php84-xml \
     php84-xmlwriter \
+    php84-tokenizer \
+    php84-iconv \
+    php84-zip \
     composer \
     protobuf \
     protobuf-dev
