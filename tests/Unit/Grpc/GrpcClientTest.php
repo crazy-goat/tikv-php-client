@@ -4,22 +4,26 @@ declare(strict_types=1);
 namespace CrazyGoat\TiKV\Tests\Unit\Grpc;
 
 use CrazyGoat\TiKV\Grpc\GrpcClient;
-use Kvrpcpb\RawGetRequest;
-use Kvrpcpb\RawGetResponse;
 use PHPUnit\Framework\TestCase;
 
 class GrpcClientTest extends TestCase
 {
-    private GrpcClient $client;
+    private ?GrpcClient $client = null;
     
     protected function setUp(): void
     {
+        // Skip tests if gRPC extension is not available
+        if (!extension_loaded('grpc')) {
+            $this->markTestSkipped('gRPC extension not available');
+        }
         $this->client = new GrpcClient();
     }
     
     protected function tearDown(): void
     {
-        $this->client->close();
+        if ($this->client !== null) {
+            $this->client->close();
+        }
     }
     
     public function testClientCanBeCreated(): void
@@ -37,7 +41,7 @@ class GrpcClientTest extends TestCase
     {
         $this->expectException(\RuntimeException::class);
         
-        $request = new RawGetRequest();
+        $request = new \Kvrpcpb\RawGetRequest();
         $request->setKey('test');
         
         $this->client->call(
@@ -45,7 +49,7 @@ class GrpcClientTest extends TestCase
             'tikvpb.Tikv',
             'RawGet',
             $request,
-            RawGetResponse::class
+            \Kvrpcpb\RawGetResponse::class
         );
     }
 }
