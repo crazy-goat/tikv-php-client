@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Tests\E2E;
 
+use CrazyGoat\TiKV\Client\RawKv\CasResult;
 use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
 use PHPUnit\Framework\TestCase;
 
@@ -1333,5 +1334,386 @@ class RawKvE2ETest extends TestCase
         
         $this->assertNotContains('ttl-scanexp-a', $keys, 'Expired key should not appear in scan');
         $this->assertContains('ttl-scanexp-b', $keys, 'Non-expired key should appear in scan');
+    }
+    
+    // ========================================================================
+    // CompareAndSwap (CAS)
+    // ========================================================================
+    
+    public function testCasSuccessfulSwap(): void
+    {
+        $this->putOneAndTrack('cas-basic', 'old-value');
+        
+        $result = self::$client->compareAndSwap('cas-basic', 'old-value', 'new-value');
+        
+        $this->assertInstanceOf(CasResult::class, $result);
+        $this->assertTrue($result->swapped, 'CAS should succeed when expected value matches');
+        $this->assertEquals('old-value', $result->previousValue);
+        
+        // Verify the new value is stored
+        $this->assertEquals('new-value', self::$client->get('cas-basic'));
+    }
+    
+    public function testCasFailedSwapValueMismatch(): void
+    {
+        $this->putOneAndTrack('cas-fail', 'actual-value');
+        
+        $result = self::$client->compareAndSwap('cas-fail', 'wrong-expected', 'new-value');
+        
+        $this->assertFalse($result->swapped, 'CAS should fail when expected value does not match');
+        $this->assertEquals('actual-value', $result->previousValue, 'Should return the actual current value');
+        
+        // Verify the value was NOT changed
+        $this->assertEquals('actual-value', self::$client->get('cas-fail'));
+    }
+    
+    public function testCasExpectNullKeyDoesNotExist(): void
+    {
+        $key = 'cas-null-' . uniqid();
+        $this->keysToCleanup[] = $key;
+        
+        // CAS with expectedValue=null on a non-existent key should succeed
+        $result = self::$client->compareAndSwap($key, null, 'created');
+        
+        $this->assertTrue($result->swapped, 'CAS with null expected should succeed when key does not exist');
+        $this->assertNull($result->previousValue, 'Previous value should be null for non-existent key');
+        
+        // Verify the value was created
+        $this->assertEquals('created', self::$client->get($key));
+    }
+    
+    public function testCasExpectNullKeyExists(): void
+    {
+        $this->putOneAndTrack('cas-null-exists', 'existing');
+        
+        // CAS with expectedValue=null on an existing key should fail
+        $result = self::$client->compareAndSwap('cas-null-exists', null, 'new-value');
+        
+        $this->assertFalse($result->swapped, 'CAS with null expected should fail when key exists');
+        $this->assertEquals('existing', $result->previousValue, 'Should return the existing value');
+        
+        // Verify the value was NOT changed
+        $this->assertEquals('existing', self::$client->get('cas-null-exists'));
+    }
+    
+    public function testCasMultipleSwapsInSequence(): void
+    {
+        $this->putOneAndTrack('cas-seq', 'v1');
+        
+        // First swap: v1 → v2
+        $r1 = self::$client->compareAndSwap('cas-seq', 'v1', 'v2');
+        $this->assertTrue($r1->swapped);
+        $this->assertEquals('v1', $r1->previousValue);
+        
+        // Second swap: v2 → v3
+        $r2 = self::$client->compareAndSwap('cas-seq', 'v2', 'v3');
+        $this->assertTrue($r2->swapped);
+        $this->assertEquals('v2', $r2->previousValue);
+        
+        // Third swap with stale expected: should fail
+        $r3 = self::$client->compareAndSwap('cas-seq', 'v1', 'v4');
+        $this->assertFalse($r3->swapped);
+        $this->assertEquals('v3', $r3->previousValue);
+        
+        // Final value should be v3
+        $this->assertEquals('v3', self::$client->get('cas-seq'));
+    }
+    
+    public function testCasWithBinaryData(): void
+    {
+        $key = "cas-bin-\x01\x02";
+        $oldValue = "\x00\x01\x02\x03";
+        $newValue = "\xff\xfe\xfd\xfc";
+        
+        self::$client->put($key, $oldValue);
+        $this->keysToCleanup[] = $key;
+        
+        $result = self::$client->compareAndSwap($key, $oldValue, $newValue);
+        
+        $this->assertTrue($result->swapped);
+        $this->assertEquals($oldValue, $result->previousValue);
+        $this->assertEquals($newValue, self::$client->get($key));
+    }
+    
+    public function testCasWithEmptyStringValue(): void
+    {
+        $this->putOneAndTrack('cas-empty', 'non-empty');
+        
+        // Swap to empty string
+        $result = self::$client->compareAndSwap('cas-empty', 'non-empty', '');
+        
+        $this->assertTrue($result->swapped);
+        $this->assertEquals('non-empty', $result->previousValue);
+        $this->assertEquals('', self::$client->get('cas-empty'));
+    }
+    
+    public function testCasWithTtl(): void
+    {
+        $key = 'cas-ttl-' . uniqid();
+        $this->keysToCleanup[] = $key;
+        
+        // Create key via CAS with TTL
+        $result = self::$client->compareAndSwap($key, null, 'temp-value', 60);
+        $this->assertTrue($result->swapped);
+        
+        // Verify TTL was set
+        $ttl = self::$client->getKeyTTL($key);
+        $this->assertNotNull($ttl, 'CAS with TTL should set expiration');
+        $this->assertGreaterThan(0, $ttl);
+        $this->assertLessThanOrEqual(60, $ttl);
+    }
+    
+    public function testCasWithTtlExpires(): void
+    {
+        $key = 'cas-ttl-exp-' . uniqid();
+        $this->keysToCleanup[] = $key;
+        
+        // Create key via CAS with short TTL
+        $result = self::$client->compareAndSwap($key, null, 'temporary', 2);
+        $this->assertTrue($result->swapped);
+        $this->assertEquals('temporary', self::$client->get($key));
+        
+        // Wait for expiration
+        sleep(3);
+        
+        $this->assertNull(self::$client->get($key), 'CAS key should expire after TTL');
+    }
+    
+    public function testCasSwapThenSwapAgain(): void
+    {
+        $this->putOneAndTrack('cas-double', 'initial');
+        
+        // First CAS succeeds
+        $r1 = self::$client->compareAndSwap('cas-double', 'initial', 'middle');
+        $this->assertTrue($r1->swapped);
+        
+        // Second CAS with the new value succeeds
+        $r2 = self::$client->compareAndSwap('cas-double', 'middle', 'final');
+        $this->assertTrue($r2->swapped);
+        
+        $this->assertEquals('final', self::$client->get('cas-double'));
+    }
+    
+    public function testCasOnDeletedKey(): void
+    {
+        $this->putOneAndTrack('cas-deleted', 'value');
+        self::$client->delete('cas-deleted');
+        
+        // CAS with null expected on a deleted key should succeed
+        $result = self::$client->compareAndSwap('cas-deleted', null, 'resurrected');
+        $this->keysToCleanup[] = 'cas-deleted';
+        
+        $this->assertTrue($result->swapped, 'CAS with null expected should succeed on deleted key');
+        $this->assertEquals('resurrected', self::$client->get('cas-deleted'));
+    }
+    
+    public function testCasOnDeletedKeyWithWrongExpected(): void
+    {
+        $this->putOneAndTrack('cas-del-wrong', 'value');
+        self::$client->delete('cas-del-wrong');
+        
+        // CAS with non-null expected on a deleted key should fail
+        $result = self::$client->compareAndSwap('cas-del-wrong', 'value', 'new');
+        
+        $this->assertFalse($result->swapped, 'CAS with non-null expected should fail on deleted key');
+        $this->assertNull($result->previousValue, 'Previous value should be null for deleted key');
+    }
+    
+    public function testCasReturnsPreviousValueOnFailure(): void
+    {
+        $this->putOneAndTrack('cas-prev', 'current-value');
+        
+        $result = self::$client->compareAndSwap('cas-prev', 'wrong-expected', 'new-value');
+        
+        $this->assertFalse($result->swapped);
+        $this->assertEquals('current-value', $result->previousValue,
+            'Failed CAS should return the actual current value for retry logic');
+    }
+    
+    public function testCasAtomicCounter(): void
+    {
+        // Simulate an atomic counter using CAS
+        $key = 'cas-counter';
+        $this->putOneAndTrack($key, '0');
+        
+        // Increment: read-compare-swap loop
+        $current = self::$client->get($key);
+        $newVal = (string)((int)$current + 1);
+        
+        $result = self::$client->compareAndSwap($key, $current, $newVal);
+        $this->assertTrue($result->swapped);
+        $this->assertEquals('1', self::$client->get($key));
+        
+        // Increment again
+        $current = self::$client->get($key);
+        $newVal = (string)((int)$current + 1);
+        
+        $result = self::$client->compareAndSwap($key, $current, $newVal);
+        $this->assertTrue($result->swapped);
+        $this->assertEquals('2', self::$client->get($key));
+    }
+    
+    public function testCasWithLargeValue(): void
+    {
+        $key = 'cas-large';
+        $oldValue = str_repeat('A', 1024 * 100); // 100KB
+        $newValue = str_repeat('B', 1024 * 100); // 100KB
+        
+        self::$client->put($key, $oldValue);
+        $this->keysToCleanup[] = $key;
+        
+        $result = self::$client->compareAndSwap($key, $oldValue, $newValue);
+        
+        $this->assertTrue($result->swapped);
+        $this->assertEquals($newValue, self::$client->get($key));
+    }
+    
+    // ========================================================================
+    // PutIfAbsent
+    // ========================================================================
+    
+    public function testPutIfAbsentNewKey(): void
+    {
+        $key = 'pia-new-' . uniqid();
+        $this->keysToCleanup[] = $key;
+        
+        $result = self::$client->putIfAbsent($key, 'first-value');
+        
+        $this->assertNull($result, 'putIfAbsent should return null when key was successfully inserted');
+        $this->assertEquals('first-value', self::$client->get($key));
+    }
+    
+    public function testPutIfAbsentExistingKey(): void
+    {
+        $this->putOneAndTrack('pia-exists', 'existing-value');
+        
+        $result = self::$client->putIfAbsent('pia-exists', 'new-value');
+        
+        $this->assertEquals('existing-value', $result, 'putIfAbsent should return existing value when key exists');
+        
+        // Verify the value was NOT changed
+        $this->assertEquals('existing-value', self::$client->get('pia-exists'));
+    }
+    
+    public function testPutIfAbsentIdempotent(): void
+    {
+        $key = 'pia-idem-' . uniqid();
+        $this->keysToCleanup[] = $key;
+        
+        // First call — inserts
+        $r1 = self::$client->putIfAbsent($key, 'value');
+        $this->assertNull($r1);
+        
+        // Second call — returns existing value
+        $r2 = self::$client->putIfAbsent($key, 'different-value');
+        $this->assertEquals('value', $r2);
+        
+        // Third call — still returns original value
+        $r3 = self::$client->putIfAbsent($key, 'yet-another');
+        $this->assertEquals('value', $r3);
+        
+        // Value should still be the original
+        $this->assertEquals('value', self::$client->get($key));
+    }
+    
+    public function testPutIfAbsentWithBinaryData(): void
+    {
+        $key = "pia-bin-\x01\x02";
+        $value = "\x00\xff\xfe\xfd";
+        $this->keysToCleanup[] = $key;
+        
+        $result = self::$client->putIfAbsent($key, $value);
+        
+        $this->assertNull($result);
+        $this->assertEquals($value, self::$client->get($key));
+    }
+    
+    public function testPutIfAbsentWithEmptyValue(): void
+    {
+        $key = 'pia-empty-' . uniqid();
+        $this->keysToCleanup[] = $key;
+        
+        $result = self::$client->putIfAbsent($key, '');
+        
+        $this->assertNull($result);
+        $this->assertEquals('', self::$client->get($key));
+    }
+    
+    public function testPutIfAbsentWithTtl(): void
+    {
+        $key = 'pia-ttl-' . uniqid();
+        $this->keysToCleanup[] = $key;
+        
+        $result = self::$client->putIfAbsent($key, 'temp-value', 60);
+        
+        $this->assertNull($result);
+        $this->assertEquals('temp-value', self::$client->get($key));
+        
+        $ttl = self::$client->getKeyTTL($key);
+        $this->assertNotNull($ttl);
+        $this->assertGreaterThan(0, $ttl);
+        $this->assertLessThanOrEqual(60, $ttl);
+    }
+    
+    public function testPutIfAbsentWithTtlExpires(): void
+    {
+        $key = 'pia-ttl-exp-' . uniqid();
+        $this->keysToCleanup[] = $key;
+        
+        $result = self::$client->putIfAbsent($key, 'temporary', 2);
+        $this->assertNull($result);
+        
+        sleep(3);
+        
+        $this->assertNull(self::$client->get($key), 'putIfAbsent key should expire after TTL');
+        
+        // After expiration, putIfAbsent should succeed again
+        $result2 = self::$client->putIfAbsent($key, 'reinserted');
+        $this->assertNull($result2, 'putIfAbsent should succeed after key expires');
+        $this->assertEquals('reinserted', self::$client->get($key));
+    }
+    
+    public function testPutIfAbsentAfterDelete(): void
+    {
+        $key = 'pia-del-' . uniqid();
+        $this->keysToCleanup[] = $key;
+        
+        // Insert
+        $r1 = self::$client->putIfAbsent($key, 'first');
+        $this->assertNull($r1);
+        
+        // Delete
+        self::$client->delete($key);
+        
+        // putIfAbsent should succeed again
+        $r2 = self::$client->putIfAbsent($key, 'second');
+        $this->assertNull($r2);
+        $this->assertEquals('second', self::$client->get($key));
+    }
+    
+    public function testPutIfAbsentDoesNotOverwriteExistingWithTtl(): void
+    {
+        $this->putOneAndTrack('pia-no-ow', 'permanent');
+        
+        // Try to putIfAbsent with TTL — should fail because key exists
+        $result = self::$client->putIfAbsent('pia-no-ow', 'temp', 60);
+        
+        $this->assertEquals('permanent', $result);
+        
+        // Original key should have no TTL (it was put without one)
+        $ttl = self::$client->getKeyTTL('pia-no-ow');
+        $this->assertNull($ttl, 'Failed putIfAbsent should not modify existing key TTL');
+    }
+    
+    public function testPutIfAbsentWithLargeValue(): void
+    {
+        $key = 'pia-large-' . uniqid();
+        $value = str_repeat('X', 1024 * 100); // 100KB
+        $this->keysToCleanup[] = $key;
+        
+        $result = self::$client->putIfAbsent($key, $value);
+        
+        $this->assertNull($result);
+        $this->assertEquals($value, self::$client->get($key));
     }
 }

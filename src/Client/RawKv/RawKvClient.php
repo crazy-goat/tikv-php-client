@@ -24,6 +24,8 @@ use CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawCASRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawCASResponse;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
 use CrazyGoat\Proto\Metapb\Peer;
 use CrazyGoat\Proto\Metapb\RegionEpoch;
@@ -195,6 +197,97 @@ class RawKvClient
             // TTL of 0 means no expiration set
             return $ttl > 0 ? $ttl : null;
         });
+    }
+    
+    /**
+     * Atomic Compare-And-Swap operation
+     * 
+     * Atomically compares the current value of a key with an expected value,
+     * and if they match, replaces it with a new value. This is the fundamental
+     * building block for optimistic locking, distributed locks, and atomic counters.
+     * 
+     * The operation is atomic at the TiKV region level — no other operation can
+     * interleave between the comparison and the write.
+     * 
+     * @param string $key Key to compare-and-swap
+     * @param string|null $expectedValue Expected current value, or null if the key should not exist
+     * @param string $newValue New value to set if comparison succeeds
+     * @param int $ttl Time-to-live in seconds for the new value (0 = no expiration)
+     * @return CasResult Contains whether the swap succeeded and the previous value
+     */
+    public function compareAndSwap(string $key, ?string $expectedValue, string $newValue, int $ttl = 0): CasResult
+    {
+        $this->ensureOpen();
+        
+        return $this->executeWithRetry($key, function() use ($key, $expectedValue, $newValue, $ttl) {
+            $regionInfo = $this->getRegionInfo($key);
+            $tikvAddress = $this->getTikvAddress($regionInfo['leader_store_id']);
+            
+            $request = new RawCASRequest();
+            $request->setContext($this->createContext($regionInfo));
+            $request->setKey($key);
+            $request->setValue($newValue);
+            
+            if ($expectedValue === null) {
+                // Expect the key to NOT exist (used by putIfAbsent)
+                $request->setPreviousNotExist(true);
+            } else {
+                $request->setPreviousNotExist(false);
+                $request->setPreviousValue($expectedValue);
+            }
+            
+            if ($ttl > 0) {
+                $request->setTtl($ttl);
+            }
+            
+            /** @var RawCASResponse $response */
+            $response = $this->grpc->call(
+                $tikvAddress,
+                'tikvpb.Tikv',
+                'RawCompareAndSwap',
+                $request,
+                RawCASResponse::class
+            );
+            
+            $error = $response->getError();
+            if ($error !== '') {
+                throw new \RuntimeException("RawCompareAndSwap failed: {$error}");
+            }
+            
+            $previousValue = $response->getPreviousNotExist()
+                ? null
+                : $response->getPreviousValue();
+            
+            return new CasResult(
+                swapped: $response->getSucceed(),
+                previousValue: $previousValue,
+            );
+        });
+    }
+    
+    /**
+     * Atomically put a value only if the key does not already exist
+     * 
+     * This is a convenience wrapper around compareAndSwap() with expectedValue=null.
+     * It is useful for idempotent initialization, distributed locks, and ensuring
+     * exactly-once semantics.
+     * 
+     * @param string $key Key to conditionally insert
+     * @param string $value Value to store if key doesn't exist
+     * @param int $ttl Time-to-live in seconds (0 = no expiration)
+     * @return string|null null if the key was successfully inserted (didn't exist before),
+     *                     or the existing value if the key already existed
+     */
+    public function putIfAbsent(string $key, string $value, int $ttl = 0): ?string
+    {
+        $result = $this->compareAndSwap($key, null, $value, $ttl);
+        
+        if ($result->swapped) {
+            return null; // Successfully inserted — key didn't exist
+        }
+        
+        // Key already existed — return the existing value
+        return $result->previousValue;
     }
     
     /**

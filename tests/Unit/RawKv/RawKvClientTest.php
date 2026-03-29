@@ -166,4 +166,28 @@ class RawKvClientTest extends TestCase
         
         $client->getKeyTTL('key');
     }
+    
+    public function testCompareAndSwapThrowsWhenClosed(): void
+    {
+        $pdClient = $this->createMock(PdClient::class);
+        $client = new RawKvClient($pdClient);
+        $client->close();
+        
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Client is closed');
+        
+        $client->compareAndSwap('key', 'old', 'new');
+    }
+    
+    public function testPutIfAbsentThrowsWhenClosed(): void
+    {
+        $pdClient = $this->createMock(PdClient::class);
+        $client = new RawKvClient($pdClient);
+        $client->close();
+        
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Client is closed');
+        
+        $client->putIfAbsent('key', 'value');
+    }
 }

@@ -21,8 +21,8 @@ This directory contains detailed implementation plans for all RawKV features.
 14. **DeletePrefix** - Delete all keys by prefix ✅
 15. **PutWithTTL** - Store with expiration (seconds) ✅
 16. **GetKeyTTL** - Get remaining TTL ✅
-
-### 🚧 Planned (in priority order)
+17. **CompareAndSwap** - Atomic CAS operation ✅
+18. **PutIfAbsent** - Conditional insert (built on CAS) ✅
 
 ### 🚧 Planned (in priority order)
 
@@ -44,9 +44,9 @@ This directory contains detailed implementation plans for all RawKV features.
 - ~~[07-put-with-ttl.md](07-put-with-ttl.md) - Store with expiration~~
 - ~~[08-get-key-ttl.md](08-get-key-ttl.md) - Get remaining TTL~~
 
-#### Phase 5: Advanced Operations (Low Priority)
-- [09-compare-and-swap.md](09-compare-and-swap.md) - Atomic CAS
-- [13-put-if-absent.md](13-put-if-absent.md) - Conditional insert
+#### Phase 5: Advanced Operations (Low Priority) — In Progress
+- ~~[09-compare-and-swap.md](09-compare-and-swap.md) - Atomic CAS~~ ✅
+- ~~[13-put-if-absent.md](13-put-if-absent.md) - Conditional insert~~ ✅
 - [10-checksum.md](10-checksum.md) - Data integrity
 - [14-batch-scan.md](14-batch-scan.md) - Multiple range scan
 
