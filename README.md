@@ -13,20 +13,17 @@ docker-compose up --build php-client
 
 - **gRPC Extension**: Uses official gRPC PHP extension (v1.78.0)
 - **Alpine Edge**: Pre-built packages for instant builds
-- **Protobuf**: Minimal proto files for fast compilation
+- **Protobuf**: Generated from official TiKV proto files
 - **PD Discovery**: Connects to PD for cluster topology with RegionEpoch
 - **Direct TiKV**: Talks directly to TiKV nodes with retry logic
 
 ## Project Structure
 
 ```
-proto/                      # Protocol buffer definitions
-├── kvproto/               # Git submodule - TiKV proto files
-├── gogo/                  # Git submodule - gogo protobuf
-├── googleapis/            # Git submodule - Google APIs
-└── minimal/               # Minimal proto for PHP client
-    ├── kvrpcpb.proto      # RawKV messages
-    └── pdpb.proto         # PD messages
+proto/                      # Protocol buffer definitions (git submodules)
+├── kvproto/               # TiKV proto files
+├── gogo/                  # gogo protobuf
+└── googleapis/            # Google APIs
 
 src/
 ├── Proto/                 # Generated PHP classes from proto
@@ -100,10 +97,14 @@ See [docs/superpowers/plans/2025-03-29-tikv-php-full-rawkv.md](docs/superpowers/
 ### Generate PHP Classes from Proto
 
 ```bash
+# Generate from TiKV proto files
 docker-compose run --rm php-client protoc \
   --php_out=src/Proto \
-  -I proto/minimal \
-  proto/minimal/*.proto
+  -I proto/kvproto/proto \
+  -I proto/gogo \
+  -I proto/googleapis \
+  proto/kvproto/proto/kvrpcpb.proto \
+  proto/kvproto/proto/pdpb.proto
 ```
 
 ### Run Tests
