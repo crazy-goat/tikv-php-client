@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Tests\Unit\Grpc;
 
-use CrazyGoat\TiKV\Grpc\GrpcClient;
+use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
 use PHPUnit\Framework\TestCase;
 
 class GrpcClientTest extends TestCase

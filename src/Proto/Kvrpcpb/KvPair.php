@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Kvrpcpb;
 
 use Google\Protobuf\Internal\Message;
+use Google\Protobuf\Internal\GPBType;
+use Google\Protobuf\Internal\GPBUtil;
 
 class KvPair extends Message
 {
@@ -12,26 +14,31 @@ class KvPair extends Message
     
     public function __construct($data = null)
     {
+        \GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
     
-    public function getKey(): string
+    public function getKey()
     {
         return $this->key;
     }
     
-    public function setKey(string $key): void
+    public function setKey($var)
     {
-        $this->key = $key;
+        GPBUtil::checkString($var, true);
+        $this->key = $var;
+        return $this;
     }
     
-    public function getValue(): string
+    public function getValue()
     {
         return $this->value;
     }
     
-    public function setValue(string $value): void
+    public function setValue($var)
     {
-        $this->value = $value;
+        GPBUtil::checkString($var, true);
+        $this->value = $var;
+        return $this;
     }
 }

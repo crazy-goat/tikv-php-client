@@ -37,15 +37,19 @@ test-e2e:
 	@echo "Running E2E tests..."
 	./scripts/test-e2e.sh
 
-# Generate PHP classes from proto files
+# Generate PHP classes from proto files with CrazyGoat\TiKV\Proto namespace
 proto-generate:
 	@echo "Generating PHP classes from proto files..."
 	@echo "Creating dummy proto files for dependencies..."
 	@touch proto/kvproto/proto/rustproto.proto
 	@touch proto/kvproto/proto/encryptionpb.proto
-	@echo "Generating classes..."
-	docker-compose run --rm php-client sh -c "cd /app/proto/kvproto/proto && protoc --php_out=/app/src/Proto *.proto"
-	@echo "Proto classes generated!"
+	@echo "Generating classes with namespace CrazyGoat\\TiKV\\Proto..."
+	docker-compose run --rm php-client sh -c "cd /app/proto/kvproto/proto && \
+		for f in *.proto; do \
+			echo 'option php_namespace = \"CrazyGoat\\\\TiKV\\\\Proto\";' >> \$$f; \
+		done && \
+		protoc --php_out=/app/src/Proto *.proto"
+	@echo "Proto classes generated with namespace CrazyGoat\\TiKV\\Proto!"
 	@echo ""
 	@echo "Note: If you see errors about missing dependencies, run: make proto-clean && make proto-generate"
 
