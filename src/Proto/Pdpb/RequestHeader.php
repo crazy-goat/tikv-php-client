@@ -10,20 +10,37 @@ use Google\Protobuf\Internal\GPBUtil;
 use Google\Protobuf\RepeatedField;
 
 /**
- * RequestHeader is required by PD
- *
  * Generated from protobuf message <code>pdpb.RequestHeader</code>
  */
 class RequestHeader extends \Google\Protobuf\Internal\Message
 {
     /**
+     * cluster_id is the ID of the cluster which be sent to.
+     *
      * Generated from protobuf field <code>uint64 cluster_id = 1;</code>
      */
     protected $cluster_id = 0;
     /**
+     * sender_id is the ID of the sender server, also member ID or etcd ID.
+     * sender_id is used in PD internal communication.
+     *
      * Generated from protobuf field <code>uint64 sender_id = 2;</code>
      */
     protected $sender_id = 0;
+    /**
+     * caller_id is the ID of the client which sends the request, such as tikv,
+     * tidb, cdc, etc.
+     *
+     * Generated from protobuf field <code>string caller_id = 3;</code>
+     */
+    protected $caller_id = '';
+    /**
+     * caller_component is the component of the client which sends the request,
+     * such as ddl, optimizer, etc.
+     *
+     * Generated from protobuf field <code>string caller_component = 4;</code>
+     */
+    protected $caller_component = '';
 
     /**
      * Constructor.
@@ -32,7 +49,16 @@ class RequestHeader extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int|string $cluster_id
+     *           cluster_id is the ID of the cluster which be sent to.
      *     @type int|string $sender_id
+     *           sender_id is the ID of the sender server, also member ID or etcd ID.
+     *           sender_id is used in PD internal communication.
+     *     @type string $caller_id
+     *           caller_id is the ID of the client which sends the request, such as tikv,
+     *           tidb, cdc, etc.
+     *     @type string $caller_component
+     *           caller_component is the component of the client which sends the request,
+     *           such as ddl, optimizer, etc.
      * }
      */
     public function __construct($data = NULL) {
@@ -41,6 +67,8 @@ class RequestHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * cluster_id is the ID of the cluster which be sent to.
+     *
      * Generated from protobuf field <code>uint64 cluster_id = 1;</code>
      * @return int|string
      */
@@ -50,6 +78,8 @@ class RequestHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * cluster_id is the ID of the cluster which be sent to.
+     *
      * Generated from protobuf field <code>uint64 cluster_id = 1;</code>
      * @param int|string $var
      * @return $this
@@ -63,6 +93,9 @@ class RequestHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * sender_id is the ID of the sender server, also member ID or etcd ID.
+     * sender_id is used in PD internal communication.
+     *
      * Generated from protobuf field <code>uint64 sender_id = 2;</code>
      * @return int|string
      */
@@ -72,6 +105,9 @@ class RequestHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * sender_id is the ID of the sender server, also member ID or etcd ID.
+     * sender_id is used in PD internal communication.
+     *
      * Generated from protobuf field <code>uint64 sender_id = 2;</code>
      * @param int|string $var
      * @return $this
@@ -80,6 +116,62 @@ class RequestHeader extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkUint64($var);
         $this->sender_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * caller_id is the ID of the client which sends the request, such as tikv,
+     * tidb, cdc, etc.
+     *
+     * Generated from protobuf field <code>string caller_id = 3;</code>
+     * @return string
+     */
+    public function getCallerId()
+    {
+        return $this->caller_id;
+    }
+
+    /**
+     * caller_id is the ID of the client which sends the request, such as tikv,
+     * tidb, cdc, etc.
+     *
+     * Generated from protobuf field <code>string caller_id = 3;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setCallerId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->caller_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * caller_component is the component of the client which sends the request,
+     * such as ddl, optimizer, etc.
+     *
+     * Generated from protobuf field <code>string caller_component = 4;</code>
+     * @return string
+     */
+    public function getCallerComponent()
+    {
+        return $this->caller_component;
+    }
+
+    /**
+     * caller_component is the component of the client which sends the request,
+     * such as ddl, optimizer, etc.
+     *
+     * Generated from protobuf field <code>string caller_component = 4;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setCallerComponent($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->caller_component = $var;
 
         return $this;
     }

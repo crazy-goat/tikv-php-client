@@ -15,7 +15,11 @@ use Google\Protobuf\RepeatedField;
 class Error extends \Google\Protobuf\Internal\Message
 {
     /**
-     * Generated from protobuf field <code>string message = 1;</code>
+     * Generated from protobuf field <code>.pdpb.ErrorType type = 1;</code>
+     */
+    protected $type = 0;
+    /**
+     * Generated from protobuf field <code>string message = 2;</code>
      */
     protected $message = '';
 
@@ -25,6 +29,7 @@ class Error extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
+     *     @type int $type
      *     @type string $message
      * }
      */
@@ -34,7 +39,29 @@ class Error extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string message = 1;</code>
+     * Generated from protobuf field <code>.pdpb.ErrorType type = 1;</code>
+     * @return int
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * Generated from protobuf field <code>.pdpb.ErrorType type = 1;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setType($var)
+    {
+        GPBUtil::checkEnum($var, \Pdpb\ErrorType::class);
+        $this->type = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string message = 2;</code>
      * @return string
      */
     public function getMessage()
@@ -43,7 +70,7 @@ class Error extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string message = 1;</code>
+     * Generated from protobuf field <code>string message = 2;</code>
      * @param string $var
      * @return $this
      */

@@ -67,25 +67,25 @@ class RawKvClient
         return $ctx;
     }
     
+    /**
+     * Get TiKV address from PD
+     * 
+     * @param int $storeId Store ID from PD
+     * @return string TiKV address (e.g., "tikv1:20160")
+     */
     private function getTikvAddress(int $storeId): string
     {
-        // TODO: Get store address from PD via GetStore() instead of hardcoding
-        // This requires metapb.Store proto to be generated
-        // For now, we use hardcoded mapping from docker-compose:
-        // - tikv1:20160, tikv2:20161, tikv3:20162
-        // Store IDs are assigned by PD dynamically
+        $store = $this->pdClient->getStore($storeId);
+        if ($store === null) {
+            throw new \RuntimeException("Store {$storeId} not found in PD");
+        }
         
-        // Current mapping (check PD logs if tests fail):
-        // store-id=1: tikv1:20160
-        // store-id=4: tikv2:20161  
-        // store-id=5: tikv3:20162
-        $storeMap = [
-            1 => 'tikv1:20160',
-            4 => 'tikv2:20161',
-            5 => 'tikv3:20162',
-        ];
+        $address = $store->getAddress();
+        if (empty($address)) {
+            throw new \RuntimeException("Store {$storeId} has no address");
+        }
         
-        return $storeMap[$storeId] ?? 'tikv1:20160';
+        return $address;
     }
     
     private function isEpochNotMatch(string $message): bool

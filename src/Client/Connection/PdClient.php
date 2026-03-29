@@ -6,13 +6,17 @@ namespace CrazyGoat\TiKV\Client\Connection;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
 use Pdpb\GetRegionRequest;
 use Pdpb\GetRegionResponse;
+use Pdpb\GetStoreRequest;
+use Pdpb\GetStoreResponse;
 use Pdpb\RequestHeader;
+use Metapb\Store;
 
 class PdClient
 {
     private GrpcClient $grpc;
     private string $pdAddress;
     private ?int $clusterId = null;
+    private array $storeCache = [];
     
     public function __construct(string $pdAddress)
     {
@@ -31,7 +35,7 @@ class PdClient
     {
         $request = new GetRegionRequest();
         $request->setHeader($this->createHeader());
-        $request->setKey($key);
+        $request->setRegionKey($key);
         
         try {
             $response = $this->grpc->call(
@@ -67,6 +71,58 @@ class PdClient
                     $this->clusterId = (int)$matches[1];
                     // Retry with correct cluster_id
                     return $this->getRegion($key);
+                }
+            }
+            throw $e;
+        }
+    }
+    
+    /**
+     * Get store information from PD
+     * 
+     * @param int $storeId Store ID
+     * @return Store|null Store information or null if not found
+     */
+    public function getStore(int $storeId): ?Store
+    {
+        // Check cache first
+        if (isset($this->storeCache[$storeId])) {
+            return $this->storeCache[$storeId];
+        }
+        
+        $request = new GetStoreRequest();
+        $request->setHeader($this->createHeader());
+        $request->setStoreId($storeId);
+        
+        try {
+            $response = $this->grpc->call(
+                $this->pdAddress,
+                'pdpb.PD',
+                'GetStore',
+                $request,
+                GetStoreResponse::class
+            );
+            
+            // Extract cluster_id from response for future requests
+            $respHeader = $response->getHeader();
+            if ($respHeader && $this->clusterId === null) {
+                $this->clusterId = $respHeader->getClusterId();
+            }
+            
+            $store = $response->getStore();
+            if ($store) {
+                $this->storeCache[$storeId] = $store;
+            }
+            
+            return $store;
+        } catch (\RuntimeException $e) {
+            // If we got cluster_id mismatch, extract it from error and retry
+            if (strpos($e->getMessage(), 'mismatch cluster id') !== false) {
+                preg_match('/need (\d+) but got/', $e->getMessage(), $matches);
+                if (isset($matches[1])) {
+                    $this->clusterId = (int)$matches[1];
+                    // Retry with correct cluster_id
+                    return $this->getStore($storeId);
                 }
             }
             throw $e;

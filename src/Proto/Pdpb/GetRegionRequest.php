@@ -19,9 +19,13 @@ class GetRegionRequest extends \Google\Protobuf\Internal\Message
      */
     protected $header = null;
     /**
-     * Generated from protobuf field <code>bytes key = 2;</code>
+     * Generated from protobuf field <code>bytes region_key = 2;</code>
      */
-    protected $key = '';
+    protected $region_key = '';
+    /**
+     * Generated from protobuf field <code>bool need_buckets = 3;</code>
+     */
+    protected $need_buckets = false;
 
     /**
      * Constructor.
@@ -30,7 +34,8 @@ class GetRegionRequest extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type \Pdpb\RequestHeader $header
-     *     @type string $key
+     *     @type string $region_key
+     *     @type bool $need_buckets
      * }
      */
     public function __construct($data = NULL) {
@@ -71,23 +76,45 @@ class GetRegionRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bytes key = 2;</code>
+     * Generated from protobuf field <code>bytes region_key = 2;</code>
      * @return string
      */
-    public function getKey()
+    public function getRegionKey()
     {
-        return $this->key;
+        return $this->region_key;
     }
 
     /**
-     * Generated from protobuf field <code>bytes key = 2;</code>
+     * Generated from protobuf field <code>bytes region_key = 2;</code>
      * @param string $var
      * @return $this
      */
-    public function setKey($var)
+    public function setRegionKey($var)
     {
         GPBUtil::checkString($var, False);
-        $this->key = $var;
+        $this->region_key = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool need_buckets = 3;</code>
+     * @return bool
+     */
+    public function getNeedBuckets()
+    {
+        return $this->need_buckets;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool need_buckets = 3;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setNeedBuckets($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->need_buckets = $var;
 
         return $this;
     }

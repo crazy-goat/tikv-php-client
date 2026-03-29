@@ -10,13 +10,13 @@ use Google\Protobuf\Internal\GPBUtil;
 use Google\Protobuf\RepeatedField;
 
 /**
- * ResponseHeader is returned by PD
- *
  * Generated from protobuf message <code>pdpb.ResponseHeader</code>
  */
 class ResponseHeader extends \Google\Protobuf\Internal\Message
 {
     /**
+     * cluster_id is the ID of the cluster which sent the response.
+     *
      * Generated from protobuf field <code>uint64 cluster_id = 1;</code>
      */
     protected $cluster_id = 0;
@@ -32,6 +32,7 @@ class ResponseHeader extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int|string $cluster_id
+     *           cluster_id is the ID of the cluster which sent the response.
      *     @type \Pdpb\Error $error
      * }
      */
@@ -41,6 +42,8 @@ class ResponseHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * cluster_id is the ID of the cluster which sent the response.
+     *
      * Generated from protobuf field <code>uint64 cluster_id = 1;</code>
      * @return int|string
      */
@@ -50,6 +53,8 @@ class ResponseHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * cluster_id is the ID of the cluster which sent the response.
+     *
      * Generated from protobuf field <code>uint64 cluster_id = 1;</code>
      * @param int|string $var
      * @return $this

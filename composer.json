@@ -20,7 +20,9 @@
             "CrazyGoat\\TiKV\\Client\\": "src/Client/",
             "Kvrpcpb\\": "src/Proto/Kvrpcpb/",
             "Pdpb\\": "src/Proto/Pdpb/",
-            "GPBMetadata\\": "src/Proto/GPBMetadata/"
+            "Metapb\\": "src/Proto/Metapb/",
+            "GPBMetadata\\": "src/Proto/GPBMetadata/",
+            "GPBMetadata\\Gogoproto\\": "src/Proto/GPBMetadata/Gogoproto/"
         }
     },
     "autoload-dev": {

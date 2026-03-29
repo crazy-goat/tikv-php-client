@@ -10,32 +10,37 @@ use Google\Protobuf\Internal\GPBUtil;
 use Google\Protobuf\RepeatedField;
 
 /**
- * Minimal Region from metapb
- *
  * Generated from protobuf message <code>pdpb.Region</code>
  */
 class Region extends \Google\Protobuf\Internal\Message
 {
     /**
-     * Generated from protobuf field <code>uint64 id = 1;</code>
+     * Generated from protobuf field <code>.metapb.Region region = 1;</code>
      */
-    protected $id = 0;
+    protected $region = null;
     /**
-     * Generated from protobuf field <code>bytes start_key = 2;</code>
+     * Generated from protobuf field <code>.metapb.Peer leader = 2;</code>
      */
-    protected $start_key = '';
+    protected $leader = null;
     /**
-     * Generated from protobuf field <code>bytes end_key = 3;</code>
+     * Leader considers that these peers are down.
+     *
+     * Generated from protobuf field <code>repeated .pdpb.PeerStats down_peers = 3;</code>
      */
-    protected $end_key = '';
+    private $down_peers;
     /**
-     * Generated from protobuf field <code>.pdpb.RegionEpoch region_epoch = 4;</code>
+     * Pending peers are the peers that the leader can't consider as
+     * working followers.
+     *
+     * Generated from protobuf field <code>repeated .metapb.Peer pending_peers = 4;</code>
      */
-    protected $region_epoch = null;
+    private $pending_peers;
     /**
-     * Generated from protobuf field <code>repeated .pdpb.Peer peers = 5;</code>
+     * buckets isn't nil only when need_buckets is true.
+     *
+     * Generated from protobuf field <code>.metapb.Buckets buckets = 5;</code>
      */
-    private $peers;
+    protected $buckets = null;
 
     /**
      * Constructor.
@@ -43,11 +48,15 @@ class Region extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type int|string $id
-     *     @type string $start_key
-     *     @type string $end_key
-     *     @type \Pdpb\RegionEpoch $region_epoch
-     *     @type \Pdpb\Peer[] $peers
+     *     @type \Metapb\Region $region
+     *     @type \Metapb\Peer $leader
+     *     @type \Pdpb\PeerStats[] $down_peers
+     *           Leader considers that these peers are down.
+     *     @type \Metapb\Peer[] $pending_peers
+     *           Pending peers are the peers that the leader can't consider as
+     *           working followers.
+     *     @type \Metapb\Buckets $buckets
+     *           buckets isn't nil only when need_buckets is true.
      * }
      */
     public function __construct($data = NULL) {
@@ -56,121 +65,155 @@ class Region extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint64 id = 1;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.metapb.Region region = 1;</code>
+     * @return \Metapb\Region|null
      */
-    public function getId()
+    public function getRegion()
     {
-        return $this->id;
+        return $this->region;
+    }
+
+    public function hasRegion()
+    {
+        return isset($this->region);
+    }
+
+    public function clearRegion()
+    {
+        unset($this->region);
     }
 
     /**
-     * Generated from protobuf field <code>uint64 id = 1;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.metapb.Region region = 1;</code>
+     * @param \Metapb\Region $var
      * @return $this
      */
-    public function setId($var)
+    public function setRegion($var)
     {
-        GPBUtil::checkUint64($var);
-        $this->id = $var;
+        GPBUtil::checkMessage($var, \Metapb\Region::class);
+        $this->region = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>bytes start_key = 2;</code>
-     * @return string
+     * Generated from protobuf field <code>.metapb.Peer leader = 2;</code>
+     * @return \Metapb\Peer|null
      */
-    public function getStartKey()
+    public function getLeader()
     {
-        return $this->start_key;
+        return $this->leader;
+    }
+
+    public function hasLeader()
+    {
+        return isset($this->leader);
+    }
+
+    public function clearLeader()
+    {
+        unset($this->leader);
     }
 
     /**
-     * Generated from protobuf field <code>bytes start_key = 2;</code>
-     * @param string $var
+     * Generated from protobuf field <code>.metapb.Peer leader = 2;</code>
+     * @param \Metapb\Peer $var
      * @return $this
      */
-    public function setStartKey($var)
+    public function setLeader($var)
     {
-        GPBUtil::checkString($var, False);
-        $this->start_key = $var;
+        GPBUtil::checkMessage($var, \Metapb\Peer::class);
+        $this->leader = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>bytes end_key = 3;</code>
-     * @return string
+     * Leader considers that these peers are down.
+     *
+     * Generated from protobuf field <code>repeated .pdpb.PeerStats down_peers = 3;</code>
+     * @return RepeatedField<\Pdpb\PeerStats>
      */
-    public function getEndKey()
+    public function getDownPeers()
     {
-        return $this->end_key;
+        return $this->down_peers;
     }
 
     /**
-     * Generated from protobuf field <code>bytes end_key = 3;</code>
-     * @param string $var
+     * Leader considers that these peers are down.
+     *
+     * Generated from protobuf field <code>repeated .pdpb.PeerStats down_peers = 3;</code>
+     * @param \Pdpb\PeerStats[] $var
      * @return $this
      */
-    public function setEndKey($var)
+    public function setDownPeers($var)
     {
-        GPBUtil::checkString($var, False);
-        $this->end_key = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\PeerStats::class);
+        $this->down_peers = $arr;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>.pdpb.RegionEpoch region_epoch = 4;</code>
-     * @return \Pdpb\RegionEpoch|null
+     * Pending peers are the peers that the leader can't consider as
+     * working followers.
+     *
+     * Generated from protobuf field <code>repeated .metapb.Peer pending_peers = 4;</code>
+     * @return RepeatedField<\Metapb\Peer>
      */
-    public function getRegionEpoch()
+    public function getPendingPeers()
     {
-        return $this->region_epoch;
-    }
-
-    public function hasRegionEpoch()
-    {
-        return isset($this->region_epoch);
-    }
-
-    public function clearRegionEpoch()
-    {
-        unset($this->region_epoch);
+        return $this->pending_peers;
     }
 
     /**
-     * Generated from protobuf field <code>.pdpb.RegionEpoch region_epoch = 4;</code>
-     * @param \Pdpb\RegionEpoch $var
+     * Pending peers are the peers that the leader can't consider as
+     * working followers.
+     *
+     * Generated from protobuf field <code>repeated .metapb.Peer pending_peers = 4;</code>
+     * @param \Metapb\Peer[] $var
      * @return $this
      */
-    public function setRegionEpoch($var)
+    public function setPendingPeers($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RegionEpoch::class);
-        $this->region_epoch = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Peer::class);
+        $this->pending_peers = $arr;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>repeated .pdpb.Peer peers = 5;</code>
-     * @return RepeatedField<\Pdpb\Peer>
+     * buckets isn't nil only when need_buckets is true.
+     *
+     * Generated from protobuf field <code>.metapb.Buckets buckets = 5;</code>
+     * @return \Metapb\Buckets|null
      */
-    public function getPeers()
+    public function getBuckets()
     {
-        return $this->peers;
+        return $this->buckets;
+    }
+
+    public function hasBuckets()
+    {
+        return isset($this->buckets);
+    }
+
+    public function clearBuckets()
+    {
+        unset($this->buckets);
     }
 
     /**
-     * Generated from protobuf field <code>repeated .pdpb.Peer peers = 5;</code>
-     * @param \Pdpb\Peer[] $var
+     * buckets isn't nil only when need_buckets is true.
+     *
+     * Generated from protobuf field <code>.metapb.Buckets buckets = 5;</code>
+     * @param \Metapb\Buckets $var
      * @return $this
      */
-    public function setPeers($var)
+    public function setBuckets($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\Peer::class);
-        $this->peers = $arr;
+        GPBUtil::checkMessage($var, \Metapb\Buckets::class);
+        $this->buckets = $var;
 
         return $this;
     }

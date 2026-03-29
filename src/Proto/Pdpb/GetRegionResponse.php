@@ -19,13 +19,32 @@ class GetRegionResponse extends \Google\Protobuf\Internal\Message
      */
     protected $header = null;
     /**
-     * Generated from protobuf field <code>.pdpb.Region region = 2;</code>
+     * Generated from protobuf field <code>.metapb.Region region = 2;</code>
      */
     protected $region = null;
     /**
-     * Generated from protobuf field <code>.pdpb.Peer leader = 3;</code>
+     * Generated from protobuf field <code>.metapb.Peer leader = 3;</code>
      */
     protected $leader = null;
+    /**
+     * Leader considers that these peers are down.
+     *
+     * Generated from protobuf field <code>repeated .pdpb.PeerStats down_peers = 5;</code>
+     */
+    private $down_peers;
+    /**
+     * Pending peers are the peers that the leader can't consider as
+     * working followers.
+     *
+     * Generated from protobuf field <code>repeated .metapb.Peer pending_peers = 6;</code>
+     */
+    private $pending_peers;
+    /**
+     * buckets isn't nil if GetRegion.* requests set need_buckets.
+     *
+     * Generated from protobuf field <code>.metapb.Buckets buckets = 7;</code>
+     */
+    protected $buckets = null;
 
     /**
      * Constructor.
@@ -34,8 +53,15 @@ class GetRegionResponse extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type \Pdpb\ResponseHeader $header
-     *     @type \Pdpb\Region $region
-     *     @type \Pdpb\Peer $leader
+     *     @type \Metapb\Region $region
+     *     @type \Metapb\Peer $leader
+     *     @type \Pdpb\PeerStats[] $down_peers
+     *           Leader considers that these peers are down.
+     *     @type \Metapb\Peer[] $pending_peers
+     *           Pending peers are the peers that the leader can't consider as
+     *           working followers.
+     *     @type \Metapb\Buckets $buckets
+     *           buckets isn't nil if GetRegion.* requests set need_buckets.
      * }
      */
     public function __construct($data = NULL) {
@@ -76,8 +102,8 @@ class GetRegionResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.pdpb.Region region = 2;</code>
-     * @return \Pdpb\Region|null
+     * Generated from protobuf field <code>.metapb.Region region = 2;</code>
+     * @return \Metapb\Region|null
      */
     public function getRegion()
     {
@@ -95,21 +121,21 @@ class GetRegionResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.pdpb.Region region = 2;</code>
-     * @param \Pdpb\Region $var
+     * Generated from protobuf field <code>.metapb.Region region = 2;</code>
+     * @param \Metapb\Region $var
      * @return $this
      */
     public function setRegion($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Region::class);
+        GPBUtil::checkMessage($var, \Metapb\Region::class);
         $this->region = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>.pdpb.Peer leader = 3;</code>
-     * @return \Pdpb\Peer|null
+     * Generated from protobuf field <code>.metapb.Peer leader = 3;</code>
+     * @return \Metapb\Peer|null
      */
     public function getLeader()
     {
@@ -127,14 +153,104 @@ class GetRegionResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.pdpb.Peer leader = 3;</code>
-     * @param \Pdpb\Peer $var
+     * Generated from protobuf field <code>.metapb.Peer leader = 3;</code>
+     * @param \Metapb\Peer $var
      * @return $this
      */
     public function setLeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Peer::class);
+        GPBUtil::checkMessage($var, \Metapb\Peer::class);
         $this->leader = $var;
+
+        return $this;
+    }
+
+    /**
+     * Leader considers that these peers are down.
+     *
+     * Generated from protobuf field <code>repeated .pdpb.PeerStats down_peers = 5;</code>
+     * @return RepeatedField<\Pdpb\PeerStats>
+     */
+    public function getDownPeers()
+    {
+        return $this->down_peers;
+    }
+
+    /**
+     * Leader considers that these peers are down.
+     *
+     * Generated from protobuf field <code>repeated .pdpb.PeerStats down_peers = 5;</code>
+     * @param \Pdpb\PeerStats[] $var
+     * @return $this
+     */
+    public function setDownPeers($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\PeerStats::class);
+        $this->down_peers = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Pending peers are the peers that the leader can't consider as
+     * working followers.
+     *
+     * Generated from protobuf field <code>repeated .metapb.Peer pending_peers = 6;</code>
+     * @return RepeatedField<\Metapb\Peer>
+     */
+    public function getPendingPeers()
+    {
+        return $this->pending_peers;
+    }
+
+    /**
+     * Pending peers are the peers that the leader can't consider as
+     * working followers.
+     *
+     * Generated from protobuf field <code>repeated .metapb.Peer pending_peers = 6;</code>
+     * @param \Metapb\Peer[] $var
+     * @return $this
+     */
+    public function setPendingPeers($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Peer::class);
+        $this->pending_peers = $arr;
+
+        return $this;
+    }
+
+    /**
+     * buckets isn't nil if GetRegion.* requests set need_buckets.
+     *
+     * Generated from protobuf field <code>.metapb.Buckets buckets = 7;</code>
+     * @return \Metapb\Buckets|null
+     */
+    public function getBuckets()
+    {
+        return $this->buckets;
+    }
+
+    public function hasBuckets()
+    {
+        return isset($this->buckets);
+    }
+
+    public function clearBuckets()
+    {
+        unset($this->buckets);
+    }
+
+    /**
+     * buckets isn't nil if GetRegion.* requests set need_buckets.
+     *
+     * Generated from protobuf field <code>.metapb.Buckets buckets = 7;</code>
+     * @param \Metapb\Buckets $var
+     * @return $this
+     */
+    public function setBuckets($var)
+    {
+        GPBUtil::checkMessage($var, \Metapb\Buckets::class);
+        $this->buckets = $var;
 
         return $this;
     }
