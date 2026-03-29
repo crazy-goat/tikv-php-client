@@ -16,7 +16,9 @@ This directory contains detailed implementation plans for all RawKV features.
 9. **RawBatchDelete** - Batch key deletion ✅
 10. **RawScan** - Range scanning ✅
 11. **ScanPrefix** - Prefix-based scanning ✅
-12. **ReverseScan** - Reverse range scanning ✅
+12. **ReverseScan** - Reverse range scanning (native reverse=true) ✅
+13. **DeleteRange** - Delete all keys in range ✅
+14. **DeletePrefix** - Delete all keys by prefix ✅
 
 ### 🚧 Planned (in priority order)
 
@@ -32,9 +34,9 @@ This directory contains detailed implementation plans for all RawKV features.
 - ~~[11-scan-prefix.md](11-scan-prefix.md) - Prefix scanning~~
 - ~~[05-raw-reverse-scan.md](05-raw-reverse-scan.md) - Reverse scanning~~
 
-#### Phase 3: Range Operations (Medium Priority)
-- [06-raw-delete-range.md](06-raw-delete-range.md) - Delete key range
-- [12-delete-prefix.md](12-delete-prefix.md) - Delete by prefix
+#### Phase 3: Range Operations (Medium Priority) ✅ COMPLETED
+- ~~[06-raw-delete-range.md](06-raw-delete-range.md) - Delete key range~~
+- ~~[12-delete-prefix.md](12-delete-prefix.md) - Delete by prefix~~
 
 #### Phase 4: TTL Operations (Medium Priority)
 - [07-put-with-ttl.md](07-put-with-ttl.md) - Store with expiration

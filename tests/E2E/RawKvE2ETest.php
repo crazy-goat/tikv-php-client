@@ -890,4 +890,261 @@ class RawKvE2ETest extends TestCase
         $this->assertEquals('rev-ml-049', $results[0]['key']);
         $this->assertEquals('rev-ml-040', $results[9]['key']);
     }
+    
+    // ========================================================================
+    // DeleteRange
+    // ========================================================================
+    
+    public function testDeleteRangeBasic(): void
+    {
+        $pairs = ['dr-a' => 'va', 'dr-b' => 'vb', 'dr-c' => 'vc'];
+        $this->putAndTrack($pairs);
+        
+        // Delete range [dr-a, dr-d) — should delete all three
+        self::$client->deleteRange('dr-a', 'dr-d');
+        
+        $this->assertNull(self::$client->get('dr-a'));
+        $this->assertNull(self::$client->get('dr-b'));
+        $this->assertNull(self::$client->get('dr-c'));
+    }
+    
+    public function testDeleteRangePartial(): void
+    {
+        $pairs = ['dr-part-a' => 'va', 'dr-part-b' => 'vb', 'dr-part-c' => 'vc'];
+        $this->putAndTrack($pairs);
+        
+        // Delete only [dr-part-a, dr-part-c) — should delete a and b, keep c
+        self::$client->deleteRange('dr-part-a', 'dr-part-c');
+        
+        $this->assertNull(self::$client->get('dr-part-a'));
+        $this->assertNull(self::$client->get('dr-part-b'));
+        $this->assertEquals('vc', self::$client->get('dr-part-c'), 'endKey is exclusive — dr-part-c should survive');
+    }
+    
+    public function testDeleteRangeStartKeyIsInclusive(): void
+    {
+        $this->putOneAndTrack('dr-inc-a', 'va');
+        $this->putOneAndTrack('dr-inc-b', 'vb');
+        
+        self::$client->deleteRange('dr-inc-a', 'dr-inc-c');
+        
+        $this->assertNull(self::$client->get('dr-inc-a'), 'startKey should be inclusive');
+    }
+    
+    public function testDeleteRangeEndKeyIsExclusive(): void
+    {
+        $this->putOneAndTrack('dr-exc-a', 'va');
+        $this->putOneAndTrack('dr-exc-b', 'vb');
+        
+        self::$client->deleteRange('dr-exc-a', 'dr-exc-b');
+        
+        $this->assertNull(self::$client->get('dr-exc-a'));
+        $this->assertEquals('vb', self::$client->get('dr-exc-b'), 'endKey should be exclusive');
+    }
+    
+    public function testDeleteRangeEmptyRange(): void
+    {
+        $this->putOneAndTrack('dr-empty-a', 'va');
+        
+        // Delete a range with no keys
+        self::$client->deleteRange('dr-empty-zzz', 'dr-empty-zzzz');
+        
+        // Original key should be untouched
+        $this->assertEquals('va', self::$client->get('dr-empty-a'));
+    }
+    
+    public function testDeleteRangeSameStartAndEnd(): void
+    {
+        $this->putOneAndTrack('dr-same', 'val');
+        
+        // Same start and end — should be a no-op
+        self::$client->deleteRange('dr-same', 'dr-same');
+        
+        $this->assertEquals('val', self::$client->get('dr-same'));
+    }
+    
+    public function testDeleteRangeSingleKey(): void
+    {
+        $this->putOneAndTrack('dr-single', 'val');
+        
+        // Range [dr-single, dr-single\x00) contains exactly one key
+        self::$client->deleteRange('dr-single', "dr-single\x00");
+        
+        $this->assertNull(self::$client->get('dr-single'));
+    }
+    
+    public function testDeleteRangeVerifyWithScan(): void
+    {
+        $pairs = [
+            'dr-scan-a' => 'va',
+            'dr-scan-b' => 'vb',
+            'dr-scan-c' => 'vc',
+            'dr-scan-d' => 'vd',
+        ];
+        $this->putAndTrack($pairs);
+        
+        // Delete middle range [dr-scan-b, dr-scan-d)
+        self::$client->deleteRange('dr-scan-b', 'dr-scan-d');
+        
+        $results = self::$client->scan('dr-scan-', 'dr-scan.');
+        $keys = array_column($results, 'key');
+        
+        $this->assertCount(2, $results);
+        $this->assertEquals(['dr-scan-a', 'dr-scan-d'], $keys);
+    }
+    
+    public function testDeleteRangeManyKeys(): void
+    {
+        $pairs = [];
+        for ($i = 0; $i < 50; $i++) {
+            $pairs[sprintf('dr-many-%03d', $i)] = "value-$i";
+        }
+        $this->putAndTrack($pairs);
+        
+        // Verify all exist
+        $results = self::$client->scan('dr-many-', 'dr-many.');
+        $this->assertCount(50, $results);
+        
+        // Delete all
+        self::$client->deleteRange('dr-many-', 'dr-many.');
+        
+        // Verify all gone
+        $results = self::$client->scan('dr-many-', 'dr-many.');
+        $this->assertCount(0, $results);
+    }
+    
+    public function testDeleteRangeWithBinaryKeys(): void
+    {
+        $k1 = "dr-bin-\x01";
+        $k2 = "dr-bin-\x02";
+        $k3 = "dr-bin-\x03";
+        
+        $this->putOneAndTrack($k1, 'v1');
+        $this->putOneAndTrack($k2, 'v2');
+        $this->putOneAndTrack($k3, 'v3');
+        
+        self::$client->deleteRange("dr-bin-\x01", "dr-bin-\x03");
+        
+        $this->assertNull(self::$client->get($k1));
+        $this->assertNull(self::$client->get($k2));
+        $this->assertEquals('v3', self::$client->get($k3), 'endKey is exclusive');
+    }
+    
+    public function testDeleteRangeDoesNotAffectOutsideKeys(): void
+    {
+        $this->putOneAndTrack('dr-out-before', 'before');
+        $this->putOneAndTrack('dr-out-target-a', 'ta');
+        $this->putOneAndTrack('dr-out-target-b', 'tb');
+        $this->putOneAndTrack('dr-out-zafter', 'after');
+        
+        self::$client->deleteRange('dr-out-target-', 'dr-out-target.');
+        
+        $this->assertEquals('before', self::$client->get('dr-out-before'));
+        $this->assertNull(self::$client->get('dr-out-target-a'));
+        $this->assertNull(self::$client->get('dr-out-target-b'));
+        $this->assertEquals('after', self::$client->get('dr-out-zafter'));
+    }
+    
+    // ========================================================================
+    // DeletePrefix
+    // ========================================================================
+    
+    public function testDeletePrefixBasic(): void
+    {
+        $pairs = [
+            'dp-user:alice' => 'Alice',
+            'dp-user:bob' => 'Bob',
+            'dp-user:charlie' => 'Charlie',
+            'dp-other:data' => 'Other',
+        ];
+        $this->putAndTrack($pairs);
+        
+        self::$client->deletePrefix('dp-user:');
+        
+        $this->assertNull(self::$client->get('dp-user:alice'));
+        $this->assertNull(self::$client->get('dp-user:bob'));
+        $this->assertNull(self::$client->get('dp-user:charlie'));
+        $this->assertEquals('Other', self::$client->get('dp-other:data'), 'Keys outside prefix should survive');
+    }
+    
+    public function testDeletePrefixNoMatches(): void
+    {
+        $this->putOneAndTrack('dp-survive', 'val');
+        
+        // Delete a prefix that doesn't match anything
+        self::$client->deletePrefix('dp-nonexistent-');
+        
+        $this->assertEquals('val', self::$client->get('dp-survive'));
+    }
+    
+    public function testDeletePrefixVerifyWithScanPrefix(): void
+    {
+        $pairs = [
+            'dp-scan-a' => 'va',
+            'dp-scan-b' => 'vb',
+            'dp-scan-c' => 'vc',
+        ];
+        $this->putAndTrack($pairs);
+        
+        // Verify keys exist
+        $results = self::$client->scanPrefix('dp-scan-');
+        $this->assertCount(3, $results);
+        
+        // Delete by prefix
+        self::$client->deletePrefix('dp-scan-');
+        
+        // Verify all gone
+        $results = self::$client->scanPrefix('dp-scan-');
+        $this->assertCount(0, $results);
+    }
+    
+    public function testDeletePrefixManyKeys(): void
+    {
+        $pairs = [];
+        for ($i = 0; $i < 50; $i++) {
+            $pairs[sprintf('dp-many-%03d', $i)] = "value-$i";
+        }
+        $this->putAndTrack($pairs);
+        
+        self::$client->deletePrefix('dp-many-');
+        
+        $results = self::$client->scanPrefix('dp-many-');
+        $this->assertCount(0, $results);
+    }
+    
+    public function testDeletePrefixEmptyStringThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        
+        self::$client->deletePrefix('');
+    }
+    
+    public function testDeletePrefixThenReinsert(): void
+    {
+        $this->putOneAndTrack('dp-reins-a', 'old-a');
+        $this->putOneAndTrack('dp-reins-b', 'old-b');
+        
+        self::$client->deletePrefix('dp-reins-');
+        
+        $this->assertNull(self::$client->get('dp-reins-a'));
+        
+        // Re-insert
+        $this->putOneAndTrack('dp-reins-a', 'new-a');
+        
+        $this->assertEquals('new-a', self::$client->get('dp-reins-a'));
+        $this->assertNull(self::$client->get('dp-reins-b'));
+    }
+    
+    public function testDeletePrefixDoesNotAffectSiblingPrefixes(): void
+    {
+        $this->putOneAndTrack('dp-sib-aaa-1', 'v1');
+        $this->putOneAndTrack('dp-sib-aab-1', 'v2');
+        $this->putOneAndTrack('dp-sib-aac-1', 'v3');
+        
+        self::$client->deletePrefix('dp-sib-aab');
+        
+        $this->assertEquals('v1', self::$client->get('dp-sib-aaa-1'));
+        $this->assertNull(self::$client->get('dp-sib-aab-1'));
+        $this->assertEquals('v3', self::$client->get('dp-sib-aac-1'));
+    }
 }

@@ -20,6 +20,8 @@ use CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawScanRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawScanResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeResponse;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
 use CrazyGoat\Proto\Metapb\Peer;
 use CrazyGoat\Proto\Metapb\RegionEpoch;
@@ -379,6 +381,91 @@ class RawKvClient
                 $request,
                 RawBatchDeleteResponse::class
             );
+            
+            return null;
+        });
+    }
+    
+    /**
+     * Delete all keys in range [startKey, endKey)
+     * 
+     * Sends RawDeleteRange RPC to each region covering the range.
+     * This is an atomic operation per region — within a single region, either
+     * all keys in the range are deleted or none are (on error).
+     * 
+     * @param string $startKey Start key (inclusive)
+     * @param string $endKey End key (exclusive)
+     * @throws \RuntimeException If any region fails after retries
+     */
+    public function deleteRange(string $startKey, string $endKey): void
+    {
+        $this->ensureOpen();
+        
+        if ($startKey === $endKey) {
+            return;
+        }
+        
+        $regions = $this->pdClient->scanRegions($startKey, $endKey, 0);
+        
+        foreach ($regions as $regionInfo) {
+            $regionStart = $regionInfo['start_key'];
+            $regionEnd = $regionInfo['end_key'];
+            
+            // Clamp range to region boundaries
+            $rangeStart = ($startKey > $regionStart) ? $startKey : $regionStart;
+            $rangeEnd = ($endKey === '' || ($regionEnd !== '' && $endKey > $regionEnd)) ? $regionEnd : $endKey;
+            
+            if ($rangeStart >= $rangeEnd && $rangeEnd !== '') {
+                continue;
+            }
+            
+            $this->executeDeleteRangeForRegion($regionInfo, $rangeStart, $rangeEnd);
+        }
+    }
+    
+    /**
+     * Delete all keys with the given prefix
+     * 
+     * Convenience wrapper around deleteRange() that calculates the end key
+     * from the prefix. Equivalent to deleteRange(prefix, nextPrefix(prefix)).
+     * 
+     * @param string $prefix Key prefix — all keys starting with this will be deleted
+     * @throws \RuntimeException If any region fails after retries
+     */
+    public function deletePrefix(string $prefix): void
+    {
+        $this->ensureOpen();
+        
+        if ($prefix === '') {
+            throw new \InvalidArgumentException('Prefix must not be empty — refusing to delete all keys');
+        }
+        
+        $endKey = $this->calculatePrefixEndKey($prefix);
+        $this->deleteRange($prefix, $endKey);
+    }
+    
+    private function executeDeleteRangeForRegion(array $regionInfo, string $startKey, string $endKey): void
+    {
+        $this->executeWithRetry($startKey, function() use ($regionInfo, $startKey, $endKey) {
+            $tikvAddress = $this->getTikvAddress($regionInfo['leader_store_id']);
+            
+            $request = new RawDeleteRangeRequest();
+            $request->setContext($this->createContext($regionInfo));
+            $request->setStartKey($startKey);
+            $request->setEndKey($endKey);
+            
+            $response = $this->grpc->call(
+                $tikvAddress,
+                'tikvpb.Tikv',
+                'RawDeleteRange',
+                $request,
+                RawDeleteRangeResponse::class
+            );
+            
+            $error = $response->getError();
+            if ($error !== '') {
+                throw new \RuntimeException("RawDeleteRange failed: {$error}");
+            }
             
             return null;
         });

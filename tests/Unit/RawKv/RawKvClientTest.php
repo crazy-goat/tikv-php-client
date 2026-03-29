@@ -120,4 +120,38 @@ class RawKvClientTest extends TestCase
         
         $client->reverseScan('start', 'end');
     }
+    
+    public function testDeleteRangeThrowsWhenClosed(): void
+    {
+        $pdClient = $this->createMock(PdClient::class);
+        $client = new RawKvClient($pdClient);
+        $client->close();
+        
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Client is closed');
+        
+        $client->deleteRange('start', 'end');
+    }
+    
+    public function testDeletePrefixThrowsWhenClosed(): void
+    {
+        $pdClient = $this->createMock(PdClient::class);
+        $client = new RawKvClient($pdClient);
+        $client->close();
+        
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Client is closed');
+        
+        $client->deletePrefix('prefix');
+    }
+    
+    public function testDeletePrefixThrowsOnEmptyPrefix(): void
+    {
+        $pdClient = $this->createMock(PdClient::class);
+        $client = new RawKvClient($pdClient);
+        
+        $this->expectException(\InvalidArgumentException::class);
+        
+        $client->deletePrefix('');
+    }
 }
