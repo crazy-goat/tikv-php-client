@@ -43,9 +43,6 @@ class GrpcClient
             \Grpc\OP_RECV_STATUS_ON_CLIENT => true,
         ]);
         
-        // Debug: print raw response
-        error_log("Raw event: " . print_r($event, true));
-        
         // Convert object to array if needed
         if (is_object($event)) {
             $event = (array) $event;
@@ -67,18 +64,12 @@ class GrpcClient
         }
         
         $message = $event['message'] ?? null;
-        
-        // Debug: print message
-        error_log("Raw message (hex): " . bin2hex($message ?? ''));
-        
         $response = new $responseClass();
         
         if ($message !== null && $message !== '') {
             try {
                 $response->mergeFromString($message);
             } catch (\Exception $e) {
-                error_log("Parse error: " . $e->getMessage());
-                error_log("Message length: " . strlen($message));
                 throw $e;
             }
         }
