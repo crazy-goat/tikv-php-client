@@ -38,7 +38,7 @@ class RawKvE2ETest extends TestCase
     protected function tearDown(): void
     {
         // Clean up test keys after each test
-        $testKeys = ['test-key', 'test-key-1', 'test-key-2', 'hello'];
+        $testKeys = ['test-key', 'test-key-1', 'test-key-2', 'hello', 'batch-key-1', 'batch-key-2', 'batch-key-3'];
         foreach ($testKeys as $key) {
             try {
                 self::$client->delete($key);
@@ -147,5 +147,130 @@ class RawKvE2ETest extends TestCase
         $result = self::$client->get($key);
         
         $this->assertEquals($value, $result);
+    }
+    
+    public function testBatchPutAndBatchGet(): void
+    {
+        $pairs = [
+            'batch-key-1' => 'value-1',
+            'batch-key-2' => 'value-2',
+            'batch-key-3' => 'value-3',
+        ];
+        
+        self::$client->batchPut($pairs);
+        
+        $results = self::$client->batchGet(array_keys($pairs));
+        
+        $this->assertEquals($pairs, $results);
+    }
+    
+    public function testBatchGetWithMissingKeys(): void
+    {
+        $existingKey = 'batch-key-1';
+        $missingKey = 'non-existent-batch-key-' . uniqid();
+        
+        self::$client->put($existingKey, 'value-1');
+        
+        $results = self::$client->batchGet([$existingKey, $missingKey]);
+        
+        $this->assertEquals('value-1', $results[$existingKey]);
+        $this->assertNull($results[$missingKey]);
+    }
+    
+    public function testBatchGetReturnsKeysInOrder(): void
+    {
+        $pairs = [
+            'batch-key-1' => 'value-1',
+            'batch-key-2' => 'value-2',
+        ];
+        
+        self::$client->batchPut($pairs);
+        
+        // Request in reverse order
+        $results = self::$client->batchGet(['batch-key-2', 'batch-key-1']);
+        
+        $this->assertEquals(['batch-key-2' => 'value-2', 'batch-key-1' => 'value-1'], $results);
+    }
+    
+    public function testBatchGetEmptyArray(): void
+    {
+        $results = self::$client->batchGet([]);
+        
+        $this->assertEquals([], $results);
+    }
+    
+    public function testBatchPutEmptyArray(): void
+    {
+        // Should not throw
+        self::$client->batchPut([]);
+        
+        $this->assertTrue(true);
+    }
+    
+    public function testBatchDelete(): void
+    {
+        $pairs = [
+            'batch-key-1' => 'value-1',
+            'batch-key-2' => 'value-2',
+        ];
+        
+        self::$client->batchPut($pairs);
+        
+        // Verify keys exist
+        $results = self::$client->batchGet(array_keys($pairs));
+        $this->assertEquals($pairs, $results);
+        
+        // Delete keys
+        self::$client->batchDelete(array_keys($pairs));
+        
+        // Verify keys are deleted
+        $results = self::$client->batchGet(array_keys($pairs));
+        $this->assertNull($results['batch-key-1']);
+        $this->assertNull($results['batch-key-2']);
+    }
+    
+    public function testBatchDeleteNonExistentKeys(): void
+    {
+        $keys = [
+            'non-existent-key-' . uniqid(),
+            'non-existent-key-' . uniqid(),
+        ];
+        
+        // Should not throw
+        self::$client->batchDelete($keys);
+        
+        $this->assertTrue(true);
+    }
+    
+    public function testBatchDeleteEmptyArray(): void
+    {
+        // Should not throw
+        self::$client->batchDelete([]);
+        
+        $this->assertTrue(true);
+    }
+    
+    public function testBatchPutOverwritesExistingKeys(): void
+    {
+        $key = 'batch-key-1';
+        
+        self::$client->put($key, 'old-value');
+        $this->assertEquals('old-value', self::$client->get($key));
+        
+        self::$client->batchPut([$key => 'new-value']);
+        $this->assertEquals('new-value', self::$client->get($key));
+    }
+    
+    public function testBatchOperationsWithBinaryData(): void
+    {
+        $pairs = [
+            'batch-key-1' => "\x00\x01\x02\x03",
+            'batch-key-2' => "\xff\xfe\xfd\xfc",
+        ];
+        
+        self::$client->batchPut($pairs);
+        $results = self::$client->batchGet(array_keys($pairs));
+        
+        $this->assertEquals($pairs, $results);
     }
 }

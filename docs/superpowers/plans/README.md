@@ -11,13 +11,18 @@ This directory contains detailed implementation plans for all RawKV features.
 4. **PD Region Discovery** - With RegionEpoch support
 5. **Retry Logic** - Automatic retry on EpochNotMatch
 6. **Region Routing** - Direct to correct TiKV node
+7. **RawBatchGet** - Batch key retrieval ✅
+8. **RawBatchPut** - Batch key storage ✅
+9. **RawBatchDelete** - Batch key deletion ✅
 
 ### 🚧 Planned (in priority order)
 
-#### Phase 1: Batch Operations (High Priority)
-- [01-raw-batch-get.md](01-raw-batch-get.md) - Batch key retrieval
-- [02-raw-batch-put.md](02-raw-batch-put.md) - Batch key storage
-- [03-raw-batch-delete.md](03-raw-batch-delete.md) - Batch key deletion
+### 🚧 Planned (in priority order)
+
+#### Phase 1: Batch Operations (High Priority) ✅ COMPLETED
+- ~~[01-raw-batch-get.md](01-raw-batch-get.md) - Batch key retrieval~~
+- ~~[02-raw-batch-put.md](02-raw-batch-put.md) - Batch key storage~~
+- ~~[03-raw-batch-delete.md](03-raw-batch-delete.md) - Batch key deletion~~
 
 #### Phase 2: Scan Operations (High Priority)
 - [04-raw-scan.md](04-raw-scan.md) - Range scanning

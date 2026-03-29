@@ -12,6 +12,13 @@ use CrazyGoat\Proto\Kvrpcpb\RawPutRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawPutResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawDeleteRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawBatchGetRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawBatchPutRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawBatchPutResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteResponse;
+use CrazyGoat\Proto\Kvrpcpb\KvPair;
 use CrazyGoat\Proto\Metapb\Peer;
 use CrazyGoat\Proto\Metapb\RegionEpoch;
 
@@ -185,6 +192,190 @@ class RawKvClient
                 'RawDelete',
                 $request,
                 RawDeleteResponse::class
+            );
+            
+            return null;
+        });
+    }
+    
+    /**
+     * Batch get multiple keys from TiKV
+     * 
+     * @param array $keys Array of keys to retrieve
+     * @return array Array of values (null for missing keys), indexed by key
+     */
+    public function batchGet(array $keys): array
+    {
+        $this->ensureOpen();
+        
+        if (empty($keys)) {
+            return [];
+        }
+        
+        // Group keys by region
+        $keysByRegion = [];
+        foreach ($keys as $key) {
+            $regionInfo = $this->getRegionInfo($key);
+            $regionId = $regionInfo['region_id'];
+            if (!isset($keysByRegion[$regionId])) {
+                $keysByRegion[$regionId] = [
+                    'region_info' => $regionInfo,
+                    'keys' => []
+                ];
+            }
+            $keysByRegion[$regionId]['keys'][] = $key;
+        }
+        
+        // Execute batch get for each region
+        $results = [];
+        foreach ($keysByRegion as $regionData) {
+            $regionResults = $this->executeBatchGetForRegion($regionData['region_info'], $regionData['keys']);
+            $results = array_merge($results, $regionResults);
+        }
+        
+        // Return results in the same order as input keys
+        $orderedResults = [];
+        foreach ($keys as $key) {
+            $orderedResults[$key] = $results[$key] ?? null;
+        }
+        
+        return $orderedResults;
+    }
+    
+    private function executeBatchGetForRegion(array $regionInfo, array $keys): array
+    {
+        return $this->executeWithRetry($keys[0], function() use ($regionInfo, $keys) {
+            $tikvAddress = $this->getTikvAddress($regionInfo['leader_store_id']);
+            
+            $request = new RawBatchGetRequest();
+            $request->setContext($this->createContext($regionInfo));
+            $request->setKeys($keys);
+            
+            $response = $this->grpc->call(
+                $tikvAddress,
+                'tikvpb.Tikv',
+                'RawBatchGet',
+                $request,
+                RawBatchGetResponse::class
+            );
+            
+            // Convert response pairs to associative array
+            $results = [];
+            foreach ($response->getPairs() as $pair) {
+                $results[$pair->getKey()] = $pair->getValue() !== '' ? $pair->getValue() : null;
+            }
+            
+            return $results;
+        });
+    }
+    
+    /**
+     * Batch put multiple key-value pairs to TiKV
+     * 
+     * @param array $keyValuePairs Associative array of key => value pairs
+     * @throws \RuntimeException If any region fails after retries
+     */
+    public function batchPut(array $keyValuePairs): void
+    {
+        $this->ensureOpen();
+        
+        if (empty($keyValuePairs)) {
+            return;
+        }
+        
+        // Group pairs by region
+        $pairsByRegion = [];
+        foreach ($keyValuePairs as $key => $value) {
+            $regionInfo = $this->getRegionInfo($key);
+            $regionId = $regionInfo['region_id'];
+            if (!isset($pairsByRegion[$regionId])) {
+                $pairsByRegion[$regionId] = [
+                    'region_info' => $regionInfo,
+                    'pairs' => []
+                ];
+            }
+            $pair = new KvPair();
+            $pair->setKey($key);
+            $pair->setValue($value);
+            $pairsByRegion[$regionId]['pairs'][] = $pair;
+        }
+        
+        // Execute batch put for each region
+        foreach ($pairsByRegion as $regionData) {
+            $this->executeBatchPutForRegion($regionData['region_info'], $regionData['pairs']);
+        }
+    }
+    
+    private function executeBatchPutForRegion(array $regionInfo, array $pairs): void
+    {
+        $this->executeWithRetry($pairs[0]->getKey(), function() use ($regionInfo, $pairs) {
+            $tikvAddress = $this->getTikvAddress($regionInfo['leader_store_id']);
+            
+            $request = new RawBatchPutRequest();
+            $request->setContext($this->createContext($regionInfo));
+            $request->setPairs($pairs);
+            
+            $this->grpc->call(
+                $tikvAddress,
+                'tikvpb.Tikv',
+                'RawBatchPut',
+                $request,
+                RawBatchPutResponse::class
+            );
+            
+            return null;
+        });
+    }
+    
+    /**
+     * Batch delete multiple keys from TiKV
+     * 
+     * @param array $keys Array of keys to delete
+     * @throws \RuntimeException If any region fails after retries
+     */
+    public function batchDelete(array $keys): void
+    {
+        $this->ensureOpen();
+        
+        if (empty($keys)) {
+            return;
+        }
+        
+        // Group keys by region
+        $keysByRegion = [];
+        foreach ($keys as $key) {
+            $regionInfo = $this->getRegionInfo($key);
+            $regionId = $regionInfo['region_id'];
+            if (!isset($keysByRegion[$regionId])) {
+                $keysByRegion[$regionId] = [
+                    'region_info' => $regionInfo,
+                    'keys' => []
+                ];
+            }
+            $keysByRegion[$regionId]['keys'][] = $key;
+        }
+        
+        // Execute batch delete for each region
+        foreach ($keysByRegion as $regionData) {
+            $this->executeBatchDeleteForRegion($regionData['region_info'], $regionData['keys']);
+        }
+    }
+    
+    private function executeBatchDeleteForRegion(array $regionInfo, array $keys): void
+    {
+        $this->executeWithRetry($keys[0], function() use ($regionInfo, $keys) {
+            $tikvAddress = $this->getTikvAddress($regionInfo['leader_store_id']);
+            
+            $request = new RawBatchDeleteRequest();
+            $request->setContext($this->createContext($regionInfo));
+            $request->setKeys($keys);
+            
+            $this->grpc->call(
+                $tikvAddress,
+                'tikvpb.Tikv',
+                'RawBatchDelete',
+                $request,
+                RawBatchDeleteResponse::class
             );
             
             return null;
