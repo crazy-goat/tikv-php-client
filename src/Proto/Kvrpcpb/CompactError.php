@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -22,20 +22,20 @@ class CompactError extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\CompactErrorInvalidStartKey $err_invalid_start_key
-     *     @type \Kvrpcpb\CompactErrorPhysicalTableNotExist $err_physical_table_not_exist
-     *     @type \Kvrpcpb\CompactErrorCompactInProgress $err_compact_in_progress
-     *     @type \Kvrpcpb\CompactErrorTooManyPendingTasks $err_too_many_pending_tasks
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CompactErrorInvalidStartKey $err_invalid_start_key
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CompactErrorPhysicalTableNotExist $err_physical_table_not_exist
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CompactErrorCompactInProgress $err_compact_in_progress
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CompactErrorTooManyPendingTasks $err_too_many_pending_tasks
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CompactErrorInvalidStartKey err_invalid_start_key = 1;</code>
-     * @return \Kvrpcpb\CompactErrorInvalidStartKey|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CompactErrorInvalidStartKey|null
      */
     public function getErrInvalidStartKey()
     {
@@ -49,12 +49,12 @@ class CompactError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CompactErrorInvalidStartKey err_invalid_start_key = 1;</code>
-     * @param \Kvrpcpb\CompactErrorInvalidStartKey $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CompactErrorInvalidStartKey $var
      * @return $this
      */
     public function setErrInvalidStartKey($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CompactErrorInvalidStartKey::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CompactErrorInvalidStartKey::class);
         $this->writeOneof(1, $var);
 
         return $this;
@@ -62,7 +62,7 @@ class CompactError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CompactErrorPhysicalTableNotExist err_physical_table_not_exist = 2;</code>
-     * @return \Kvrpcpb\CompactErrorPhysicalTableNotExist|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CompactErrorPhysicalTableNotExist|null
      */
     public function getErrPhysicalTableNotExist()
     {
@@ -76,12 +76,12 @@ class CompactError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CompactErrorPhysicalTableNotExist err_physical_table_not_exist = 2;</code>
-     * @param \Kvrpcpb\CompactErrorPhysicalTableNotExist $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CompactErrorPhysicalTableNotExist $var
      * @return $this
      */
     public function setErrPhysicalTableNotExist($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CompactErrorPhysicalTableNotExist::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CompactErrorPhysicalTableNotExist::class);
         $this->writeOneof(2, $var);
 
         return $this;
@@ -89,7 +89,7 @@ class CompactError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CompactErrorCompactInProgress err_compact_in_progress = 3;</code>
-     * @return \Kvrpcpb\CompactErrorCompactInProgress|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CompactErrorCompactInProgress|null
      */
     public function getErrCompactInProgress()
     {
@@ -103,12 +103,12 @@ class CompactError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CompactErrorCompactInProgress err_compact_in_progress = 3;</code>
-     * @param \Kvrpcpb\CompactErrorCompactInProgress $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CompactErrorCompactInProgress $var
      * @return $this
      */
     public function setErrCompactInProgress($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CompactErrorCompactInProgress::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CompactErrorCompactInProgress::class);
         $this->writeOneof(3, $var);
 
         return $this;
@@ -116,7 +116,7 @@ class CompactError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CompactErrorTooManyPendingTasks err_too_many_pending_tasks = 4;</code>
-     * @return \Kvrpcpb\CompactErrorTooManyPendingTasks|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CompactErrorTooManyPendingTasks|null
      */
     public function getErrTooManyPendingTasks()
     {
@@ -130,12 +130,12 @@ class CompactError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CompactErrorTooManyPendingTasks err_too_many_pending_tasks = 4;</code>
-     * @param \Kvrpcpb\CompactErrorTooManyPendingTasks $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CompactErrorTooManyPendingTasks $var
      * @return $this
      */
     public function setErrTooManyPendingTasks($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CompactErrorTooManyPendingTasks::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CompactErrorTooManyPendingTasks::class);
         $this->writeOneof(4, $var);
 
         return $this;

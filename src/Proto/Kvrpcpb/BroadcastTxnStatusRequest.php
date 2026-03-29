@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -29,18 +29,18 @@ class BroadcastTxnStatusRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\Context $context
-     *     @type \Kvrpcpb\TxnStatus[] $txn_status
+     *     @type \CrazyGoat\Proto\Kvrpcpb\Context $context
+     *     @type \CrazyGoat\Proto\Kvrpcpb\TxnStatus[] $txn_status
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @return \Kvrpcpb\Context|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\Context|null
      */
     public function getContext()
     {
@@ -59,12 +59,12 @@ class BroadcastTxnStatusRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @param \Kvrpcpb\Context $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\Context $var
      * @return $this
      */
     public function setContext($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\Context::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\Context::class);
         $this->context = $var;
 
         return $this;
@@ -72,7 +72,7 @@ class BroadcastTxnStatusRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.TxnStatus txn_status = 2;</code>
-     * @return RepeatedField<\Kvrpcpb\TxnStatus>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\TxnStatus>
      */
     public function getTxnStatus()
     {
@@ -81,12 +81,12 @@ class BroadcastTxnStatusRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.TxnStatus txn_status = 2;</code>
-     * @param \Kvrpcpb\TxnStatus[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\TxnStatus[] $var
      * @return $this
      */
     public function setTxnStatus($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\TxnStatus::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\TxnStatus::class);
         $this->txn_status = $arr;
 
         return $this;

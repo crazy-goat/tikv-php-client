@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: mpp.proto
 
-namespace Mpp;
+namespace CrazyGoat\Proto\Mpp;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -35,14 +35,14 @@ class EstablishMPPConnectionRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Mpp\TaskMeta $sender_meta
+     *     @type \CrazyGoat\Proto\Mpp\TaskMeta $sender_meta
      *           node closer to the source
-     *     @type \Mpp\TaskMeta $receiver_meta
+     *     @type \CrazyGoat\Proto\Mpp\TaskMeta $receiver_meta
      *           node closer to the tidb mpp gather.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Mpp::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Mpp::initOnce();
         parent::__construct($data);
     }
 
@@ -50,7 +50,7 @@ class EstablishMPPConnectionRequest extends \Google\Protobuf\Internal\Message
      * node closer to the source
      *
      * Generated from protobuf field <code>.mpp.TaskMeta sender_meta = 1;</code>
-     * @return \Mpp\TaskMeta|null
+     * @return \CrazyGoat\Proto\Mpp\TaskMeta|null
      */
     public function getSenderMeta()
     {
@@ -71,12 +71,12 @@ class EstablishMPPConnectionRequest extends \Google\Protobuf\Internal\Message
      * node closer to the source
      *
      * Generated from protobuf field <code>.mpp.TaskMeta sender_meta = 1;</code>
-     * @param \Mpp\TaskMeta $var
+     * @param \CrazyGoat\Proto\Mpp\TaskMeta $var
      * @return $this
      */
     public function setSenderMeta($var)
     {
-        GPBUtil::checkMessage($var, \Mpp\TaskMeta::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Mpp\TaskMeta::class);
         $this->sender_meta = $var;
 
         return $this;
@@ -86,7 +86,7 @@ class EstablishMPPConnectionRequest extends \Google\Protobuf\Internal\Message
      * node closer to the tidb mpp gather.
      *
      * Generated from protobuf field <code>.mpp.TaskMeta receiver_meta = 2;</code>
-     * @return \Mpp\TaskMeta|null
+     * @return \CrazyGoat\Proto\Mpp\TaskMeta|null
      */
     public function getReceiverMeta()
     {
@@ -107,12 +107,12 @@ class EstablishMPPConnectionRequest extends \Google\Protobuf\Internal\Message
      * node closer to the tidb mpp gather.
      *
      * Generated from protobuf field <code>.mpp.TaskMeta receiver_meta = 2;</code>
-     * @param \Mpp\TaskMeta $var
+     * @param \CrazyGoat\Proto\Mpp\TaskMeta $var
      * @return $this
      */
     public function setReceiverMeta($var)
     {
-        GPBUtil::checkMessage($var, \Mpp\TaskMeta::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Mpp\TaskMeta::class);
         $this->receiver_meta = $var;
 
         return $this;

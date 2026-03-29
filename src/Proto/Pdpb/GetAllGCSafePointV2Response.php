@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,19 +33,19 @@ class GetAllGCSafePointV2Response extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Pdpb\GCSafePointV2[] $gc_safe_points
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\GCSafePointV2[] $gc_safe_points
      *     @type int|string $revision
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -64,12 +64,12 @@ class GetAllGCSafePointV2Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -77,7 +77,7 @@ class GetAllGCSafePointV2Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GCSafePointV2 gc_safe_points = 2;</code>
-     * @return RepeatedField<\Pdpb\GCSafePointV2>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\GCSafePointV2>
      */
     public function getGcSafePoints()
     {
@@ -86,12 +86,12 @@ class GetAllGCSafePointV2Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GCSafePointV2 gc_safe_points = 2;</code>
-     * @param \Pdpb\GCSafePointV2[] $var
+     * @param \CrazyGoat\Proto\Pdpb\GCSafePointV2[] $var
      * @return $this
      */
     public function setGcSafePoints($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\GCSafePointV2::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\GCSafePointV2::class);
         $this->gc_safe_points = $arr;
 
         return $this;

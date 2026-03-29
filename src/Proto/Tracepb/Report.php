@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: tracepb.proto
 
-namespace Tracepb;
+namespace CrazyGoat\Proto\Tracepb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -31,18 +31,18 @@ class Report extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Tracepb\RemoteParentSpan[] $remote_parent_spans
-     *     @type \Tracepb\Span[] $spans
+     *     @type \CrazyGoat\Proto\Tracepb\RemoteParentSpan[] $remote_parent_spans
+     *     @type \CrazyGoat\Proto\Tracepb\Span[] $spans
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Tracepb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Tracepb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .tracepb.RemoteParentSpan remote_parent_spans = 1;</code>
-     * @return RepeatedField<\Tracepb\RemoteParentSpan>
+     * @return RepeatedField<\CrazyGoat\Proto\Tracepb\RemoteParentSpan>
      */
     public function getRemoteParentSpans()
     {
@@ -51,12 +51,12 @@ class Report extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .tracepb.RemoteParentSpan remote_parent_spans = 1;</code>
-     * @param \Tracepb\RemoteParentSpan[] $var
+     * @param \CrazyGoat\Proto\Tracepb\RemoteParentSpan[] $var
      * @return $this
      */
     public function setRemoteParentSpans($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Tracepb\RemoteParentSpan::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Tracepb\RemoteParentSpan::class);
         $this->remote_parent_spans = $arr;
 
         return $this;
@@ -64,7 +64,7 @@ class Report extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .tracepb.Span spans = 2;</code>
-     * @return RepeatedField<\Tracepb\Span>
+     * @return RepeatedField<\CrazyGoat\Proto\Tracepb\Span>
      */
     public function getSpans()
     {
@@ -73,12 +73,12 @@ class Report extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .tracepb.Span spans = 2;</code>
-     * @param \Tracepb\Span[] $var
+     * @param \CrazyGoat\Proto\Tracepb\Span[] $var
      * @return $this
      */
     public function setSpans($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Tracepb\Span::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Tracepb\Span::class);
         $this->spans = $arr;
 
         return $this;

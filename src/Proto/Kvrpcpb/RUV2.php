@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -50,7 +50,7 @@ class RUV2 extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int|string $kv_engine_cache_miss
-     *     @type \Kvrpcpb\ExecutorInputs $executor_inputs
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ExecutorInputs $executor_inputs
      *     @type int|string $coprocessor_executor_iterations
      *     @type int|string $coprocessor_response_bytes
      *     @type int|string $raftstore_store_write_trigger_wb_bytes
@@ -59,7 +59,7 @@ class RUV2 extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -87,7 +87,7 @@ class RUV2 extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ExecutorInputs executor_inputs = 2;</code>
-     * @return \Kvrpcpb\ExecutorInputs|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ExecutorInputs|null
      */
     public function getExecutorInputs()
     {
@@ -106,12 +106,12 @@ class RUV2 extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ExecutorInputs executor_inputs = 2;</code>
-     * @param \Kvrpcpb\ExecutorInputs $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ExecutorInputs $var
      * @return $this
      */
     public function setExecutorInputs($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ExecutorInputs::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ExecutorInputs::class);
         $this->executor_inputs = $var;
 
         return $this;

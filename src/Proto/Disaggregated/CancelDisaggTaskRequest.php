@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disaggregated.proto
 
-namespace Disaggregated;
+namespace CrazyGoat\Proto\Disaggregated;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -25,17 +25,17 @@ class CancelDisaggTaskRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Disaggregated\DisaggTaskMeta $meta
+     *     @type \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta $meta
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Disaggregated::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Disaggregated::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.disaggregated.DisaggTaskMeta meta = 1;</code>
-     * @return \Disaggregated\DisaggTaskMeta|null
+     * @return \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta|null
      */
     public function getMeta()
     {
@@ -54,12 +54,12 @@ class CancelDisaggTaskRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.DisaggTaskMeta meta = 1;</code>
-     * @param \Disaggregated\DisaggTaskMeta $var
+     * @param \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta $var
      * @return $this
      */
     public function setMeta($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\DisaggTaskMeta::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta::class);
         $this->meta = $var;
 
         return $this;

@@ -1,7 +1,7 @@
 <?php
 // GENERATED CODE -- DO NOT EDIT!
 
-namespace Tikvpb;
+namespace CrazyGoat\Proto\Tikvpb;
 
 /**
  * VersionedKv provides versioned coprocessor APIs for TiCI lookup.
@@ -22,16 +22,16 @@ class VersionedKvClient extends \Grpc\BaseStub {
     }
 
     /**
-     * @param \Coprocessor\Request $argument input argument
+     * @param \CrazyGoat\Proto\Coprocessor\Request $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Coprocessor\Response>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Coprocessor\Response>
      */
-    public function VersionedCoprocessor(\Coprocessor\Request $argument,
+    public function VersionedCoprocessor(\CrazyGoat\Proto\Coprocessor\Request $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.VersionedKv/VersionedCoprocessor',
         $argument,
-        ['\Coprocessor\Response', 'decode'],
+        ['\CrazyGoat\Proto\Coprocessor\Response', 'decode'],
         $metadata, $options);
     }
 

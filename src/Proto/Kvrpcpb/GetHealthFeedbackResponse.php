@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -31,13 +31,13 @@ class GetHealthFeedbackResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Errorpb\Error $region_error
+     *     @type \CrazyGoat\Proto\Errorpb\Error $region_error
      *           The error field is added for keeping consistent. This request won't meet any region error as it's store level rather than region level.
-     *     @type \Kvrpcpb\HealthFeedback $health_feedback
+     *     @type \CrazyGoat\Proto\Kvrpcpb\HealthFeedback $health_feedback
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -45,7 +45,7 @@ class GetHealthFeedbackResponse extends \Google\Protobuf\Internal\Message
      * The error field is added for keeping consistent. This request won't meet any region error as it's store level rather than region level.
      *
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @return \Errorpb\Error|null
+     * @return \CrazyGoat\Proto\Errorpb\Error|null
      */
     public function getRegionError()
     {
@@ -66,12 +66,12 @@ class GetHealthFeedbackResponse extends \Google\Protobuf\Internal\Message
      * The error field is added for keeping consistent. This request won't meet any region error as it's store level rather than region level.
      *
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @param \Errorpb\Error $var
+     * @param \CrazyGoat\Proto\Errorpb\Error $var
      * @return $this
      */
     public function setRegionError($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\Error::class);
         $this->region_error = $var;
 
         return $this;
@@ -79,7 +79,7 @@ class GetHealthFeedbackResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.HealthFeedback health_feedback = 2;</code>
-     * @return \Kvrpcpb\HealthFeedback|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\HealthFeedback|null
      */
     public function getHealthFeedback()
     {
@@ -98,12 +98,12 @@ class GetHealthFeedbackResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.HealthFeedback health_feedback = 2;</code>
-     * @param \Kvrpcpb\HealthFeedback $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\HealthFeedback $var
      * @return $this
      */
     public function setHealthFeedback($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\HealthFeedback::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\HealthFeedback::class);
         $this->health_feedback = $var;
 
         return $this;

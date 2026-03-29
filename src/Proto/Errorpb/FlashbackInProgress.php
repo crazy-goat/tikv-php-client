@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: errorpb.proto
 
-namespace Errorpb;
+namespace CrazyGoat\Proto\Errorpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -37,7 +37,7 @@ class FlashbackInProgress extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Errorpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Errorpb::initOnce();
         parent::__construct($data);
     }
 

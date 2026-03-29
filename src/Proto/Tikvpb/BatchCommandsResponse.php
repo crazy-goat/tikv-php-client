@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: tikvpb.proto
 
-namespace Tikvpb;
+namespace CrazyGoat\Proto\Tikvpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -39,21 +39,21 @@ class BatchCommandsResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Tikvpb\BatchCommandsResponse\Response[] $responses
+     *     @type \CrazyGoat\Proto\Tikvpb\BatchCommandsResponse\Response[] $responses
      *     @type int[]|string[] $request_ids
      *     @type int|string $transport_layer_load
      *           280 means TiKV gRPC cpu usage is 280%.
-     *     @type \Kvrpcpb\HealthFeedback $health_feedback
+     *     @type \CrazyGoat\Proto\Kvrpcpb\HealthFeedback $health_feedback
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Tikvpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Tikvpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .tikvpb.BatchCommandsResponse.Response responses = 1;</code>
-     * @return RepeatedField<\Tikvpb\BatchCommandsResponse\Response>
+     * @return RepeatedField<\CrazyGoat\Proto\Tikvpb\BatchCommandsResponse\Response>
      */
     public function getResponses()
     {
@@ -62,12 +62,12 @@ class BatchCommandsResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .tikvpb.BatchCommandsResponse.Response responses = 1;</code>
-     * @param \Tikvpb\BatchCommandsResponse\Response[] $var
+     * @param \CrazyGoat\Proto\Tikvpb\BatchCommandsResponse\Response[] $var
      * @return $this
      */
     public function setResponses($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Tikvpb\BatchCommandsResponse\Response::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Tikvpb\BatchCommandsResponse\Response::class);
         $this->responses = $arr;
 
         return $this;
@@ -123,7 +123,7 @@ class BatchCommandsResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.HealthFeedback health_feedback = 4;</code>
-     * @return \Kvrpcpb\HealthFeedback|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\HealthFeedback|null
      */
     public function getHealthFeedback()
     {
@@ -142,12 +142,12 @@ class BatchCommandsResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.HealthFeedback health_feedback = 4;</code>
-     * @param \Kvrpcpb\HealthFeedback $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\HealthFeedback $var
      * @return $this
      */
     public function setHealthFeedback($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\HealthFeedback::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\HealthFeedback::class);
         $this->health_feedback = $var;
 
         return $this;

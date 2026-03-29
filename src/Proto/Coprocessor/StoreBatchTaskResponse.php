@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -46,15 +46,15 @@ class StoreBatchTaskResponse extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $data
-     *     @type \Errorpb\Error $region_error
-     *     @type \Kvrpcpb\LockInfo $locked
+     *     @type \CrazyGoat\Proto\Errorpb\Error $region_error
+     *     @type \CrazyGoat\Proto\Kvrpcpb\LockInfo $locked
      *     @type string $other_error
      *     @type int|string $task_id
-     *     @type \Kvrpcpb\ExecDetailsV2 $exec_details_v2
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2 $exec_details_v2
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
@@ -82,7 +82,7 @@ class StoreBatchTaskResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 2;</code>
-     * @return \Errorpb\Error|null
+     * @return \CrazyGoat\Proto\Errorpb\Error|null
      */
     public function getRegionError()
     {
@@ -101,12 +101,12 @@ class StoreBatchTaskResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 2;</code>
-     * @param \Errorpb\Error $var
+     * @param \CrazyGoat\Proto\Errorpb\Error $var
      * @return $this
      */
     public function setRegionError($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\Error::class);
         $this->region_error = $var;
 
         return $this;
@@ -114,7 +114,7 @@ class StoreBatchTaskResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.LockInfo locked = 3;</code>
-     * @return \Kvrpcpb\LockInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\LockInfo|null
      */
     public function getLocked()
     {
@@ -133,12 +133,12 @@ class StoreBatchTaskResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.LockInfo locked = 3;</code>
-     * @param \Kvrpcpb\LockInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\LockInfo $var
      * @return $this
      */
     public function setLocked($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\LockInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\LockInfo::class);
         $this->locked = $var;
 
         return $this;
@@ -190,7 +190,7 @@ class StoreBatchTaskResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ExecDetailsV2 exec_details_v2 = 6;</code>
-     * @return \Kvrpcpb\ExecDetailsV2|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2|null
      */
     public function getExecDetailsV2()
     {
@@ -209,12 +209,12 @@ class StoreBatchTaskResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ExecDetailsV2 exec_details_v2 = 6;</code>
-     * @param \Kvrpcpb\ExecDetailsV2 $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2 $var
      * @return $this
      */
     public function setExecDetailsV2($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ExecDetailsV2::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2::class);
         $this->exec_details_v2 = $var;
 
         return $this;

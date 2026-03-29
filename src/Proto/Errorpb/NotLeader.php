@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: errorpb.proto
 
-namespace Errorpb;
+namespace CrazyGoat\Proto\Errorpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -38,12 +38,12 @@ class NotLeader extends \Google\Protobuf\Internal\Message
      *
      *     @type int|string $region_id
      *           The requested region ID
-     *     @type \Metapb\Peer $leader
+     *     @type \CrazyGoat\Proto\Metapb\Peer $leader
      *           Region leader of the requested region
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Errorpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Errorpb::initOnce();
         parent::__construct($data);
     }
 
@@ -77,7 +77,7 @@ class NotLeader extends \Google\Protobuf\Internal\Message
      * Region leader of the requested region
      *
      * Generated from protobuf field <code>.metapb.Peer leader = 2;</code>
-     * @return \Metapb\Peer|null
+     * @return \CrazyGoat\Proto\Metapb\Peer|null
      */
     public function getLeader()
     {
@@ -98,12 +98,12 @@ class NotLeader extends \Google\Protobuf\Internal\Message
      * Region leader of the requested region
      *
      * Generated from protobuf field <code>.metapb.Peer leader = 2;</code>
-     * @param \Metapb\Peer $var
+     * @param \CrazyGoat\Proto\Metapb\Peer $var
      * @return $this
      */
     public function setLeader($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Peer::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->leader = $var;
 
         return $this;

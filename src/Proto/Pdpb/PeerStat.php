@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -55,16 +55,16 @@ class PeerStat extends \Google\Protobuf\Internal\Message
      *     @type int|string $region_id
      *     @type int|string $read_keys
      *     @type int|string $read_bytes
-     *     @type \Pdpb\QueryStats $query_stats
+     *     @type \CrazyGoat\Proto\Pdpb\QueryStats $query_stats
      *     @type int|string $written_keys
      *     @type int|string $written_bytes
-     *     @type \Pdpb\CPUStats $cpu_stats
+     *     @type \CrazyGoat\Proto\Pdpb\CPUStats $cpu_stats
      *           cpu_stats is the CPU usage of the region's unified read pool since the last heartbeat,
      *           which is calculated by cpu_time_delta/heartbeat_reported_interval.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
@@ -136,7 +136,7 @@ class PeerStat extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.QueryStats query_stats = 4;</code>
-     * @return \Pdpb\QueryStats|null
+     * @return \CrazyGoat\Proto\Pdpb\QueryStats|null
      */
     public function getQueryStats()
     {
@@ -155,12 +155,12 @@ class PeerStat extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.QueryStats query_stats = 4;</code>
-     * @param \Pdpb\QueryStats $var
+     * @param \CrazyGoat\Proto\Pdpb\QueryStats $var
      * @return $this
      */
     public function setQueryStats($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\QueryStats::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\QueryStats::class);
         $this->query_stats = $var;
 
         return $this;
@@ -215,7 +215,7 @@ class PeerStat extends \Google\Protobuf\Internal\Message
      * which is calculated by cpu_time_delta/heartbeat_reported_interval.
      *
      * Generated from protobuf field <code>.pdpb.CPUStats cpu_stats = 7;</code>
-     * @return \Pdpb\CPUStats|null
+     * @return \CrazyGoat\Proto\Pdpb\CPUStats|null
      */
     public function getCpuStats()
     {
@@ -237,12 +237,12 @@ class PeerStat extends \Google\Protobuf\Internal\Message
      * which is calculated by cpu_time_delta/heartbeat_reported_interval.
      *
      * Generated from protobuf field <code>.pdpb.CPUStats cpu_stats = 7;</code>
-     * @param \Pdpb\CPUStats $var
+     * @param \CrazyGoat\Proto\Pdpb\CPUStats $var
      * @return $this
      */
     public function setCpuStats($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\CPUStats::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\CPUStats::class);
         $this->cpu_stats = $var;
 
         return $this;

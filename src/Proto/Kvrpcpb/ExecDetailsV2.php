@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -52,21 +52,21 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\TimeDetail $time_detail
+     *     @type \CrazyGoat\Proto\Kvrpcpb\TimeDetail $time_detail
      *           Available when ctx.record_time_stat = true or meet slow query.
      *           deprecated. Should use `time_detail_v2` instead.
-     *     @type \Kvrpcpb\ScanDetailV2 $scan_detail_v2
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ScanDetailV2 $scan_detail_v2
      *           Available when ctx.record_scan_stat = true or meet slow query.
-     *     @type \Kvrpcpb\WriteDetail $write_detail
+     *     @type \CrazyGoat\Proto\Kvrpcpb\WriteDetail $write_detail
      *           Raftstore writing durations of the request. Only available for some write requests.
-     *     @type \Kvrpcpb\TimeDetailV2 $time_detail_v2
+     *     @type \CrazyGoat\Proto\Kvrpcpb\TimeDetailV2 $time_detail_v2
      *           Available when ctx.record_time_stat = true or meet slow query.
-     *     @type \Kvrpcpb\RUV2 $ru_v2
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RUV2 $ru_v2
      *           RU (Request Unit) consumption details.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -75,7 +75,7 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * deprecated. Should use `time_detail_v2` instead.
      *
      * Generated from protobuf field <code>.kvrpcpb.TimeDetail time_detail = 1;</code>
-     * @return \Kvrpcpb\TimeDetail|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\TimeDetail|null
      */
     public function getTimeDetail()
     {
@@ -97,12 +97,12 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * deprecated. Should use `time_detail_v2` instead.
      *
      * Generated from protobuf field <code>.kvrpcpb.TimeDetail time_detail = 1;</code>
-     * @param \Kvrpcpb\TimeDetail $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\TimeDetail $var
      * @return $this
      */
     public function setTimeDetail($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\TimeDetail::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\TimeDetail::class);
         $this->time_detail = $var;
 
         return $this;
@@ -112,7 +112,7 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * Available when ctx.record_scan_stat = true or meet slow query.
      *
      * Generated from protobuf field <code>.kvrpcpb.ScanDetailV2 scan_detail_v2 = 2;</code>
-     * @return \Kvrpcpb\ScanDetailV2|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ScanDetailV2|null
      */
     public function getScanDetailV2()
     {
@@ -133,12 +133,12 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * Available when ctx.record_scan_stat = true or meet slow query.
      *
      * Generated from protobuf field <code>.kvrpcpb.ScanDetailV2 scan_detail_v2 = 2;</code>
-     * @param \Kvrpcpb\ScanDetailV2 $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ScanDetailV2 $var
      * @return $this
      */
     public function setScanDetailV2($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ScanDetailV2::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ScanDetailV2::class);
         $this->scan_detail_v2 = $var;
 
         return $this;
@@ -148,7 +148,7 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * Raftstore writing durations of the request. Only available for some write requests.
      *
      * Generated from protobuf field <code>.kvrpcpb.WriteDetail write_detail = 3;</code>
-     * @return \Kvrpcpb\WriteDetail|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\WriteDetail|null
      */
     public function getWriteDetail()
     {
@@ -169,12 +169,12 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * Raftstore writing durations of the request. Only available for some write requests.
      *
      * Generated from protobuf field <code>.kvrpcpb.WriteDetail write_detail = 3;</code>
-     * @param \Kvrpcpb\WriteDetail $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\WriteDetail $var
      * @return $this
      */
     public function setWriteDetail($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\WriteDetail::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\WriteDetail::class);
         $this->write_detail = $var;
 
         return $this;
@@ -184,7 +184,7 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * Available when ctx.record_time_stat = true or meet slow query.
      *
      * Generated from protobuf field <code>.kvrpcpb.TimeDetailV2 time_detail_v2 = 4;</code>
-     * @return \Kvrpcpb\TimeDetailV2|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\TimeDetailV2|null
      */
     public function getTimeDetailV2()
     {
@@ -205,12 +205,12 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * Available when ctx.record_time_stat = true or meet slow query.
      *
      * Generated from protobuf field <code>.kvrpcpb.TimeDetailV2 time_detail_v2 = 4;</code>
-     * @param \Kvrpcpb\TimeDetailV2 $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\TimeDetailV2 $var
      * @return $this
      */
     public function setTimeDetailV2($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\TimeDetailV2::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\TimeDetailV2::class);
         $this->time_detail_v2 = $var;
 
         return $this;
@@ -220,7 +220,7 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * RU (Request Unit) consumption details.
      *
      * Generated from protobuf field <code>.kvrpcpb.RUV2 ru_v2 = 5;</code>
-     * @return \Kvrpcpb\RUV2|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RUV2|null
      */
     public function getRuV2()
     {
@@ -241,12 +241,12 @@ class ExecDetailsV2 extends \Google\Protobuf\Internal\Message
      * RU (Request Unit) consumption details.
      *
      * Generated from protobuf field <code>.kvrpcpb.RUV2 ru_v2 = 5;</code>
-     * @param \Kvrpcpb\RUV2 $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RUV2 $var
      * @return $this
      */
     public function setRuV2($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RUV2::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RUV2::class);
         $this->ru_v2 = $var;
 
         return $this;

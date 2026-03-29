@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -29,18 +29,18 @@ class GetDCLocationInfoRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\RequestHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\RequestHeader $header
      *     @type string $dc_location
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @return \Pdpb\RequestHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\RequestHeader|null
      */
     public function getHeader()
     {
@@ -59,12 +59,12 @@ class GetDCLocationInfoRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @param \Pdpb\RequestHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\RequestHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RequestHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RequestHeader::class);
         $this->header = $var;
 
         return $this;

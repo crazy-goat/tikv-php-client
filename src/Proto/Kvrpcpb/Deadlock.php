@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -49,13 +49,13 @@ class Deadlock extends \Google\Protobuf\Internal\Message
      *     @type string $lock_key
      *     @type int|string $deadlock_key_hash
      *           The hash of `deadlock_key` field.
-     *     @type \Deadlock\WaitForEntry[] $wait_chain
+     *     @type \CrazyGoat\Proto\Deadlock\WaitForEntry[] $wait_chain
      *     @type string $deadlock_key
      *           The key that the current transaction has already acquired and blocks another transaction to form the deadlock.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -131,7 +131,7 @@ class Deadlock extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .deadlock.WaitForEntry wait_chain = 4;</code>
-     * @return RepeatedField<\Deadlock\WaitForEntry>
+     * @return RepeatedField<\CrazyGoat\Proto\Deadlock\WaitForEntry>
      */
     public function getWaitChain()
     {
@@ -140,12 +140,12 @@ class Deadlock extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .deadlock.WaitForEntry wait_chain = 4;</code>
-     * @param \Deadlock\WaitForEntry[] $var
+     * @param \CrazyGoat\Proto\Deadlock\WaitForEntry[] $var
      * @return $this
      */
     public function setWaitChain($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Deadlock\WaitForEntry::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Deadlock\WaitForEntry::class);
         $this->wait_chain = $arr;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -29,18 +29,18 @@ class TransferLeader extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Metapb\Peer $peer
-     *     @type \Metapb\Peer[] $peers
+     *     @type \CrazyGoat\Proto\Metapb\Peer $peer
+     *     @type \CrazyGoat\Proto\Metapb\Peer[] $peers
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.metapb.Peer peer = 1;</code>
-     * @return \Metapb\Peer|null
+     * @return \CrazyGoat\Proto\Metapb\Peer|null
      */
     public function getPeer()
     {
@@ -59,12 +59,12 @@ class TransferLeader extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Peer peer = 1;</code>
-     * @param \Metapb\Peer $var
+     * @param \CrazyGoat\Proto\Metapb\Peer $var
      * @return $this
      */
     public function setPeer($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Peer::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->peer = $var;
 
         return $this;
@@ -72,7 +72,7 @@ class TransferLeader extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.Peer peers = 2;</code>
-     * @return RepeatedField<\Metapb\Peer>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Peer>
      */
     public function getPeers()
     {
@@ -81,12 +81,12 @@ class TransferLeader extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.Peer peers = 2;</code>
-     * @param \Metapb\Peer[] $var
+     * @param \CrazyGoat\Proto\Metapb\Peer[] $var
      * @return $this
      */
     public function setPeers($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Peer::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->peers = $arr;
 
         return $this;

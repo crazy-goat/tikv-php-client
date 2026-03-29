@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: eraftpb.proto
 
-namespace Eraftpb;
+namespace CrazyGoat\Proto\Eraftpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -44,7 +44,7 @@ class ConfChange extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Eraftpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Eraftpb::initOnce();
         parent::__construct($data);
     }
 
@@ -64,7 +64,7 @@ class ConfChange extends \Google\Protobuf\Internal\Message
      */
     public function setChangeType($var)
     {
-        GPBUtil::checkEnum($var, \Eraftpb\ConfChangeType::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Eraftpb\ConfChangeType::class);
         $this->change_type = $var;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -37,20 +37,20 @@ class MvccGetByStartTsResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Errorpb\Error $region_error
+     *     @type \CrazyGoat\Proto\Errorpb\Error $region_error
      *     @type string $error
      *     @type string $key
-     *     @type \Kvrpcpb\MvccInfo $info
+     *     @type \CrazyGoat\Proto\Kvrpcpb\MvccInfo $info
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @return \Errorpb\Error|null
+     * @return \CrazyGoat\Proto\Errorpb\Error|null
      */
     public function getRegionError()
     {
@@ -69,12 +69,12 @@ class MvccGetByStartTsResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @param \Errorpb\Error $var
+     * @param \CrazyGoat\Proto\Errorpb\Error $var
      * @return $this
      */
     public function setRegionError($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\Error::class);
         $this->region_error = $var;
 
         return $this;
@@ -126,7 +126,7 @@ class MvccGetByStartTsResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.MvccInfo info = 4;</code>
-     * @return \Kvrpcpb\MvccInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\MvccInfo|null
      */
     public function getInfo()
     {
@@ -145,12 +145,12 @@ class MvccGetByStartTsResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.MvccInfo info = 4;</code>
-     * @param \Kvrpcpb\MvccInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\MvccInfo $var
      * @return $this
      */
     public function setInfo($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\MvccInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\MvccInfo::class);
         $this->info = $var;
 
         return $this;

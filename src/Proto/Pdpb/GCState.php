@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -41,21 +41,21 @@ class GCState extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\KeyspaceScope $keyspace_scope
+     *     @type \CrazyGoat\Proto\Pdpb\KeyspaceScope $keyspace_scope
      *     @type bool $is_keyspace_level_gc
      *     @type int|string $txn_safe_point
      *     @type int|string $gc_safe_point
-     *     @type \Pdpb\GCBarrierInfo[] $gc_barriers
+     *     @type \CrazyGoat\Proto\Pdpb\GCBarrierInfo[] $gc_barriers
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.KeyspaceScope keyspace_scope = 1;</code>
-     * @return \Pdpb\KeyspaceScope|null
+     * @return \CrazyGoat\Proto\Pdpb\KeyspaceScope|null
      */
     public function getKeyspaceScope()
     {
@@ -74,12 +74,12 @@ class GCState extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.KeyspaceScope keyspace_scope = 1;</code>
-     * @param \Pdpb\KeyspaceScope $var
+     * @param \CrazyGoat\Proto\Pdpb\KeyspaceScope $var
      * @return $this
      */
     public function setKeyspaceScope($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\KeyspaceScope::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\KeyspaceScope::class);
         $this->keyspace_scope = $var;
 
         return $this;
@@ -153,7 +153,7 @@ class GCState extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GCBarrierInfo gc_barriers = 5;</code>
-     * @return RepeatedField<\Pdpb\GCBarrierInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\GCBarrierInfo>
      */
     public function getGcBarriers()
     {
@@ -162,12 +162,12 @@ class GCState extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GCBarrierInfo gc_barriers = 5;</code>
-     * @param \Pdpb\GCBarrierInfo[] $var
+     * @param \CrazyGoat\Proto\Pdpb\GCBarrierInfo[] $var
      * @return $this
      */
     public function setGcBarriers($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\GCBarrierInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\GCBarrierInfo::class);
         $this->gc_barriers = $arr;
 
         return $this;

@@ -101,6 +101,35 @@ for f in "$WORK_DIR"/*.proto; do
   sed -i '/^ *\];$/d' "$f"
 done
 
+# --- Inject PHP namespace options ---
+# Adds `option php_namespace` and `option php_metadata_namespace` to each proto file
+# so generated classes land under the CrazyGoat\Proto\ namespace tree.
+echo "Injecting PHP namespace options..."
+for f in "$WORK_DIR"/*.proto; do
+  [ -f "$f" ] || continue
+
+  # Extract package name (e.g. "kvrpcpb", "raft_serverpb")
+  PKG=$(grep '^package ' "$f" | sed 's/package //;s/;//' | tr -d '[:space:]')
+  [ -z "$PKG" ] && continue
+
+  # Convert package name to PascalCase for PHP namespace
+  # BusyBox sed doesn't support \U, so we use awk instead
+  # e.g. kvrpcpb -> Kvrpcpb, raft_serverpb -> RaftServerpb, disk_usage -> DiskUsage
+  PHP_PKG=$(echo "$PKG" | awk -F'_' '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1' OFS='')
+
+  # Write a temp file with the namespace options injected after the package line.
+  # Protobuf string literals use \\ for a literal backslash in namespace paths.
+  awk -v pkg="$PHP_PKG" '
+    /^package / {
+      print
+      printf "option php_namespace = \"CrazyGoat\\\\Proto\\\\%s\";\n", pkg
+      printf "option php_metadata_namespace = \"CrazyGoat\\\\Proto\\\\GPBMetadata\";\n"
+      next
+    }
+    { print }
+  ' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+done
+
 # --- Clean output directory ---
 echo "Cleaning output directory..."
 rm -rf "$OUT_DIR"/*
@@ -131,14 +160,23 @@ protoc \
   --plugin=protoc-gen-grpc=/usr/bin/grpc_php_plugin \
   $PROTO_LIST
 
+# --- Flatten output directory ---
+# protoc generates CrazyGoat/Proto/<Package>/ structure inside OUT_DIR.
+# Move everything up so the layout matches PSR-4: src/Proto/<Package>/
+echo "Flattening directory structure..."
+if [ -d "$OUT_DIR/CrazyGoat/Proto" ]; then
+  cp -r "$OUT_DIR/CrazyGoat/Proto"/* "$OUT_DIR/"
+  rm -rf "$OUT_DIR/CrazyGoat"
+fi
+
 # --- Summary ---
 echo ""
 echo "=== Done ==="
 PHP_COUNT=$(find "$OUT_DIR" -name "*.php" | wc -l)
 echo "Generated $PHP_COUNT PHP files in $OUT_DIR"
 echo ""
-echo "Generated directories:"
-find "$OUT_DIR" -mindepth 1 -maxdepth 1 -type d | sort | sed "s|$OUT_DIR/|  |"
+echo "Generated namespaces:"
+find "$OUT_DIR" -mindepth 1 -maxdepth 1 -type d | sort | sed "s|$OUT_DIR/|  CrazyGoat\\\\Proto\\\\|"
 echo ""
 echo "gRPC service stubs:"
-find "$OUT_DIR" -name "*Client.php" -path "*/Tikvpb/*" -o -name "*Client.php" -path "*/Pdpb/*" | sort | sed "s|$OUT_DIR/|  |"
+find "$OUT_DIR" -name "*Client.php" | sort | sed "s|$OUT_DIR/|  |"

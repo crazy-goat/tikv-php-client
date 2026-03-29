@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disaggregated.proto
 
-namespace Disaggregated;
+namespace CrazyGoat\Proto\Disaggregated;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -45,7 +45,7 @@ class PagesPacket extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Disaggregated\DisaggReadError $error
+     *     @type \CrazyGoat\Proto\Disaggregated\DisaggReadError $error
      *     @type string[] $pages
      *           Serialized column file data
      *           * ColumnFilePersisted alone with its schema, page data, field offsets
@@ -57,13 +57,13 @@ class PagesPacket extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Disaggregated::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Disaggregated::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.disaggregated.DisaggReadError error = 1;</code>
-     * @return \Disaggregated\DisaggReadError|null
+     * @return \CrazyGoat\Proto\Disaggregated\DisaggReadError|null
      */
     public function getError()
     {
@@ -82,12 +82,12 @@ class PagesPacket extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.DisaggReadError error = 1;</code>
-     * @param \Disaggregated\DisaggReadError $var
+     * @param \CrazyGoat\Proto\Disaggregated\DisaggReadError $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\DisaggReadError::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\DisaggReadError::class);
         $this->error = $var;
 
         return $this;

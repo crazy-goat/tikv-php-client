@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -81,14 +81,14 @@ class Response extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $data
-     *     @type \Errorpb\Error $region_error
-     *     @type \Kvrpcpb\LockInfo $locked
+     *     @type \CrazyGoat\Proto\Errorpb\Error $region_error
+     *     @type \CrazyGoat\Proto\Kvrpcpb\LockInfo $locked
      *     @type string $other_error
-     *     @type \Coprocessor\KeyRange $range
-     *     @type \Kvrpcpb\ExecDetails $exec_details
+     *     @type \CrazyGoat\Proto\Coprocessor\KeyRange $range
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ExecDetails $exec_details
      *           This field is always filled for compatibility consideration. However
      *           newer TiDB should respect `exec_details_v2` field instead.
-     *     @type \Kvrpcpb\ExecDetailsV2 $exec_details_v2
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2 $exec_details_v2
      *           This field is provided in later versions, containing more detailed
      *           information.
      *     @type bool $is_cache_hit
@@ -97,12 +97,12 @@ class Response extends \Google\Protobuf\Internal\Message
      *     @type int|string $latest_buckets_version
      *           Contains the latest buckets version of the region.
      *           Clients should query PD to update buckets in cache if its is stale.
-     *     @type \Coprocessor\StoreBatchTaskResponse[] $batch_responses
+     *     @type \CrazyGoat\Proto\Coprocessor\StoreBatchTaskResponse[] $batch_responses
      *           StoreBatchTaskResponse is the collection of batch task responses.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
@@ -130,7 +130,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 2;</code>
-     * @return \Errorpb\Error|null
+     * @return \CrazyGoat\Proto\Errorpb\Error|null
      */
     public function getRegionError()
     {
@@ -149,12 +149,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 2;</code>
-     * @param \Errorpb\Error $var
+     * @param \CrazyGoat\Proto\Errorpb\Error $var
      * @return $this
      */
     public function setRegionError($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\Error::class);
         $this->region_error = $var;
 
         return $this;
@@ -162,7 +162,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.LockInfo locked = 3;</code>
-     * @return \Kvrpcpb\LockInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\LockInfo|null
      */
     public function getLocked()
     {
@@ -181,12 +181,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.LockInfo locked = 3;</code>
-     * @param \Kvrpcpb\LockInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\LockInfo $var
      * @return $this
      */
     public function setLocked($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\LockInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\LockInfo::class);
         $this->locked = $var;
 
         return $this;
@@ -216,7 +216,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.coprocessor.KeyRange range = 5;</code>
-     * @return \Coprocessor\KeyRange|null
+     * @return \CrazyGoat\Proto\Coprocessor\KeyRange|null
      */
     public function getRange()
     {
@@ -235,12 +235,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.coprocessor.KeyRange range = 5;</code>
-     * @param \Coprocessor\KeyRange $var
+     * @param \CrazyGoat\Proto\Coprocessor\KeyRange $var
      * @return $this
      */
     public function setRange($var)
     {
-        GPBUtil::checkMessage($var, \Coprocessor\KeyRange::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Coprocessor\KeyRange::class);
         $this->range = $var;
 
         return $this;
@@ -251,7 +251,7 @@ class Response extends \Google\Protobuf\Internal\Message
      * newer TiDB should respect `exec_details_v2` field instead.
      *
      * Generated from protobuf field <code>.kvrpcpb.ExecDetails exec_details = 6;</code>
-     * @return \Kvrpcpb\ExecDetails|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ExecDetails|null
      */
     public function getExecDetails()
     {
@@ -273,12 +273,12 @@ class Response extends \Google\Protobuf\Internal\Message
      * newer TiDB should respect `exec_details_v2` field instead.
      *
      * Generated from protobuf field <code>.kvrpcpb.ExecDetails exec_details = 6;</code>
-     * @param \Kvrpcpb\ExecDetails $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ExecDetails $var
      * @return $this
      */
     public function setExecDetails($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ExecDetails::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ExecDetails::class);
         $this->exec_details = $var;
 
         return $this;
@@ -289,7 +289,7 @@ class Response extends \Google\Protobuf\Internal\Message
      * information.
      *
      * Generated from protobuf field <code>.kvrpcpb.ExecDetailsV2 exec_details_v2 = 11;</code>
-     * @return \Kvrpcpb\ExecDetailsV2|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2|null
      */
     public function getExecDetailsV2()
     {
@@ -311,12 +311,12 @@ class Response extends \Google\Protobuf\Internal\Message
      * information.
      *
      * Generated from protobuf field <code>.kvrpcpb.ExecDetailsV2 exec_details_v2 = 11;</code>
-     * @param \Kvrpcpb\ExecDetailsV2 $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2 $var
      * @return $this
      */
     public function setExecDetailsV2($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ExecDetailsV2::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2::class);
         $this->exec_details_v2 = $var;
 
         return $this;
@@ -420,7 +420,7 @@ class Response extends \Google\Protobuf\Internal\Message
      * StoreBatchTaskResponse is the collection of batch task responses.
      *
      * Generated from protobuf field <code>repeated .coprocessor.StoreBatchTaskResponse batch_responses = 13;</code>
-     * @return RepeatedField<\Coprocessor\StoreBatchTaskResponse>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\StoreBatchTaskResponse>
      */
     public function getBatchResponses()
     {
@@ -431,12 +431,12 @@ class Response extends \Google\Protobuf\Internal\Message
      * StoreBatchTaskResponse is the collection of batch task responses.
      *
      * Generated from protobuf field <code>repeated .coprocessor.StoreBatchTaskResponse batch_responses = 13;</code>
-     * @param \Coprocessor\StoreBatchTaskResponse[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\StoreBatchTaskResponse[] $var
      * @return $this
      */
     public function setBatchResponses($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\StoreBatchTaskResponse::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\StoreBatchTaskResponse::class);
         $this->batch_responses = $arr;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disaggregated.proto
 
-namespace Disaggregated;
+namespace CrazyGoat\Proto\Disaggregated;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -61,30 +61,30 @@ class EstablishDisaggTaskRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Disaggregated\DisaggTaskMeta $meta
+     *     @type \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta $meta
      *     @type string $address
      *           target address of this task.
      *     @type int|string $timeout_s
      *           The write node needs to ensure that subsequent
      *           FetchDisaggPagesRequest can be processed within timeout_s.
      *           unit: seconds
-     *     @type \Coprocessor\RegionInfo[] $regions
+     *     @type \CrazyGoat\Proto\Coprocessor\RegionInfo[] $regions
      *           The key ranges, Region meta that read node need to execute TableScan
      *     @type int|string $schema_ver
-     *     @type \Coprocessor\TableRegions[] $table_regions
+     *     @type \CrazyGoat\Proto\Coprocessor\TableRegions[] $table_regions
      *           Used for PartitionTableScan
      *     @type string $encoded_plan
      *           The encoded TableScan/PartitionTableScan + Selection.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Disaggregated::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Disaggregated::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.disaggregated.DisaggTaskMeta meta = 1;</code>
-     * @return \Disaggregated\DisaggTaskMeta|null
+     * @return \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta|null
      */
     public function getMeta()
     {
@@ -103,12 +103,12 @@ class EstablishDisaggTaskRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.DisaggTaskMeta meta = 1;</code>
-     * @param \Disaggregated\DisaggTaskMeta $var
+     * @param \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta $var
      * @return $this
      */
     public function setMeta($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\DisaggTaskMeta::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta::class);
         $this->meta = $var;
 
         return $this;
@@ -174,7 +174,7 @@ class EstablishDisaggTaskRequest extends \Google\Protobuf\Internal\Message
      * The key ranges, Region meta that read node need to execute TableScan
      *
      * Generated from protobuf field <code>repeated .coprocessor.RegionInfo regions = 4;</code>
-     * @return RepeatedField<\Coprocessor\RegionInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\RegionInfo>
      */
     public function getRegions()
     {
@@ -185,12 +185,12 @@ class EstablishDisaggTaskRequest extends \Google\Protobuf\Internal\Message
      * The key ranges, Region meta that read node need to execute TableScan
      *
      * Generated from protobuf field <code>repeated .coprocessor.RegionInfo regions = 4;</code>
-     * @param \Coprocessor\RegionInfo[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\RegionInfo[] $var
      * @return $this
      */
     public function setRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\RegionInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\RegionInfo::class);
         $this->regions = $arr;
 
         return $this;
@@ -222,7 +222,7 @@ class EstablishDisaggTaskRequest extends \Google\Protobuf\Internal\Message
      * Used for PartitionTableScan
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableRegions table_regions = 6;</code>
-     * @return RepeatedField<\Coprocessor\TableRegions>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\TableRegions>
      */
     public function getTableRegions()
     {
@@ -233,12 +233,12 @@ class EstablishDisaggTaskRequest extends \Google\Protobuf\Internal\Message
      * Used for PartitionTableScan
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableRegions table_regions = 6;</code>
-     * @param \Coprocessor\TableRegions[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\TableRegions[] $var
      * @return $this
      */
     public function setTableRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\TableRegions::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\TableRegions::class);
         $this->table_regions = $arr;
 
         return $this;

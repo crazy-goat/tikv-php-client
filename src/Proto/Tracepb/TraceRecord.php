@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: tracepb.proto
 
-namespace Tracepb;
+namespace CrazyGoat\Proto\Tracepb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -22,18 +22,18 @@ class TraceRecord extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Tracepb\Report $report
-     *     @type \Tracepb\NotifyCollect $notify_collect
+     *     @type \CrazyGoat\Proto\Tracepb\Report $report
+     *     @type \CrazyGoat\Proto\Tracepb\NotifyCollect $notify_collect
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Tracepb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Tracepb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.tracepb.Report report = 1;</code>
-     * @return \Tracepb\Report|null
+     * @return \CrazyGoat\Proto\Tracepb\Report|null
      */
     public function getReport()
     {
@@ -47,12 +47,12 @@ class TraceRecord extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.tracepb.Report report = 1;</code>
-     * @param \Tracepb\Report $var
+     * @param \CrazyGoat\Proto\Tracepb\Report $var
      * @return $this
      */
     public function setReport($var)
     {
-        GPBUtil::checkMessage($var, \Tracepb\Report::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Tracepb\Report::class);
         $this->writeOneof(1, $var);
 
         return $this;
@@ -60,7 +60,7 @@ class TraceRecord extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.tracepb.NotifyCollect notify_collect = 2;</code>
-     * @return \Tracepb\NotifyCollect|null
+     * @return \CrazyGoat\Proto\Tracepb\NotifyCollect|null
      */
     public function getNotifyCollect()
     {
@@ -74,12 +74,12 @@ class TraceRecord extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.tracepb.NotifyCollect notify_collect = 2;</code>
-     * @param \Tracepb\NotifyCollect $var
+     * @param \CrazyGoat\Proto\Tracepb\NotifyCollect $var
      * @return $this
      */
     public function setNotifyCollect($var)
     {
-        GPBUtil::checkMessage($var, \Tracepb\NotifyCollect::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Tracepb\NotifyCollect::class);
         $this->writeOneof(2, $var);
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -99,36 +99,36 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\LockInfo $locked
+     *     @type \CrazyGoat\Proto\Kvrpcpb\LockInfo $locked
      *           Client should backoff or cleanup the lock then retry.
      *     @type string $retryable
      *           Client may restart the txn. e.g write conflict.
      *     @type string $abort
      *           Client should abort the txn.
-     *     @type \Kvrpcpb\WriteConflict $conflict
+     *     @type \CrazyGoat\Proto\Kvrpcpb\WriteConflict $conflict
      *           Write conflict is moved from retryable to here.
-     *     @type \Kvrpcpb\AlreadyExist $already_exist
+     *     @type \CrazyGoat\Proto\Kvrpcpb\AlreadyExist $already_exist
      *           Key already exists
-     *     @type \Kvrpcpb\Deadlock $deadlock
+     *     @type \CrazyGoat\Proto\Kvrpcpb\Deadlock $deadlock
      *           Deadlock is used in pessimistic transaction for single statement rollback.
-     *     @type \Kvrpcpb\CommitTsExpired $commit_ts_expired
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CommitTsExpired $commit_ts_expired
      *           Commit ts is earlier than min commit ts of a transaction.
-     *     @type \Kvrpcpb\TxnNotFound $txn_not_found
+     *     @type \CrazyGoat\Proto\Kvrpcpb\TxnNotFound $txn_not_found
      *           Txn not found when checking txn status.
-     *     @type \Kvrpcpb\CommitTsTooLarge $commit_ts_too_large
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CommitTsTooLarge $commit_ts_too_large
      *           Calculated commit TS exceeds the limit given by the user.
-     *     @type \Kvrpcpb\AssertionFailed $assertion_failed
+     *     @type \CrazyGoat\Proto\Kvrpcpb\AssertionFailed $assertion_failed
      *           Assertion of a `Mutation` is evaluated as a failure.
-     *     @type \Kvrpcpb\PrimaryMismatch $primary_mismatch
+     *     @type \CrazyGoat\Proto\Kvrpcpb\PrimaryMismatch $primary_mismatch
      *           CheckTxnStatus is sent to a lock that's not the primary.
-     *     @type \Kvrpcpb\TxnLockNotFound $txn_lock_not_found
+     *     @type \CrazyGoat\Proto\Kvrpcpb\TxnLockNotFound $txn_lock_not_found
      *           TxnLockNotFound indicates the txn lock is not found.
-     *     @type \Kvrpcpb\DebugInfo $debug_info
+     *     @type \CrazyGoat\Proto\Kvrpcpb\DebugInfo $debug_info
      *           Extra information for error debugging
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -136,7 +136,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Client should backoff or cleanup the lock then retry.
      *
      * Generated from protobuf field <code>.kvrpcpb.LockInfo locked = 1;</code>
-     * @return \Kvrpcpb\LockInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\LockInfo|null
      */
     public function getLocked()
     {
@@ -157,12 +157,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Client should backoff or cleanup the lock then retry.
      *
      * Generated from protobuf field <code>.kvrpcpb.LockInfo locked = 1;</code>
-     * @param \Kvrpcpb\LockInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\LockInfo $var
      * @return $this
      */
     public function setLocked($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\LockInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\LockInfo::class);
         $this->locked = $var;
 
         return $this;
@@ -224,7 +224,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Write conflict is moved from retryable to here.
      *
      * Generated from protobuf field <code>.kvrpcpb.WriteConflict conflict = 4;</code>
-     * @return \Kvrpcpb\WriteConflict|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\WriteConflict|null
      */
     public function getConflict()
     {
@@ -245,12 +245,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Write conflict is moved from retryable to here.
      *
      * Generated from protobuf field <code>.kvrpcpb.WriteConflict conflict = 4;</code>
-     * @param \Kvrpcpb\WriteConflict $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\WriteConflict $var
      * @return $this
      */
     public function setConflict($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\WriteConflict::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\WriteConflict::class);
         $this->conflict = $var;
 
         return $this;
@@ -260,7 +260,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Key already exists
      *
      * Generated from protobuf field <code>.kvrpcpb.AlreadyExist already_exist = 5;</code>
-     * @return \Kvrpcpb\AlreadyExist|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\AlreadyExist|null
      */
     public function getAlreadyExist()
     {
@@ -281,12 +281,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Key already exists
      *
      * Generated from protobuf field <code>.kvrpcpb.AlreadyExist already_exist = 5;</code>
-     * @param \Kvrpcpb\AlreadyExist $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\AlreadyExist $var
      * @return $this
      */
     public function setAlreadyExist($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\AlreadyExist::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\AlreadyExist::class);
         $this->already_exist = $var;
 
         return $this;
@@ -296,7 +296,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Deadlock is used in pessimistic transaction for single statement rollback.
      *
      * Generated from protobuf field <code>.kvrpcpb.Deadlock deadlock = 6;</code>
-     * @return \Kvrpcpb\Deadlock|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\Deadlock|null
      */
     public function getDeadlock()
     {
@@ -317,12 +317,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Deadlock is used in pessimistic transaction for single statement rollback.
      *
      * Generated from protobuf field <code>.kvrpcpb.Deadlock deadlock = 6;</code>
-     * @param \Kvrpcpb\Deadlock $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\Deadlock $var
      * @return $this
      */
     public function setDeadlock($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\Deadlock::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\Deadlock::class);
         $this->deadlock = $var;
 
         return $this;
@@ -332,7 +332,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Commit ts is earlier than min commit ts of a transaction.
      *
      * Generated from protobuf field <code>.kvrpcpb.CommitTsExpired commit_ts_expired = 7;</code>
-     * @return \Kvrpcpb\CommitTsExpired|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CommitTsExpired|null
      */
     public function getCommitTsExpired()
     {
@@ -353,12 +353,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Commit ts is earlier than min commit ts of a transaction.
      *
      * Generated from protobuf field <code>.kvrpcpb.CommitTsExpired commit_ts_expired = 7;</code>
-     * @param \Kvrpcpb\CommitTsExpired $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CommitTsExpired $var
      * @return $this
      */
     public function setCommitTsExpired($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CommitTsExpired::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CommitTsExpired::class);
         $this->commit_ts_expired = $var;
 
         return $this;
@@ -368,7 +368,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Txn not found when checking txn status.
      *
      * Generated from protobuf field <code>.kvrpcpb.TxnNotFound txn_not_found = 8;</code>
-     * @return \Kvrpcpb\TxnNotFound|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\TxnNotFound|null
      */
     public function getTxnNotFound()
     {
@@ -389,12 +389,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Txn not found when checking txn status.
      *
      * Generated from protobuf field <code>.kvrpcpb.TxnNotFound txn_not_found = 8;</code>
-     * @param \Kvrpcpb\TxnNotFound $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\TxnNotFound $var
      * @return $this
      */
     public function setTxnNotFound($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\TxnNotFound::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\TxnNotFound::class);
         $this->txn_not_found = $var;
 
         return $this;
@@ -404,7 +404,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Calculated commit TS exceeds the limit given by the user.
      *
      * Generated from protobuf field <code>.kvrpcpb.CommitTsTooLarge commit_ts_too_large = 9;</code>
-     * @return \Kvrpcpb\CommitTsTooLarge|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CommitTsTooLarge|null
      */
     public function getCommitTsTooLarge()
     {
@@ -425,12 +425,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Calculated commit TS exceeds the limit given by the user.
      *
      * Generated from protobuf field <code>.kvrpcpb.CommitTsTooLarge commit_ts_too_large = 9;</code>
-     * @param \Kvrpcpb\CommitTsTooLarge $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CommitTsTooLarge $var
      * @return $this
      */
     public function setCommitTsTooLarge($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CommitTsTooLarge::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CommitTsTooLarge::class);
         $this->commit_ts_too_large = $var;
 
         return $this;
@@ -440,7 +440,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Assertion of a `Mutation` is evaluated as a failure.
      *
      * Generated from protobuf field <code>.kvrpcpb.AssertionFailed assertion_failed = 10;</code>
-     * @return \Kvrpcpb\AssertionFailed|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\AssertionFailed|null
      */
     public function getAssertionFailed()
     {
@@ -461,12 +461,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Assertion of a `Mutation` is evaluated as a failure.
      *
      * Generated from protobuf field <code>.kvrpcpb.AssertionFailed assertion_failed = 10;</code>
-     * @param \Kvrpcpb\AssertionFailed $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\AssertionFailed $var
      * @return $this
      */
     public function setAssertionFailed($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\AssertionFailed::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\AssertionFailed::class);
         $this->assertion_failed = $var;
 
         return $this;
@@ -476,7 +476,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * CheckTxnStatus is sent to a lock that's not the primary.
      *
      * Generated from protobuf field <code>.kvrpcpb.PrimaryMismatch primary_mismatch = 11;</code>
-     * @return \Kvrpcpb\PrimaryMismatch|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\PrimaryMismatch|null
      */
     public function getPrimaryMismatch()
     {
@@ -497,12 +497,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * CheckTxnStatus is sent to a lock that's not the primary.
      *
      * Generated from protobuf field <code>.kvrpcpb.PrimaryMismatch primary_mismatch = 11;</code>
-     * @param \Kvrpcpb\PrimaryMismatch $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\PrimaryMismatch $var
      * @return $this
      */
     public function setPrimaryMismatch($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\PrimaryMismatch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\PrimaryMismatch::class);
         $this->primary_mismatch = $var;
 
         return $this;
@@ -512,7 +512,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * TxnLockNotFound indicates the txn lock is not found.
      *
      * Generated from protobuf field <code>.kvrpcpb.TxnLockNotFound txn_lock_not_found = 12;</code>
-     * @return \Kvrpcpb\TxnLockNotFound|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\TxnLockNotFound|null
      */
     public function getTxnLockNotFound()
     {
@@ -533,12 +533,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * TxnLockNotFound indicates the txn lock is not found.
      *
      * Generated from protobuf field <code>.kvrpcpb.TxnLockNotFound txn_lock_not_found = 12;</code>
-     * @param \Kvrpcpb\TxnLockNotFound $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\TxnLockNotFound $var
      * @return $this
      */
     public function setTxnLockNotFound($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\TxnLockNotFound::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\TxnLockNotFound::class);
         $this->txn_lock_not_found = $var;
 
         return $this;
@@ -548,7 +548,7 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Extra information for error debugging
      *
      * Generated from protobuf field <code>.kvrpcpb.DebugInfo debug_info = 100;</code>
-     * @return \Kvrpcpb\DebugInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\DebugInfo|null
      */
     public function getDebugInfo()
     {
@@ -569,12 +569,12 @@ class KeyError extends \Google\Protobuf\Internal\Message
      * Extra information for error debugging
      *
      * Generated from protobuf field <code>.kvrpcpb.DebugInfo debug_info = 100;</code>
-     * @param \Kvrpcpb\DebugInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\DebugInfo $var
      * @return $this
      */
     public function setDebugInfo($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\DebugInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\DebugInfo::class);
         $this->debug_info = $var;
 
         return $this;

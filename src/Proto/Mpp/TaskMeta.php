@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: mpp.proto
 
-namespace Mpp;
+namespace CrazyGoat\Proto\Mpp;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -161,7 +161,7 @@ class TaskMeta extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Mpp::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Mpp::initOnce();
         parent::__construct($data);
     }
 
@@ -497,7 +497,7 @@ class TaskMeta extends \Google\Protobuf\Internal\Message
      */
     public function setApiVersion($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\APIVersion::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\APIVersion::class);
         $this->api_version = $var;
 
         return $this;

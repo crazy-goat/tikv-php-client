@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -38,22 +38,22 @@ class GetDCLocationInfoResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
      *     @type int $suffix
      *           suffix sign
-     *     @type \Pdpb\Timestamp $max_ts
+     *     @type \CrazyGoat\Proto\Pdpb\Timestamp $max_ts
      *           max_ts will be included into this response if PD leader think the receiver needs,
      *           which it's set when the number of the max suffix bits changes.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -72,12 +72,12 @@ class GetDCLocationInfoResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -114,7 +114,7 @@ class GetDCLocationInfoResponse extends \Google\Protobuf\Internal\Message
      * which it's set when the number of the max suffix bits changes.
      *
      * Generated from protobuf field <code>.pdpb.Timestamp max_ts = 3;</code>
-     * @return \Pdpb\Timestamp|null
+     * @return \CrazyGoat\Proto\Pdpb\Timestamp|null
      */
     public function getMaxTs()
     {
@@ -136,12 +136,12 @@ class GetDCLocationInfoResponse extends \Google\Protobuf\Internal\Message
      * which it's set when the number of the max suffix bits changes.
      *
      * Generated from protobuf field <code>.pdpb.Timestamp max_ts = 3;</code>
-     * @param \Pdpb\Timestamp $var
+     * @param \CrazyGoat\Proto\Pdpb\Timestamp $var
      * @return $this
      */
     public function setMaxTs($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Timestamp::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\Timestamp::class);
         $this->max_ts = $var;
 
         return $this;

@@ -1,7 +1,7 @@
 <?php
 // GENERATED CODE -- DO NOT EDIT!
 
-namespace Deadlock;
+namespace CrazyGoat\Proto\Deadlock;
 
 /**
  */
@@ -19,16 +19,16 @@ class DeadlockClient extends \Grpc\BaseStub {
     /**
      * Get local wait for entries, should be handle by every node.
      * The owner should sent this request to all members to build the complete wait for graph.
-     * @param \Deadlock\WaitForEntriesRequest $argument input argument
+     * @param \CrazyGoat\Proto\Deadlock\WaitForEntriesRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Deadlock\WaitForEntriesResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Deadlock\WaitForEntriesResponse>
      */
-    public function GetWaitForEntries(\Deadlock\WaitForEntriesRequest $argument,
+    public function GetWaitForEntries(\CrazyGoat\Proto\Deadlock\WaitForEntriesRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/deadlock.Deadlock/GetWaitForEntries',
         $argument,
-        ['\Deadlock\WaitForEntriesResponse', 'decode'],
+        ['\CrazyGoat\Proto\Deadlock\WaitForEntriesResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -42,7 +42,7 @@ class DeadlockClient extends \Grpc\BaseStub {
      */
     public function Detect($metadata = [], $options = []) {
         return $this->_bidiRequest('/deadlock.Deadlock/Detect',
-        ['\Deadlock\DeadlockResponse','decode'],
+        ['\CrazyGoat\Proto\Deadlock\DeadlockResponse','decode'],
         $metadata, $options);
     }
 

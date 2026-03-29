@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -25,17 +25,17 @@ class ChangePeer extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Metapb\Peer $peer
+     *     @type \CrazyGoat\Proto\Metapb\Peer $peer
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.metapb.Peer peer = 1;</code>
-     * @return \Metapb\Peer|null
+     * @return \CrazyGoat\Proto\Metapb\Peer|null
      */
     public function getPeer()
     {
@@ -54,12 +54,12 @@ class ChangePeer extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Peer peer = 1;</code>
-     * @param \Metapb\Peer $var
+     * @param \CrazyGoat\Proto\Metapb\Peer $var
      * @return $this
      */
     public function setPeer($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Peer::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->peer = $var;
 
         return $this;

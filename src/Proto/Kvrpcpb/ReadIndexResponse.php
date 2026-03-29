@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -36,21 +36,21 @@ class ReadIndexResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Errorpb\Error $region_error
+     *     @type \CrazyGoat\Proto\Errorpb\Error $region_error
      *     @type int|string $read_index
-     *     @type \Kvrpcpb\LockInfo $locked
+     *     @type \CrazyGoat\Proto\Kvrpcpb\LockInfo $locked
      *           If `locked` is set, this read request is blocked by a lock.
      *           The lock should be returned to the client.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @return \Errorpb\Error|null
+     * @return \CrazyGoat\Proto\Errorpb\Error|null
      */
     public function getRegionError()
     {
@@ -69,12 +69,12 @@ class ReadIndexResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @param \Errorpb\Error $var
+     * @param \CrazyGoat\Proto\Errorpb\Error $var
      * @return $this
      */
     public function setRegionError($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\Error::class);
         $this->region_error = $var;
 
         return $this;
@@ -107,7 +107,7 @@ class ReadIndexResponse extends \Google\Protobuf\Internal\Message
      * The lock should be returned to the client.
      *
      * Generated from protobuf field <code>.kvrpcpb.LockInfo locked = 3;</code>
-     * @return \Kvrpcpb\LockInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\LockInfo|null
      */
     public function getLocked()
     {
@@ -129,12 +129,12 @@ class ReadIndexResponse extends \Google\Protobuf\Internal\Message
      * The lock should be returned to the client.
      *
      * Generated from protobuf field <code>.kvrpcpb.LockInfo locked = 3;</code>
-     * @param \Kvrpcpb\LockInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\LockInfo $var
      * @return $this
      */
     public function setLocked($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\LockInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\LockInfo::class);
         $this->locked = $var;
 
         return $this;

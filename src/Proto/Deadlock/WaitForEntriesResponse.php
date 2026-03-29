@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: deadlock.proto
 
-namespace Deadlock;
+namespace CrazyGoat\Proto\Deadlock;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -25,17 +25,17 @@ class WaitForEntriesResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Deadlock\WaitForEntry[] $entries
+     *     @type \CrazyGoat\Proto\Deadlock\WaitForEntry[] $entries
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Deadlock::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Deadlock::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .deadlock.WaitForEntry entries = 1;</code>
-     * @return RepeatedField<\Deadlock\WaitForEntry>
+     * @return RepeatedField<\CrazyGoat\Proto\Deadlock\WaitForEntry>
      */
     public function getEntries()
     {
@@ -44,12 +44,12 @@ class WaitForEntriesResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .deadlock.WaitForEntry entries = 1;</code>
-     * @param \Deadlock\WaitForEntry[] $var
+     * @param \CrazyGoat\Proto\Deadlock\WaitForEntry[] $var
      * @return $this
      */
     public function setEntries($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Deadlock\WaitForEntry::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Deadlock\WaitForEntry::class);
         $this->entries = $arr;
 
         return $this;

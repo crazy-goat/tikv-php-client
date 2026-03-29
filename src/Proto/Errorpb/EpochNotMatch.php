@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: errorpb.proto
 
-namespace Errorpb;
+namespace CrazyGoat\Proto\Errorpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -31,12 +31,12 @@ class EpochNotMatch extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Metapb\Region[] $current_regions
+     *     @type \CrazyGoat\Proto\Metapb\Region[] $current_regions
      *           Available regions that may be siblings of the requested one.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Errorpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Errorpb::initOnce();
         parent::__construct($data);
     }
 
@@ -44,7 +44,7 @@ class EpochNotMatch extends \Google\Protobuf\Internal\Message
      * Available regions that may be siblings of the requested one.
      *
      * Generated from protobuf field <code>repeated .metapb.Region current_regions = 1;</code>
-     * @return RepeatedField<\Metapb\Region>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Region>
      */
     public function getCurrentRegions()
     {
@@ -55,12 +55,12 @@ class EpochNotMatch extends \Google\Protobuf\Internal\Message
      * Available regions that may be siblings of the requested one.
      *
      * Generated from protobuf field <code>repeated .metapb.Region current_regions = 1;</code>
-     * @param \Metapb\Region[] $var
+     * @param \CrazyGoat\Proto\Metapb\Region[] $var
      * @return $this
      */
     public function setCurrentRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Region::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Region::class);
         $this->current_regions = $arr;
 
         return $this;

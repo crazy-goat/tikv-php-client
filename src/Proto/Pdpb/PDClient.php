@@ -1,7 +1,7 @@
 <?php
 // GENERATED CODE -- DO NOT EDIT!
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 /**
  */
@@ -19,32 +19,32 @@ class PDClient extends \Grpc\BaseStub {
     /**
      * GetClusterInfo get the information of this cluster. It does not require
      * the cluster_id in request matchs the id of this cluster.
-     * @param \Pdpb\GetClusterInfoRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetClusterInfoRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetClusterInfoResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetClusterInfoResponse>
      */
-    public function GetClusterInfo(\Pdpb\GetClusterInfoRequest $argument,
+    public function GetClusterInfo(\CrazyGoat\Proto\Pdpb\GetClusterInfoRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetClusterInfo',
         $argument,
-        ['\Pdpb\GetClusterInfoResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetClusterInfoResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * GetMembers get the member list of this cluster. It does not require
      * the cluster_id in request matchs the id of this cluster.
-     * @param \Pdpb\GetMembersRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetMembersRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetMembersResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetMembersResponse>
      */
-    public function GetMembers(\Pdpb\GetMembersRequest $argument,
+    public function GetMembers(\CrazyGoat\Proto\Pdpb\GetMembersRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetMembers',
         $argument,
-        ['\Pdpb\GetMembersResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetMembersResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -55,119 +55,119 @@ class PDClient extends \Grpc\BaseStub {
      */
     public function Tso($metadata = [], $options = []) {
         return $this->_bidiRequest('/pdpb.PD/Tso',
-        ['\Pdpb\TsoResponse','decode'],
+        ['\CrazyGoat\Proto\Pdpb\TsoResponse','decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\BootstrapRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\BootstrapRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\BootstrapResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\BootstrapResponse>
      */
-    public function Bootstrap(\Pdpb\BootstrapRequest $argument,
+    public function Bootstrap(\CrazyGoat\Proto\Pdpb\BootstrapRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/Bootstrap',
         $argument,
-        ['\Pdpb\BootstrapResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\BootstrapResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\IsBootstrappedRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\IsBootstrappedRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\IsBootstrappedResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\IsBootstrappedResponse>
      */
-    public function IsBootstrapped(\Pdpb\IsBootstrappedRequest $argument,
+    public function IsBootstrapped(\CrazyGoat\Proto\Pdpb\IsBootstrappedRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/IsBootstrapped',
         $argument,
-        ['\Pdpb\IsBootstrappedResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\IsBootstrappedResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\AllocIDRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\AllocIDRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\AllocIDResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\AllocIDResponse>
      */
-    public function AllocID(\Pdpb\AllocIDRequest $argument,
+    public function AllocID(\CrazyGoat\Proto\Pdpb\AllocIDRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/AllocID',
         $argument,
-        ['\Pdpb\AllocIDResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\AllocIDResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\IsSnapshotRecoveringRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\IsSnapshotRecoveringRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\IsSnapshotRecoveringResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\IsSnapshotRecoveringResponse>
      */
-    public function IsSnapshotRecovering(\Pdpb\IsSnapshotRecoveringRequest $argument,
+    public function IsSnapshotRecovering(\CrazyGoat\Proto\Pdpb\IsSnapshotRecoveringRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/IsSnapshotRecovering',
         $argument,
-        ['\Pdpb\IsSnapshotRecoveringResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\IsSnapshotRecoveringResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetStoreRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetStoreRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetStoreResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetStoreResponse>
      */
-    public function GetStore(\Pdpb\GetStoreRequest $argument,
+    public function GetStore(\CrazyGoat\Proto\Pdpb\GetStoreRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetStore',
         $argument,
-        ['\Pdpb\GetStoreResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetStoreResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\PutStoreRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\PutStoreRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\PutStoreResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\PutStoreResponse>
      */
-    public function PutStore(\Pdpb\PutStoreRequest $argument,
+    public function PutStore(\CrazyGoat\Proto\Pdpb\PutStoreRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/PutStore',
         $argument,
-        ['\Pdpb\PutStoreResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\PutStoreResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetAllStoresRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetAllStoresRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetAllStoresResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetAllStoresResponse>
      */
-    public function GetAllStores(\Pdpb\GetAllStoresRequest $argument,
+    public function GetAllStores(\CrazyGoat\Proto\Pdpb\GetAllStoresRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetAllStores',
         $argument,
-        ['\Pdpb\GetAllStoresResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetAllStoresResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\StoreHeartbeatRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\StoreHeartbeatRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\StoreHeartbeatResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\StoreHeartbeatResponse>
      */
-    public function StoreHeartbeat(\Pdpb\StoreHeartbeatRequest $argument,
+    public function StoreHeartbeat(\CrazyGoat\Proto\Pdpb\StoreHeartbeatRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/StoreHeartbeat',
         $argument,
-        ['\Pdpb\StoreHeartbeatResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\StoreHeartbeatResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -178,49 +178,49 @@ class PDClient extends \Grpc\BaseStub {
      */
     public function RegionHeartbeat($metadata = [], $options = []) {
         return $this->_bidiRequest('/pdpb.PD/RegionHeartbeat',
-        ['\Pdpb\RegionHeartbeatResponse','decode'],
+        ['\CrazyGoat\Proto\Pdpb\RegionHeartbeatResponse','decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetRegionRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetRegionRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetRegionResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetRegionResponse>
      */
-    public function GetRegion(\Pdpb\GetRegionRequest $argument,
+    public function GetRegion(\CrazyGoat\Proto\Pdpb\GetRegionRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetRegion',
         $argument,
-        ['\Pdpb\GetRegionResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetRegionResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetRegionRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetRegionRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetRegionResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetRegionResponse>
      */
-    public function GetPrevRegion(\Pdpb\GetRegionRequest $argument,
+    public function GetPrevRegion(\CrazyGoat\Proto\Pdpb\GetRegionRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetPrevRegion',
         $argument,
-        ['\Pdpb\GetRegionResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetRegionResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetRegionByIDRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetRegionByIDRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetRegionResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetRegionResponse>
      */
-    public function GetRegionByID(\Pdpb\GetRegionByIDRequest $argument,
+    public function GetRegionByID(\CrazyGoat\Proto\Pdpb\GetRegionByIDRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetRegionByID',
         $argument,
-        ['\Pdpb\GetRegionResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetRegionResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -231,360 +231,360 @@ class PDClient extends \Grpc\BaseStub {
      */
     public function QueryRegion($metadata = [], $options = []) {
         return $this->_bidiRequest('/pdpb.PD/QueryRegion',
-        ['\Pdpb\QueryRegionResponse','decode'],
+        ['\CrazyGoat\Proto\Pdpb\QueryRegionResponse','decode'],
         $metadata, $options);
     }
 
     /**
      * Deprecated: use BatchScanRegions instead.
-     * @param \Pdpb\ScanRegionsRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\ScanRegionsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\ScanRegionsResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\ScanRegionsResponse>
      */
-    public function ScanRegions(\Pdpb\ScanRegionsRequest $argument,
+    public function ScanRegions(\CrazyGoat\Proto\Pdpb\ScanRegionsRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/ScanRegions',
         $argument,
-        ['\Pdpb\ScanRegionsResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\ScanRegionsResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\BatchScanRegionsRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\BatchScanRegionsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\BatchScanRegionsResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\BatchScanRegionsResponse>
      */
-    public function BatchScanRegions(\Pdpb\BatchScanRegionsRequest $argument,
+    public function BatchScanRegions(\CrazyGoat\Proto\Pdpb\BatchScanRegionsRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/BatchScanRegions',
         $argument,
-        ['\Pdpb\BatchScanRegionsResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\BatchScanRegionsResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * @deprecated
-     * @param \Pdpb\AskSplitRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\AskSplitRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\AskSplitResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\AskSplitResponse>
      */
-    public function AskSplit(\Pdpb\AskSplitRequest $argument,
+    public function AskSplit(\CrazyGoat\Proto\Pdpb\AskSplitRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/AskSplit',
         $argument,
-        ['\Pdpb\AskSplitResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\AskSplitResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * @deprecated
-     * @param \Pdpb\ReportSplitRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\ReportSplitRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\ReportSplitResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\ReportSplitResponse>
      */
-    public function ReportSplit(\Pdpb\ReportSplitRequest $argument,
+    public function ReportSplit(\CrazyGoat\Proto\Pdpb\ReportSplitRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/ReportSplit',
         $argument,
-        ['\Pdpb\ReportSplitResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\ReportSplitResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\AskBatchSplitRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\AskBatchSplitRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\AskBatchSplitResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\AskBatchSplitResponse>
      */
-    public function AskBatchSplit(\Pdpb\AskBatchSplitRequest $argument,
+    public function AskBatchSplit(\CrazyGoat\Proto\Pdpb\AskBatchSplitRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/AskBatchSplit',
         $argument,
-        ['\Pdpb\AskBatchSplitResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\AskBatchSplitResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\ReportBatchSplitRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\ReportBatchSplitRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\ReportBatchSplitResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\ReportBatchSplitResponse>
      */
-    public function ReportBatchSplit(\Pdpb\ReportBatchSplitRequest $argument,
+    public function ReportBatchSplit(\CrazyGoat\Proto\Pdpb\ReportBatchSplitRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/ReportBatchSplit',
         $argument,
-        ['\Pdpb\ReportBatchSplitResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\ReportBatchSplitResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetClusterConfigRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetClusterConfigRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetClusterConfigResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetClusterConfigResponse>
      */
-    public function GetClusterConfig(\Pdpb\GetClusterConfigRequest $argument,
+    public function GetClusterConfig(\CrazyGoat\Proto\Pdpb\GetClusterConfigRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetClusterConfig',
         $argument,
-        ['\Pdpb\GetClusterConfigResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetClusterConfigResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\PutClusterConfigRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\PutClusterConfigRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\PutClusterConfigResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\PutClusterConfigResponse>
      */
-    public function PutClusterConfig(\Pdpb\PutClusterConfigRequest $argument,
+    public function PutClusterConfig(\CrazyGoat\Proto\Pdpb\PutClusterConfigRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/PutClusterConfig',
         $argument,
-        ['\Pdpb\PutClusterConfigResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\PutClusterConfigResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\ScatterRegionRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\ScatterRegionRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\ScatterRegionResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\ScatterRegionResponse>
      */
-    public function ScatterRegion(\Pdpb\ScatterRegionRequest $argument,
+    public function ScatterRegion(\CrazyGoat\Proto\Pdpb\ScatterRegionRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/ScatterRegion',
         $argument,
-        ['\Pdpb\ScatterRegionResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\ScatterRegionResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetGCSafePointRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetGCSafePointRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetGCSafePointResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetGCSafePointResponse>
      */
-    public function GetGCSafePoint(\Pdpb\GetGCSafePointRequest $argument,
+    public function GetGCSafePoint(\CrazyGoat\Proto\Pdpb\GetGCSafePointRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetGCSafePoint',
         $argument,
-        ['\Pdpb\GetGCSafePointResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetGCSafePointResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\UpdateGCSafePointRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\UpdateGCSafePointRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\UpdateGCSafePointResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\UpdateGCSafePointResponse>
      */
-    public function UpdateGCSafePoint(\Pdpb\UpdateGCSafePointRequest $argument,
+    public function UpdateGCSafePoint(\CrazyGoat\Proto\Pdpb\UpdateGCSafePointRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/UpdateGCSafePoint',
         $argument,
-        ['\Pdpb\UpdateGCSafePointResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\UpdateGCSafePointResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\UpdateServiceGCSafePointRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\UpdateServiceGCSafePointRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\UpdateServiceGCSafePointResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\UpdateServiceGCSafePointResponse>
      */
-    public function UpdateServiceGCSafePoint(\Pdpb\UpdateServiceGCSafePointRequest $argument,
+    public function UpdateServiceGCSafePoint(\CrazyGoat\Proto\Pdpb\UpdateServiceGCSafePointRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/UpdateServiceGCSafePoint',
         $argument,
-        ['\Pdpb\UpdateServiceGCSafePointResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\UpdateServiceGCSafePointResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetGCSafePointV2Request $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetGCSafePointV2Request $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetGCSafePointV2Response>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetGCSafePointV2Response>
      */
-    public function GetGCSafePointV2(\Pdpb\GetGCSafePointV2Request $argument,
+    public function GetGCSafePointV2(\CrazyGoat\Proto\Pdpb\GetGCSafePointV2Request $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetGCSafePointV2',
         $argument,
-        ['\Pdpb\GetGCSafePointV2Response', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetGCSafePointV2Response', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\WatchGCSafePointV2Request $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\WatchGCSafePointV2Request $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
      * @return \Grpc\ServerStreamingCall
      */
-    public function WatchGCSafePointV2(\Pdpb\WatchGCSafePointV2Request $argument,
+    public function WatchGCSafePointV2(\CrazyGoat\Proto\Pdpb\WatchGCSafePointV2Request $argument,
       $metadata = [], $options = []) {
         return $this->_serverStreamRequest('/pdpb.PD/WatchGCSafePointV2',
         $argument,
-        ['\Pdpb\WatchGCSafePointV2Response', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\WatchGCSafePointV2Response', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\UpdateGCSafePointV2Request $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\UpdateGCSafePointV2Request $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\UpdateGCSafePointV2Response>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\UpdateGCSafePointV2Response>
      */
-    public function UpdateGCSafePointV2(\Pdpb\UpdateGCSafePointV2Request $argument,
+    public function UpdateGCSafePointV2(\CrazyGoat\Proto\Pdpb\UpdateGCSafePointV2Request $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/UpdateGCSafePointV2',
         $argument,
-        ['\Pdpb\UpdateGCSafePointV2Response', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\UpdateGCSafePointV2Response', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\UpdateServiceSafePointV2Request $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\UpdateServiceSafePointV2Request $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\UpdateServiceSafePointV2Response>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\UpdateServiceSafePointV2Response>
      */
-    public function UpdateServiceSafePointV2(\Pdpb\UpdateServiceSafePointV2Request $argument,
+    public function UpdateServiceSafePointV2(\CrazyGoat\Proto\Pdpb\UpdateServiceSafePointV2Request $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/UpdateServiceSafePointV2',
         $argument,
-        ['\Pdpb\UpdateServiceSafePointV2Response', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\UpdateServiceSafePointV2Response', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetAllGCSafePointV2Request $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetAllGCSafePointV2Request $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetAllGCSafePointV2Response>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetAllGCSafePointV2Response>
      */
-    public function GetAllGCSafePointV2(\Pdpb\GetAllGCSafePointV2Request $argument,
+    public function GetAllGCSafePointV2(\CrazyGoat\Proto\Pdpb\GetAllGCSafePointV2Request $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetAllGCSafePointV2',
         $argument,
-        ['\Pdpb\GetAllGCSafePointV2Response', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetAllGCSafePointV2Response', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\AdvanceGCSafePointRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\AdvanceGCSafePointRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\AdvanceGCSafePointResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\AdvanceGCSafePointResponse>
      */
-    public function AdvanceGCSafePoint(\Pdpb\AdvanceGCSafePointRequest $argument,
+    public function AdvanceGCSafePoint(\CrazyGoat\Proto\Pdpb\AdvanceGCSafePointRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/AdvanceGCSafePoint',
         $argument,
-        ['\Pdpb\AdvanceGCSafePointResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\AdvanceGCSafePointResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\AdvanceTxnSafePointRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\AdvanceTxnSafePointRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\AdvanceTxnSafePointResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\AdvanceTxnSafePointResponse>
      */
-    public function AdvanceTxnSafePoint(\Pdpb\AdvanceTxnSafePointRequest $argument,
+    public function AdvanceTxnSafePoint(\CrazyGoat\Proto\Pdpb\AdvanceTxnSafePointRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/AdvanceTxnSafePoint',
         $argument,
-        ['\Pdpb\AdvanceTxnSafePointResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\AdvanceTxnSafePointResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\SetGCBarrierRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\SetGCBarrierRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\SetGCBarrierResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\SetGCBarrierResponse>
      */
-    public function SetGCBarrier(\Pdpb\SetGCBarrierRequest $argument,
+    public function SetGCBarrier(\CrazyGoat\Proto\Pdpb\SetGCBarrierRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/SetGCBarrier',
         $argument,
-        ['\Pdpb\SetGCBarrierResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\SetGCBarrierResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\DeleteGCBarrierRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\DeleteGCBarrierRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\DeleteGCBarrierResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\DeleteGCBarrierResponse>
      */
-    public function DeleteGCBarrier(\Pdpb\DeleteGCBarrierRequest $argument,
+    public function DeleteGCBarrier(\CrazyGoat\Proto\Pdpb\DeleteGCBarrierRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/DeleteGCBarrier',
         $argument,
-        ['\Pdpb\DeleteGCBarrierResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\DeleteGCBarrierResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\SetGlobalGCBarrierRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\SetGlobalGCBarrierRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\SetGlobalGCBarrierResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\SetGlobalGCBarrierResponse>
      */
-    public function SetGlobalGCBarrier(\Pdpb\SetGlobalGCBarrierRequest $argument,
+    public function SetGlobalGCBarrier(\CrazyGoat\Proto\Pdpb\SetGlobalGCBarrierRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/SetGlobalGCBarrier',
         $argument,
-        ['\Pdpb\SetGlobalGCBarrierResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\SetGlobalGCBarrierResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\DeleteGlobalGCBarrierRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\DeleteGlobalGCBarrierRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\DeleteGlobalGCBarrierResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\DeleteGlobalGCBarrierResponse>
      */
-    public function DeleteGlobalGCBarrier(\Pdpb\DeleteGlobalGCBarrierRequest $argument,
+    public function DeleteGlobalGCBarrier(\CrazyGoat\Proto\Pdpb\DeleteGlobalGCBarrierRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/DeleteGlobalGCBarrier',
         $argument,
-        ['\Pdpb\DeleteGlobalGCBarrierResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\DeleteGlobalGCBarrierResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetGCStateRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetGCStateRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetGCStateResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetGCStateResponse>
      */
-    public function GetGCState(\Pdpb\GetGCStateRequest $argument,
+    public function GetGCState(\CrazyGoat\Proto\Pdpb\GetGCStateRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetGCState',
         $argument,
-        ['\Pdpb\GetGCStateResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetGCStateResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetAllKeyspacesGCStatesRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetAllKeyspacesGCStatesRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetAllKeyspacesGCStatesResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetAllKeyspacesGCStatesResponse>
      */
-    public function GetAllKeyspacesGCStates(\Pdpb\GetAllKeyspacesGCStatesRequest $argument,
+    public function GetAllKeyspacesGCStates(\CrazyGoat\Proto\Pdpb\GetAllKeyspacesGCStatesRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetAllKeyspacesGCStates',
         $argument,
-        ['\Pdpb\GetAllKeyspacesGCStatesResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetAllKeyspacesGCStatesResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -595,119 +595,119 @@ class PDClient extends \Grpc\BaseStub {
      */
     public function SyncRegions($metadata = [], $options = []) {
         return $this->_bidiRequest('/pdpb.PD/SyncRegions',
-        ['\Pdpb\SyncRegionResponse','decode'],
+        ['\CrazyGoat\Proto\Pdpb\SyncRegionResponse','decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetOperatorRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetOperatorRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetOperatorResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetOperatorResponse>
      */
-    public function GetOperator(\Pdpb\GetOperatorRequest $argument,
+    public function GetOperator(\CrazyGoat\Proto\Pdpb\GetOperatorRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetOperator',
         $argument,
-        ['\Pdpb\GetOperatorResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetOperatorResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\SyncMaxTSRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\SyncMaxTSRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\SyncMaxTSResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\SyncMaxTSResponse>
      */
-    public function SyncMaxTS(\Pdpb\SyncMaxTSRequest $argument,
+    public function SyncMaxTS(\CrazyGoat\Proto\Pdpb\SyncMaxTSRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/SyncMaxTS',
         $argument,
-        ['\Pdpb\SyncMaxTSResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\SyncMaxTSResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\SplitRegionsRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\SplitRegionsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\SplitRegionsResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\SplitRegionsResponse>
      */
-    public function SplitRegions(\Pdpb\SplitRegionsRequest $argument,
+    public function SplitRegions(\CrazyGoat\Proto\Pdpb\SplitRegionsRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/SplitRegions',
         $argument,
-        ['\Pdpb\SplitRegionsResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\SplitRegionsResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\SplitAndScatterRegionsRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\SplitAndScatterRegionsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\SplitAndScatterRegionsResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\SplitAndScatterRegionsResponse>
      */
-    public function SplitAndScatterRegions(\Pdpb\SplitAndScatterRegionsRequest $argument,
+    public function SplitAndScatterRegions(\CrazyGoat\Proto\Pdpb\SplitAndScatterRegionsRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/SplitAndScatterRegions',
         $argument,
-        ['\Pdpb\SplitAndScatterRegionsResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\SplitAndScatterRegionsResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetDCLocationInfoRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetDCLocationInfoRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetDCLocationInfoResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetDCLocationInfoResponse>
      */
-    public function GetDCLocationInfo(\Pdpb\GetDCLocationInfoRequest $argument,
+    public function GetDCLocationInfo(\CrazyGoat\Proto\Pdpb\GetDCLocationInfoRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetDCLocationInfo',
         $argument,
-        ['\Pdpb\GetDCLocationInfoResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetDCLocationInfoResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\StoreGlobalConfigRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\StoreGlobalConfigRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\StoreGlobalConfigResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\StoreGlobalConfigResponse>
      */
-    public function StoreGlobalConfig(\Pdpb\StoreGlobalConfigRequest $argument,
+    public function StoreGlobalConfig(\CrazyGoat\Proto\Pdpb\StoreGlobalConfigRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/StoreGlobalConfig',
         $argument,
-        ['\Pdpb\StoreGlobalConfigResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\StoreGlobalConfigResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\LoadGlobalConfigRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\LoadGlobalConfigRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\LoadGlobalConfigResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\LoadGlobalConfigResponse>
      */
-    public function LoadGlobalConfig(\Pdpb\LoadGlobalConfigRequest $argument,
+    public function LoadGlobalConfig(\CrazyGoat\Proto\Pdpb\LoadGlobalConfigRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/LoadGlobalConfig',
         $argument,
-        ['\Pdpb\LoadGlobalConfigResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\LoadGlobalConfigResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\WatchGlobalConfigRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\WatchGlobalConfigRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
      * @return \Grpc\ServerStreamingCall
      */
-    public function WatchGlobalConfig(\Pdpb\WatchGlobalConfigRequest $argument,
+    public function WatchGlobalConfig(\CrazyGoat\Proto\Pdpb\WatchGlobalConfigRequest $argument,
       $metadata = [], $options = []) {
         return $this->_serverStreamRequest('/pdpb.PD/WatchGlobalConfig',
         $argument,
-        ['\Pdpb\WatchGlobalConfigResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\WatchGlobalConfigResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -718,49 +718,49 @@ class PDClient extends \Grpc\BaseStub {
      */
     public function ReportBuckets($metadata = [], $options = []) {
         return $this->_clientStreamRequest('/pdpb.PD/ReportBuckets',
-        ['\Pdpb\ReportBucketsResponse','decode'],
+        ['\CrazyGoat\Proto\Pdpb\ReportBucketsResponse','decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\ReportMinResolvedTsRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\ReportMinResolvedTsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\ReportMinResolvedTsResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\ReportMinResolvedTsResponse>
      */
-    public function ReportMinResolvedTS(\Pdpb\ReportMinResolvedTsRequest $argument,
+    public function ReportMinResolvedTS(\CrazyGoat\Proto\Pdpb\ReportMinResolvedTsRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/ReportMinResolvedTS',
         $argument,
-        ['\Pdpb\ReportMinResolvedTsResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\ReportMinResolvedTsResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\SetExternalTimestampRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\SetExternalTimestampRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\SetExternalTimestampResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\SetExternalTimestampResponse>
      */
-    public function SetExternalTimestamp(\Pdpb\SetExternalTimestampRequest $argument,
+    public function SetExternalTimestamp(\CrazyGoat\Proto\Pdpb\SetExternalTimestampRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/SetExternalTimestamp',
         $argument,
-        ['\Pdpb\SetExternalTimestampResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\SetExternalTimestampResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Pdpb\GetExternalTimestampRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetExternalTimestampRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetExternalTimestampResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetExternalTimestampResponse>
      */
-    public function GetExternalTimestamp(\Pdpb\GetExternalTimestampRequest $argument,
+    public function GetExternalTimestamp(\CrazyGoat\Proto\Pdpb\GetExternalTimestampRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetExternalTimestamp',
         $argument,
-        ['\Pdpb\GetExternalTimestampResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetExternalTimestampResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -768,16 +768,16 @@ class PDClient extends \Grpc\BaseStub {
      * Get the minimum timestamp across all keyspace groups from API server
      * TODO: Currently, we need to ask API server to get the minimum timestamp.
      * Once we support service discovery, we can remove it.
-     * @param \Pdpb\GetMinTSRequest $argument input argument
+     * @param \CrazyGoat\Proto\Pdpb\GetMinTSRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Pdpb\GetMinTSResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Pdpb\GetMinTSResponse>
      */
-    public function GetMinTS(\Pdpb\GetMinTSRequest $argument,
+    public function GetMinTS(\CrazyGoat\Proto\Pdpb\GetMinTSRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/pdpb.PD/GetMinTS',
         $argument,
-        ['\Pdpb\GetMinTSResponse', 'decode'],
+        ['\CrazyGoat\Proto\Pdpb\GetMinTSResponse', 'decode'],
         $metadata, $options);
     }
 

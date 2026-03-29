@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -75,32 +75,32 @@ class BatchRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\Context $context
+     *     @type \CrazyGoat\Proto\Kvrpcpb\Context $context
      *     @type int|string $tp
      *     @type string $data
-     *     @type \Coprocessor\RegionInfo[] $regions
+     *     @type \CrazyGoat\Proto\Coprocessor\RegionInfo[] $regions
      *     @type int|string $start_ts
      *     @type int|string $schema_ver
      *           Any schema-ful storage to validate schema correctness if necessary.
-     *     @type \Coprocessor\TableRegions[] $table_regions
+     *     @type \CrazyGoat\Proto\Coprocessor\TableRegions[] $table_regions
      *           Used for partition table scan
      *     @type string $log_id
      *     @type int|string $connection_id
      *           This is the session id between a client and tidb
      *     @type string $connection_alias
      *           This is the session alias between a client and tidb
-     *     @type \Coprocessor\TableShardInfos[] $table_shard_infos
+     *     @type \CrazyGoat\Proto\Coprocessor\TableShardInfos[] $table_shard_infos
      *           Shard infos for FTS index, used by TiFlash reading TiCI.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @return \Kvrpcpb\Context|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\Context|null
      */
     public function getContext()
     {
@@ -119,12 +119,12 @@ class BatchRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @param \Kvrpcpb\Context $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\Context $var
      * @return $this
      */
     public function setContext($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\Context::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\Context::class);
         $this->context = $var;
 
         return $this;
@@ -176,7 +176,7 @@ class BatchRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.RegionInfo regions = 4;</code>
-     * @return RepeatedField<\Coprocessor\RegionInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\RegionInfo>
      */
     public function getRegions()
     {
@@ -185,12 +185,12 @@ class BatchRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.RegionInfo regions = 4;</code>
-     * @param \Coprocessor\RegionInfo[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\RegionInfo[] $var
      * @return $this
      */
     public function setRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\RegionInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\RegionInfo::class);
         $this->regions = $arr;
 
         return $this;
@@ -248,7 +248,7 @@ class BatchRequest extends \Google\Protobuf\Internal\Message
      * Used for partition table scan
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableRegions table_regions = 7;</code>
-     * @return RepeatedField<\Coprocessor\TableRegions>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\TableRegions>
      */
     public function getTableRegions()
     {
@@ -259,12 +259,12 @@ class BatchRequest extends \Google\Protobuf\Internal\Message
      * Used for partition table scan
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableRegions table_regions = 7;</code>
-     * @param \Coprocessor\TableRegions[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\TableRegions[] $var
      * @return $this
      */
     public function setTableRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\TableRegions::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\TableRegions::class);
         $this->table_regions = $arr;
 
         return $this;
@@ -348,7 +348,7 @@ class BatchRequest extends \Google\Protobuf\Internal\Message
      * Shard infos for FTS index, used by TiFlash reading TiCI.
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableShardInfos table_shard_infos = 11;</code>
-     * @return RepeatedField<\Coprocessor\TableShardInfos>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\TableShardInfos>
      */
     public function getTableShardInfos()
     {
@@ -359,12 +359,12 @@ class BatchRequest extends \Google\Protobuf\Internal\Message
      * Shard infos for FTS index, used by TiFlash reading TiCI.
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableShardInfos table_shard_infos = 11;</code>
-     * @param \Coprocessor\TableShardInfos[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\TableShardInfos[] $var
      * @return $this
      */
     public function setTableShardInfos($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\TableShardInfos::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\TableShardInfos::class);
         $this->table_shard_infos = $arr;
 
         return $this;

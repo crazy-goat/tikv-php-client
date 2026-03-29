@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: eraftpb.proto
 
-namespace Eraftpb;
+namespace CrazyGoat\Proto\Eraftpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -39,7 +39,7 @@ class HardState extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Eraftpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Eraftpb::initOnce();
         parent::__construct($data);
     }
 

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -29,18 +29,18 @@ class StoreReport extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\PeerReport[] $peer_reports
+     *     @type \CrazyGoat\Proto\Pdpb\PeerReport[] $peer_reports
      *     @type int|string $step
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.PeerReport peer_reports = 1;</code>
-     * @return RepeatedField<\Pdpb\PeerReport>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\PeerReport>
      */
     public function getPeerReports()
     {
@@ -49,12 +49,12 @@ class StoreReport extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.PeerReport peer_reports = 1;</code>
-     * @param \Pdpb\PeerReport[] $var
+     * @param \CrazyGoat\Proto\Pdpb\PeerReport[] $var
      * @return $this
      */
     public function setPeerReports($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\PeerReport::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\PeerReport::class);
         $this->peer_reports = $arr;
 
         return $this;

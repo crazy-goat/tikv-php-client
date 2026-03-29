@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -37,7 +37,7 @@ class DfsStatItem extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\DfsStatScope $scope
+     *     @type \CrazyGoat\Proto\Pdpb\DfsStatScope $scope
      *     @type int|string $written_bytes
      *           Number of bytes written to DFS.
      *     @type int|string $write_requests
@@ -45,13 +45,13 @@ class DfsStatItem extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.DfsStatScope scope = 1;</code>
-     * @return \Pdpb\DfsStatScope|null
+     * @return \CrazyGoat\Proto\Pdpb\DfsStatScope|null
      */
     public function getScope()
     {
@@ -70,12 +70,12 @@ class DfsStatItem extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.DfsStatScope scope = 1;</code>
-     * @param \Pdpb\DfsStatScope $var
+     * @param \CrazyGoat\Proto\Pdpb\DfsStatScope $var
      * @return $this
      */
     public function setScope($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\DfsStatScope::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\DfsStatScope::class);
         $this->scope = $var;
 
         return $this;

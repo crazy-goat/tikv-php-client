@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: tikvpb.proto
 
-namespace Tikvpb;
+namespace CrazyGoat\Proto\Tikvpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -32,7 +32,7 @@ class BatchCommandsEmptyResponse extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Tikvpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Tikvpb::initOnce();
         parent::__construct($data);
     }
 

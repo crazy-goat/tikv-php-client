@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: metapb.proto
 
-namespace Metapb;
+namespace CrazyGoat\Proto\Metapb;
 
 use UnexpectedValueException;
 

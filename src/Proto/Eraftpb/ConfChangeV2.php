@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: eraftpb.proto
 
-namespace Eraftpb;
+namespace CrazyGoat\Proto\Eraftpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -61,12 +61,12 @@ class ConfChangeV2 extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int $transition
-     *     @type \Eraftpb\ConfChangeSingle[] $changes
+     *     @type \CrazyGoat\Proto\Eraftpb\ConfChangeSingle[] $changes
      *     @type string $context
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Eraftpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Eraftpb::initOnce();
         parent::__construct($data);
     }
 
@@ -86,7 +86,7 @@ class ConfChangeV2 extends \Google\Protobuf\Internal\Message
      */
     public function setTransition($var)
     {
-        GPBUtil::checkEnum($var, \Eraftpb\ConfChangeTransition::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Eraftpb\ConfChangeTransition::class);
         $this->transition = $var;
 
         return $this;
@@ -94,7 +94,7 @@ class ConfChangeV2 extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .eraftpb.ConfChangeSingle changes = 2;</code>
-     * @return RepeatedField<\Eraftpb\ConfChangeSingle>
+     * @return RepeatedField<\CrazyGoat\Proto\Eraftpb\ConfChangeSingle>
      */
     public function getChanges()
     {
@@ -103,12 +103,12 @@ class ConfChangeV2 extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .eraftpb.ConfChangeSingle changes = 2;</code>
-     * @param \Eraftpb\ConfChangeSingle[] $var
+     * @param \CrazyGoat\Proto\Eraftpb\ConfChangeSingle[] $var
      * @return $this
      */
     public function setChanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Eraftpb\ConfChangeSingle::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Eraftpb\ConfChangeSingle::class);
         $this->changes = $arr;
 
         return $this;

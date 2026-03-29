@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: deadlock.proto
 
-namespace Deadlock;
+namespace CrazyGoat\Proto\Deadlock;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -34,12 +34,12 @@ class DeadlockRequest extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int $tp
-     *     @type \Deadlock\WaitForEntry $entry
-     *     @type \Deadlock\ReplaceLocksByKeysRequest $replace_locks_by_keys
+     *     @type \CrazyGoat\Proto\Deadlock\WaitForEntry $entry
+     *     @type \CrazyGoat\Proto\Deadlock\ReplaceLocksByKeysRequest $replace_locks_by_keys
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Deadlock::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Deadlock::initOnce();
         parent::__construct($data);
     }
 
@@ -59,7 +59,7 @@ class DeadlockRequest extends \Google\Protobuf\Internal\Message
      */
     public function setTp($var)
     {
-        GPBUtil::checkEnum($var, \Deadlock\DeadlockRequestType::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Deadlock\DeadlockRequestType::class);
         $this->tp = $var;
 
         return $this;
@@ -67,7 +67,7 @@ class DeadlockRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.deadlock.WaitForEntry entry = 2;</code>
-     * @return \Deadlock\WaitForEntry|null
+     * @return \CrazyGoat\Proto\Deadlock\WaitForEntry|null
      */
     public function getEntry()
     {
@@ -86,12 +86,12 @@ class DeadlockRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.deadlock.WaitForEntry entry = 2;</code>
-     * @param \Deadlock\WaitForEntry $var
+     * @param \CrazyGoat\Proto\Deadlock\WaitForEntry $var
      * @return $this
      */
     public function setEntry($var)
     {
-        GPBUtil::checkMessage($var, \Deadlock\WaitForEntry::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Deadlock\WaitForEntry::class);
         $this->entry = $var;
 
         return $this;
@@ -99,7 +99,7 @@ class DeadlockRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.deadlock.ReplaceLocksByKeysRequest replace_locks_by_keys = 3;</code>
-     * @return \Deadlock\ReplaceLocksByKeysRequest|null
+     * @return \CrazyGoat\Proto\Deadlock\ReplaceLocksByKeysRequest|null
      */
     public function getReplaceLocksByKeys()
     {
@@ -118,12 +118,12 @@ class DeadlockRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.deadlock.ReplaceLocksByKeysRequest replace_locks_by_keys = 3;</code>
-     * @param \Deadlock\ReplaceLocksByKeysRequest $var
+     * @param \CrazyGoat\Proto\Deadlock\ReplaceLocksByKeysRequest $var
      * @return $this
      */
     public function setReplaceLocksByKeys($var)
     {
-        GPBUtil::checkMessage($var, \Deadlock\ReplaceLocksByKeysRequest::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Deadlock\ReplaceLocksByKeysRequest::class);
         $this->replace_locks_by_keys = $var;
 
         return $this;

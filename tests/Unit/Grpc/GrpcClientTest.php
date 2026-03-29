@@ -41,7 +41,7 @@ class GrpcClientTest extends TestCase
     {
         $this->expectException(\RuntimeException::class);
         
-        $request = new \Kvrpcpb\RawGetRequest();
+        $request = new \CrazyGoat\Proto\Kvrpcpb\RawGetRequest();
         $request->setKey('test');
         
         $this->client->call(
@@ -49,7 +49,7 @@ class GrpcClientTest extends TestCase
             'tikvpb.Tikv',
             'RawGet',
             $request,
-            \Kvrpcpb\RawGetResponse::class
+            \CrazyGoat\Proto\Kvrpcpb\RawGetResponse::class
         );
     }
 }

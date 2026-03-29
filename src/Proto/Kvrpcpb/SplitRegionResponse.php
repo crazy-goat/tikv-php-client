@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -51,25 +51,25 @@ class SplitRegionResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Errorpb\Error $region_error
-     *     @type \Metapb\Region $left
+     *     @type \CrazyGoat\Proto\Errorpb\Error $region_error
+     *     @type \CrazyGoat\Proto\Metapb\Region $left
      *           set when there are only 2 result regions.
-     *     @type \Metapb\Region $right
+     *     @type \CrazyGoat\Proto\Metapb\Region $right
      *           set when there are only 2 result regions.
-     *     @type \Metapb\Region[] $regions
+     *     @type \CrazyGoat\Proto\Metapb\Region[] $regions
      *           include all result regions.
-     *     @type \Kvrpcpb\KeyError[] $errors
+     *     @type \CrazyGoat\Proto\Kvrpcpb\KeyError[] $errors
      *           Reserved for file based transaction.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @return \Errorpb\Error|null
+     * @return \CrazyGoat\Proto\Errorpb\Error|null
      */
     public function getRegionError()
     {
@@ -88,12 +88,12 @@ class SplitRegionResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @param \Errorpb\Error $var
+     * @param \CrazyGoat\Proto\Errorpb\Error $var
      * @return $this
      */
     public function setRegionError($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\Error::class);
         $this->region_error = $var;
 
         return $this;
@@ -103,7 +103,7 @@ class SplitRegionResponse extends \Google\Protobuf\Internal\Message
      * set when there are only 2 result regions.
      *
      * Generated from protobuf field <code>.metapb.Region left = 2 [deprecated = true];</code>
-     * @return \Metapb\Region|null
+     * @return \CrazyGoat\Proto\Metapb\Region|null
      * @deprecated
      */
     public function getLeft()
@@ -132,14 +132,14 @@ class SplitRegionResponse extends \Google\Protobuf\Internal\Message
      * set when there are only 2 result regions.
      *
      * Generated from protobuf field <code>.metapb.Region left = 2 [deprecated = true];</code>
-     * @param \Metapb\Region $var
+     * @param \CrazyGoat\Proto\Metapb\Region $var
      * @return $this
      * @deprecated
      */
     public function setLeft($var)
     {
         @trigger_error('left is deprecated.', E_USER_DEPRECATED);
-        GPBUtil::checkMessage($var, \Metapb\Region::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Region::class);
         $this->left = $var;
 
         return $this;
@@ -149,7 +149,7 @@ class SplitRegionResponse extends \Google\Protobuf\Internal\Message
      * set when there are only 2 result regions.
      *
      * Generated from protobuf field <code>.metapb.Region right = 3 [deprecated = true];</code>
-     * @return \Metapb\Region|null
+     * @return \CrazyGoat\Proto\Metapb\Region|null
      * @deprecated
      */
     public function getRight()
@@ -178,14 +178,14 @@ class SplitRegionResponse extends \Google\Protobuf\Internal\Message
      * set when there are only 2 result regions.
      *
      * Generated from protobuf field <code>.metapb.Region right = 3 [deprecated = true];</code>
-     * @param \Metapb\Region $var
+     * @param \CrazyGoat\Proto\Metapb\Region $var
      * @return $this
      * @deprecated
      */
     public function setRight($var)
     {
         @trigger_error('right is deprecated.', E_USER_DEPRECATED);
-        GPBUtil::checkMessage($var, \Metapb\Region::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Region::class);
         $this->right = $var;
 
         return $this;
@@ -195,7 +195,7 @@ class SplitRegionResponse extends \Google\Protobuf\Internal\Message
      * include all result regions.
      *
      * Generated from protobuf field <code>repeated .metapb.Region regions = 4;</code>
-     * @return RepeatedField<\Metapb\Region>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Region>
      */
     public function getRegions()
     {
@@ -206,12 +206,12 @@ class SplitRegionResponse extends \Google\Protobuf\Internal\Message
      * include all result regions.
      *
      * Generated from protobuf field <code>repeated .metapb.Region regions = 4;</code>
-     * @param \Metapb\Region[] $var
+     * @param \CrazyGoat\Proto\Metapb\Region[] $var
      * @return $this
      */
     public function setRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Region::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Region::class);
         $this->regions = $arr;
 
         return $this;
@@ -221,7 +221,7 @@ class SplitRegionResponse extends \Google\Protobuf\Internal\Message
      * Reserved for file based transaction.
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.KeyError errors = 100;</code>
-     * @return RepeatedField<\Kvrpcpb\KeyError>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\KeyError>
      */
     public function getErrors()
     {
@@ -232,12 +232,12 @@ class SplitRegionResponse extends \Google\Protobuf\Internal\Message
      * Reserved for file based transaction.
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.KeyError errors = 100;</code>
-     * @param \Kvrpcpb\KeyError[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\KeyError[] $var
      * @return $this
      */
     public function setErrors($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\KeyError::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\KeyError::class);
         $this->errors = $arr;
 
         return $this;

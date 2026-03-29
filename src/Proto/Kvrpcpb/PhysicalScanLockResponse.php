@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -30,11 +30,11 @@ class PhysicalScanLockResponse extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $error
-     *     @type \Kvrpcpb\LockInfo[] $locks
+     *     @type \CrazyGoat\Proto\Kvrpcpb\LockInfo[] $locks
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -62,7 +62,7 @@ class PhysicalScanLockResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.LockInfo locks = 2;</code>
-     * @return RepeatedField<\Kvrpcpb\LockInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\LockInfo>
      */
     public function getLocks()
     {
@@ -71,12 +71,12 @@ class PhysicalScanLockResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.LockInfo locks = 2;</code>
-     * @param \Kvrpcpb\LockInfo[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\LockInfo[] $var
      * @return $this
      */
     public function setLocks($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\LockInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\LockInfo::class);
         $this->locks = $arr;
 
         return $this;

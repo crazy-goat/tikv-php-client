@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -39,21 +39,21 @@ class StoreHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\RequestHeader $header
-     *     @type \Pdpb\StoreStats $stats
-     *     @type \Pdpb\StoreReport $store_report
+     *     @type \CrazyGoat\Proto\Pdpb\RequestHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\StoreStats $stats
+     *     @type \CrazyGoat\Proto\Pdpb\StoreReport $store_report
      *           Detailed store report that is only filled up on PD's demand for online unsafe recovery.
-     *     @type \Replication_modepb\StoreDRAutoSyncStatus $dr_autosync_status
+     *     @type \CrazyGoat\Proto\ReplicationModepb\StoreDRAutoSyncStatus $dr_autosync_status
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @return \Pdpb\RequestHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\RequestHeader|null
      */
     public function getHeader()
     {
@@ -72,12 +72,12 @@ class StoreHeartbeatRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @param \Pdpb\RequestHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\RequestHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RequestHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RequestHeader::class);
         $this->header = $var;
 
         return $this;
@@ -85,7 +85,7 @@ class StoreHeartbeatRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.StoreStats stats = 2;</code>
-     * @return \Pdpb\StoreStats|null
+     * @return \CrazyGoat\Proto\Pdpb\StoreStats|null
      */
     public function getStats()
     {
@@ -104,12 +104,12 @@ class StoreHeartbeatRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.StoreStats stats = 2;</code>
-     * @param \Pdpb\StoreStats $var
+     * @param \CrazyGoat\Proto\Pdpb\StoreStats $var
      * @return $this
      */
     public function setStats($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\StoreStats::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\StoreStats::class);
         $this->stats = $var;
 
         return $this;
@@ -119,7 +119,7 @@ class StoreHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * Detailed store report that is only filled up on PD's demand for online unsafe recovery.
      *
      * Generated from protobuf field <code>.pdpb.StoreReport store_report = 3;</code>
-     * @return \Pdpb\StoreReport|null
+     * @return \CrazyGoat\Proto\Pdpb\StoreReport|null
      */
     public function getStoreReport()
     {
@@ -140,12 +140,12 @@ class StoreHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * Detailed store report that is only filled up on PD's demand for online unsafe recovery.
      *
      * Generated from protobuf field <code>.pdpb.StoreReport store_report = 3;</code>
-     * @param \Pdpb\StoreReport $var
+     * @param \CrazyGoat\Proto\Pdpb\StoreReport $var
      * @return $this
      */
     public function setStoreReport($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\StoreReport::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\StoreReport::class);
         $this->store_report = $var;
 
         return $this;
@@ -153,7 +153,7 @@ class StoreHeartbeatRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.replication_modepb.StoreDRAutoSyncStatus dr_autosync_status = 4;</code>
-     * @return \Replication_modepb\StoreDRAutoSyncStatus|null
+     * @return \CrazyGoat\Proto\ReplicationModepb\StoreDRAutoSyncStatus|null
      */
     public function getDrAutosyncStatus()
     {
@@ -172,12 +172,12 @@ class StoreHeartbeatRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.replication_modepb.StoreDRAutoSyncStatus dr_autosync_status = 4;</code>
-     * @param \Replication_modepb\StoreDRAutoSyncStatus $var
+     * @param \CrazyGoat\Proto\ReplicationModepb\StoreDRAutoSyncStatus $var
      * @return $this
      */
     public function setDrAutosyncStatus($var)
     {
-        GPBUtil::checkMessage($var, \Replication_modepb\StoreDRAutoSyncStatus::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\ReplicationModepb\StoreDRAutoSyncStatus::class);
         $this->dr_autosync_status = $var;
 
         return $this;

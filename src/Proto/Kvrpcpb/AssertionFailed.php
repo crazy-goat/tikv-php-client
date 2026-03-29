@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -49,7 +49,7 @@ class AssertionFailed extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -113,7 +113,7 @@ class AssertionFailed extends \Google\Protobuf\Internal\Message
      */
     public function setAssertion($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\Assertion::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\Assertion::class);
         $this->assertion = $var;
 
         return $this;

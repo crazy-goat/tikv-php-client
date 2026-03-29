@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: errorpb.proto
 
-namespace Errorpb;
+namespace CrazyGoat\Proto\Errorpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -131,41 +131,41 @@ class Error extends \Google\Protobuf\Internal\Message
      *
      *     @type string $message
      *           The error message
-     *     @type \Errorpb\NotLeader $not_leader
-     *     @type \Errorpb\RegionNotFound $region_not_found
-     *     @type \Errorpb\KeyNotInRegion $key_not_in_region
-     *     @type \Errorpb\EpochNotMatch $epoch_not_match
-     *     @type \Errorpb\ServerIsBusy $server_is_busy
-     *     @type \Errorpb\StaleCommand $stale_command
-     *     @type \Errorpb\StoreNotMatch $store_not_match
-     *     @type \Errorpb\RaftEntryTooLarge $raft_entry_too_large
-     *     @type \Errorpb\MaxTimestampNotSynced $max_timestamp_not_synced
-     *     @type \Errorpb\ReadIndexNotReady $read_index_not_ready
-     *     @type \Errorpb\ProposalInMergingMode $proposal_in_merging_mode
-     *     @type \Errorpb\DataIsNotReady $data_is_not_ready
-     *     @type \Errorpb\RegionNotInitialized $region_not_initialized
-     *     @type \Errorpb\DiskFull $disk_full
-     *     @type \Errorpb\RecoveryInProgress $RecoveryInProgress
+     *     @type \CrazyGoat\Proto\Errorpb\NotLeader $not_leader
+     *     @type \CrazyGoat\Proto\Errorpb\RegionNotFound $region_not_found
+     *     @type \CrazyGoat\Proto\Errorpb\KeyNotInRegion $key_not_in_region
+     *     @type \CrazyGoat\Proto\Errorpb\EpochNotMatch $epoch_not_match
+     *     @type \CrazyGoat\Proto\Errorpb\ServerIsBusy $server_is_busy
+     *     @type \CrazyGoat\Proto\Errorpb\StaleCommand $stale_command
+     *     @type \CrazyGoat\Proto\Errorpb\StoreNotMatch $store_not_match
+     *     @type \CrazyGoat\Proto\Errorpb\RaftEntryTooLarge $raft_entry_too_large
+     *     @type \CrazyGoat\Proto\Errorpb\MaxTimestampNotSynced $max_timestamp_not_synced
+     *     @type \CrazyGoat\Proto\Errorpb\ReadIndexNotReady $read_index_not_ready
+     *     @type \CrazyGoat\Proto\Errorpb\ProposalInMergingMode $proposal_in_merging_mode
+     *     @type \CrazyGoat\Proto\Errorpb\DataIsNotReady $data_is_not_ready
+     *     @type \CrazyGoat\Proto\Errorpb\RegionNotInitialized $region_not_initialized
+     *     @type \CrazyGoat\Proto\Errorpb\DiskFull $disk_full
+     *     @type \CrazyGoat\Proto\Errorpb\RecoveryInProgress $RecoveryInProgress
      *           Online recovery is still in performing, reject writes to avoid potential issues
-     *     @type \Errorpb\FlashbackInProgress $FlashbackInProgress
+     *     @type \CrazyGoat\Proto\Errorpb\FlashbackInProgress $FlashbackInProgress
      *           Flashback is still in performing, reject any read or write to avoid potential issues.
      *           NOTICE: this error is non-retryable, the request should fail ASAP when it meets this error.
-     *     @type \Errorpb\FlashbackNotPrepared $FlashbackNotPrepared
+     *     @type \CrazyGoat\Proto\Errorpb\FlashbackNotPrepared $FlashbackNotPrepared
      *           If the second phase flashback request is sent to a region that is not prepared for the flashback,
      *           this error will be returned.
      *           NOTICE: this error is non-retryable, the client should retry the first phase flashback request when it meets this error.
-     *     @type \Errorpb\IsWitness $is_witness
+     *     @type \CrazyGoat\Proto\Errorpb\IsWitness $is_witness
      *           IsWitness is the error variant that tells a request be handle by witness
      *           which should be forbidden and retry.
-     *     @type \Errorpb\MismatchPeerId $mismatch_peer_id
-     *     @type \Errorpb\BucketVersionNotMatch $bucket_version_not_match
+     *     @type \CrazyGoat\Proto\Errorpb\MismatchPeerId $mismatch_peer_id
+     *     @type \CrazyGoat\Proto\Errorpb\BucketVersionNotMatch $bucket_version_not_match
      *           BucketVersionNotMatch is the error variant that tells the request buckets version is not match.
-     *     @type \Errorpb\UndeterminedResult $undetermined_result
+     *     @type \CrazyGoat\Proto\Errorpb\UndeterminedResult $undetermined_result
      *           UndeterminedResult is the error variant that tells the result is not determined yet.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Errorpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Errorpb::initOnce();
         parent::__construct($data);
     }
 
@@ -197,7 +197,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.NotLeader not_leader = 2;</code>
-     * @return \Errorpb\NotLeader|null
+     * @return \CrazyGoat\Proto\Errorpb\NotLeader|null
      */
     public function getNotLeader()
     {
@@ -216,12 +216,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.NotLeader not_leader = 2;</code>
-     * @param \Errorpb\NotLeader $var
+     * @param \CrazyGoat\Proto\Errorpb\NotLeader $var
      * @return $this
      */
     public function setNotLeader($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\NotLeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\NotLeader::class);
         $this->not_leader = $var;
 
         return $this;
@@ -229,7 +229,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.RegionNotFound region_not_found = 3;</code>
-     * @return \Errorpb\RegionNotFound|null
+     * @return \CrazyGoat\Proto\Errorpb\RegionNotFound|null
      */
     public function getRegionNotFound()
     {
@@ -248,12 +248,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.RegionNotFound region_not_found = 3;</code>
-     * @param \Errorpb\RegionNotFound $var
+     * @param \CrazyGoat\Proto\Errorpb\RegionNotFound $var
      * @return $this
      */
     public function setRegionNotFound($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\RegionNotFound::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\RegionNotFound::class);
         $this->region_not_found = $var;
 
         return $this;
@@ -261,7 +261,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.KeyNotInRegion key_not_in_region = 4;</code>
-     * @return \Errorpb\KeyNotInRegion|null
+     * @return \CrazyGoat\Proto\Errorpb\KeyNotInRegion|null
      */
     public function getKeyNotInRegion()
     {
@@ -280,12 +280,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.KeyNotInRegion key_not_in_region = 4;</code>
-     * @param \Errorpb\KeyNotInRegion $var
+     * @param \CrazyGoat\Proto\Errorpb\KeyNotInRegion $var
      * @return $this
      */
     public function setKeyNotInRegion($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\KeyNotInRegion::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\KeyNotInRegion::class);
         $this->key_not_in_region = $var;
 
         return $this;
@@ -293,7 +293,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.EpochNotMatch epoch_not_match = 5;</code>
-     * @return \Errorpb\EpochNotMatch|null
+     * @return \CrazyGoat\Proto\Errorpb\EpochNotMatch|null
      */
     public function getEpochNotMatch()
     {
@@ -312,12 +312,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.EpochNotMatch epoch_not_match = 5;</code>
-     * @param \Errorpb\EpochNotMatch $var
+     * @param \CrazyGoat\Proto\Errorpb\EpochNotMatch $var
      * @return $this
      */
     public function setEpochNotMatch($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\EpochNotMatch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\EpochNotMatch::class);
         $this->epoch_not_match = $var;
 
         return $this;
@@ -325,7 +325,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.ServerIsBusy server_is_busy = 6;</code>
-     * @return \Errorpb\ServerIsBusy|null
+     * @return \CrazyGoat\Proto\Errorpb\ServerIsBusy|null
      */
     public function getServerIsBusy()
     {
@@ -344,12 +344,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.ServerIsBusy server_is_busy = 6;</code>
-     * @param \Errorpb\ServerIsBusy $var
+     * @param \CrazyGoat\Proto\Errorpb\ServerIsBusy $var
      * @return $this
      */
     public function setServerIsBusy($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\ServerIsBusy::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\ServerIsBusy::class);
         $this->server_is_busy = $var;
 
         return $this;
@@ -357,7 +357,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.StaleCommand stale_command = 7;</code>
-     * @return \Errorpb\StaleCommand|null
+     * @return \CrazyGoat\Proto\Errorpb\StaleCommand|null
      */
     public function getStaleCommand()
     {
@@ -376,12 +376,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.StaleCommand stale_command = 7;</code>
-     * @param \Errorpb\StaleCommand $var
+     * @param \CrazyGoat\Proto\Errorpb\StaleCommand $var
      * @return $this
      */
     public function setStaleCommand($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\StaleCommand::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\StaleCommand::class);
         $this->stale_command = $var;
 
         return $this;
@@ -389,7 +389,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.StoreNotMatch store_not_match = 8;</code>
-     * @return \Errorpb\StoreNotMatch|null
+     * @return \CrazyGoat\Proto\Errorpb\StoreNotMatch|null
      */
     public function getStoreNotMatch()
     {
@@ -408,12 +408,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.StoreNotMatch store_not_match = 8;</code>
-     * @param \Errorpb\StoreNotMatch $var
+     * @param \CrazyGoat\Proto\Errorpb\StoreNotMatch $var
      * @return $this
      */
     public function setStoreNotMatch($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\StoreNotMatch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\StoreNotMatch::class);
         $this->store_not_match = $var;
 
         return $this;
@@ -421,7 +421,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.RaftEntryTooLarge raft_entry_too_large = 9;</code>
-     * @return \Errorpb\RaftEntryTooLarge|null
+     * @return \CrazyGoat\Proto\Errorpb\RaftEntryTooLarge|null
      */
     public function getRaftEntryTooLarge()
     {
@@ -440,12 +440,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.RaftEntryTooLarge raft_entry_too_large = 9;</code>
-     * @param \Errorpb\RaftEntryTooLarge $var
+     * @param \CrazyGoat\Proto\Errorpb\RaftEntryTooLarge $var
      * @return $this
      */
     public function setRaftEntryTooLarge($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\RaftEntryTooLarge::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\RaftEntryTooLarge::class);
         $this->raft_entry_too_large = $var;
 
         return $this;
@@ -453,7 +453,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.MaxTimestampNotSynced max_timestamp_not_synced = 10;</code>
-     * @return \Errorpb\MaxTimestampNotSynced|null
+     * @return \CrazyGoat\Proto\Errorpb\MaxTimestampNotSynced|null
      */
     public function getMaxTimestampNotSynced()
     {
@@ -472,12 +472,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.MaxTimestampNotSynced max_timestamp_not_synced = 10;</code>
-     * @param \Errorpb\MaxTimestampNotSynced $var
+     * @param \CrazyGoat\Proto\Errorpb\MaxTimestampNotSynced $var
      * @return $this
      */
     public function setMaxTimestampNotSynced($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\MaxTimestampNotSynced::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\MaxTimestampNotSynced::class);
         $this->max_timestamp_not_synced = $var;
 
         return $this;
@@ -485,7 +485,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.ReadIndexNotReady read_index_not_ready = 11;</code>
-     * @return \Errorpb\ReadIndexNotReady|null
+     * @return \CrazyGoat\Proto\Errorpb\ReadIndexNotReady|null
      */
     public function getReadIndexNotReady()
     {
@@ -504,12 +504,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.ReadIndexNotReady read_index_not_ready = 11;</code>
-     * @param \Errorpb\ReadIndexNotReady $var
+     * @param \CrazyGoat\Proto\Errorpb\ReadIndexNotReady $var
      * @return $this
      */
     public function setReadIndexNotReady($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\ReadIndexNotReady::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\ReadIndexNotReady::class);
         $this->read_index_not_ready = $var;
 
         return $this;
@@ -517,7 +517,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.ProposalInMergingMode proposal_in_merging_mode = 12;</code>
-     * @return \Errorpb\ProposalInMergingMode|null
+     * @return \CrazyGoat\Proto\Errorpb\ProposalInMergingMode|null
      */
     public function getProposalInMergingMode()
     {
@@ -536,12 +536,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.ProposalInMergingMode proposal_in_merging_mode = 12;</code>
-     * @param \Errorpb\ProposalInMergingMode $var
+     * @param \CrazyGoat\Proto\Errorpb\ProposalInMergingMode $var
      * @return $this
      */
     public function setProposalInMergingMode($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\ProposalInMergingMode::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\ProposalInMergingMode::class);
         $this->proposal_in_merging_mode = $var;
 
         return $this;
@@ -549,7 +549,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.DataIsNotReady data_is_not_ready = 13;</code>
-     * @return \Errorpb\DataIsNotReady|null
+     * @return \CrazyGoat\Proto\Errorpb\DataIsNotReady|null
      */
     public function getDataIsNotReady()
     {
@@ -568,12 +568,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.DataIsNotReady data_is_not_ready = 13;</code>
-     * @param \Errorpb\DataIsNotReady $var
+     * @param \CrazyGoat\Proto\Errorpb\DataIsNotReady $var
      * @return $this
      */
     public function setDataIsNotReady($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\DataIsNotReady::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\DataIsNotReady::class);
         $this->data_is_not_ready = $var;
 
         return $this;
@@ -581,7 +581,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.RegionNotInitialized region_not_initialized = 14;</code>
-     * @return \Errorpb\RegionNotInitialized|null
+     * @return \CrazyGoat\Proto\Errorpb\RegionNotInitialized|null
      */
     public function getRegionNotInitialized()
     {
@@ -600,12 +600,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.RegionNotInitialized region_not_initialized = 14;</code>
-     * @param \Errorpb\RegionNotInitialized $var
+     * @param \CrazyGoat\Proto\Errorpb\RegionNotInitialized $var
      * @return $this
      */
     public function setRegionNotInitialized($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\RegionNotInitialized::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\RegionNotInitialized::class);
         $this->region_not_initialized = $var;
 
         return $this;
@@ -613,7 +613,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.DiskFull disk_full = 15;</code>
-     * @return \Errorpb\DiskFull|null
+     * @return \CrazyGoat\Proto\Errorpb\DiskFull|null
      */
     public function getDiskFull()
     {
@@ -632,12 +632,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.DiskFull disk_full = 15;</code>
-     * @param \Errorpb\DiskFull $var
+     * @param \CrazyGoat\Proto\Errorpb\DiskFull $var
      * @return $this
      */
     public function setDiskFull($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\DiskFull::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\DiskFull::class);
         $this->disk_full = $var;
 
         return $this;
@@ -647,7 +647,7 @@ class Error extends \Google\Protobuf\Internal\Message
      * Online recovery is still in performing, reject writes to avoid potential issues
      *
      * Generated from protobuf field <code>.errorpb.RecoveryInProgress RecoveryInProgress = 16;</code>
-     * @return \Errorpb\RecoveryInProgress|null
+     * @return \CrazyGoat\Proto\Errorpb\RecoveryInProgress|null
      */
     public function getRecoveryInProgress()
     {
@@ -668,12 +668,12 @@ class Error extends \Google\Protobuf\Internal\Message
      * Online recovery is still in performing, reject writes to avoid potential issues
      *
      * Generated from protobuf field <code>.errorpb.RecoveryInProgress RecoveryInProgress = 16;</code>
-     * @param \Errorpb\RecoveryInProgress $var
+     * @param \CrazyGoat\Proto\Errorpb\RecoveryInProgress $var
      * @return $this
      */
     public function setRecoveryInProgress($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\RecoveryInProgress::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\RecoveryInProgress::class);
         $this->RecoveryInProgress = $var;
 
         return $this;
@@ -684,7 +684,7 @@ class Error extends \Google\Protobuf\Internal\Message
      * NOTICE: this error is non-retryable, the request should fail ASAP when it meets this error.
      *
      * Generated from protobuf field <code>.errorpb.FlashbackInProgress FlashbackInProgress = 17;</code>
-     * @return \Errorpb\FlashbackInProgress|null
+     * @return \CrazyGoat\Proto\Errorpb\FlashbackInProgress|null
      */
     public function getFlashbackInProgress()
     {
@@ -706,12 +706,12 @@ class Error extends \Google\Protobuf\Internal\Message
      * NOTICE: this error is non-retryable, the request should fail ASAP when it meets this error.
      *
      * Generated from protobuf field <code>.errorpb.FlashbackInProgress FlashbackInProgress = 17;</code>
-     * @param \Errorpb\FlashbackInProgress $var
+     * @param \CrazyGoat\Proto\Errorpb\FlashbackInProgress $var
      * @return $this
      */
     public function setFlashbackInProgress($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\FlashbackInProgress::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\FlashbackInProgress::class);
         $this->FlashbackInProgress = $var;
 
         return $this;
@@ -723,7 +723,7 @@ class Error extends \Google\Protobuf\Internal\Message
      * NOTICE: this error is non-retryable, the client should retry the first phase flashback request when it meets this error.
      *
      * Generated from protobuf field <code>.errorpb.FlashbackNotPrepared FlashbackNotPrepared = 18;</code>
-     * @return \Errorpb\FlashbackNotPrepared|null
+     * @return \CrazyGoat\Proto\Errorpb\FlashbackNotPrepared|null
      */
     public function getFlashbackNotPrepared()
     {
@@ -746,12 +746,12 @@ class Error extends \Google\Protobuf\Internal\Message
      * NOTICE: this error is non-retryable, the client should retry the first phase flashback request when it meets this error.
      *
      * Generated from protobuf field <code>.errorpb.FlashbackNotPrepared FlashbackNotPrepared = 18;</code>
-     * @param \Errorpb\FlashbackNotPrepared $var
+     * @param \CrazyGoat\Proto\Errorpb\FlashbackNotPrepared $var
      * @return $this
      */
     public function setFlashbackNotPrepared($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\FlashbackNotPrepared::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\FlashbackNotPrepared::class);
         $this->FlashbackNotPrepared = $var;
 
         return $this;
@@ -762,7 +762,7 @@ class Error extends \Google\Protobuf\Internal\Message
      * which should be forbidden and retry.
      *
      * Generated from protobuf field <code>.errorpb.IsWitness is_witness = 19;</code>
-     * @return \Errorpb\IsWitness|null
+     * @return \CrazyGoat\Proto\Errorpb\IsWitness|null
      */
     public function getIsWitness()
     {
@@ -784,12 +784,12 @@ class Error extends \Google\Protobuf\Internal\Message
      * which should be forbidden and retry.
      *
      * Generated from protobuf field <code>.errorpb.IsWitness is_witness = 19;</code>
-     * @param \Errorpb\IsWitness $var
+     * @param \CrazyGoat\Proto\Errorpb\IsWitness $var
      * @return $this
      */
     public function setIsWitness($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\IsWitness::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\IsWitness::class);
         $this->is_witness = $var;
 
         return $this;
@@ -797,7 +797,7 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.MismatchPeerId mismatch_peer_id = 20;</code>
-     * @return \Errorpb\MismatchPeerId|null
+     * @return \CrazyGoat\Proto\Errorpb\MismatchPeerId|null
      */
     public function getMismatchPeerId()
     {
@@ -816,12 +816,12 @@ class Error extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.MismatchPeerId mismatch_peer_id = 20;</code>
-     * @param \Errorpb\MismatchPeerId $var
+     * @param \CrazyGoat\Proto\Errorpb\MismatchPeerId $var
      * @return $this
      */
     public function setMismatchPeerId($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\MismatchPeerId::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\MismatchPeerId::class);
         $this->mismatch_peer_id = $var;
 
         return $this;
@@ -831,7 +831,7 @@ class Error extends \Google\Protobuf\Internal\Message
      * BucketVersionNotMatch is the error variant that tells the request buckets version is not match.
      *
      * Generated from protobuf field <code>.errorpb.BucketVersionNotMatch bucket_version_not_match = 21;</code>
-     * @return \Errorpb\BucketVersionNotMatch|null
+     * @return \CrazyGoat\Proto\Errorpb\BucketVersionNotMatch|null
      */
     public function getBucketVersionNotMatch()
     {
@@ -852,12 +852,12 @@ class Error extends \Google\Protobuf\Internal\Message
      * BucketVersionNotMatch is the error variant that tells the request buckets version is not match.
      *
      * Generated from protobuf field <code>.errorpb.BucketVersionNotMatch bucket_version_not_match = 21;</code>
-     * @param \Errorpb\BucketVersionNotMatch $var
+     * @param \CrazyGoat\Proto\Errorpb\BucketVersionNotMatch $var
      * @return $this
      */
     public function setBucketVersionNotMatch($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\BucketVersionNotMatch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\BucketVersionNotMatch::class);
         $this->bucket_version_not_match = $var;
 
         return $this;
@@ -867,7 +867,7 @@ class Error extends \Google\Protobuf\Internal\Message
      * UndeterminedResult is the error variant that tells the result is not determined yet.
      *
      * Generated from protobuf field <code>.errorpb.UndeterminedResult undetermined_result = 22;</code>
-     * @return \Errorpb\UndeterminedResult|null
+     * @return \CrazyGoat\Proto\Errorpb\UndeterminedResult|null
      */
     public function getUndeterminedResult()
     {
@@ -888,12 +888,12 @@ class Error extends \Google\Protobuf\Internal\Message
      * UndeterminedResult is the error variant that tells the result is not determined yet.
      *
      * Generated from protobuf field <code>.errorpb.UndeterminedResult undetermined_result = 22;</code>
-     * @param \Errorpb\UndeterminedResult $var
+     * @param \CrazyGoat\Proto\Errorpb\UndeterminedResult $var
      * @return $this
      */
     public function setUndeterminedResult($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\UndeterminedResult::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\UndeterminedResult::class);
         $this->undetermined_result = $var;
 
         return $this;

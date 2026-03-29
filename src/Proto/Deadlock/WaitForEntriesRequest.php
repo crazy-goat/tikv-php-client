@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: deadlock.proto
 
-namespace Deadlock;
+namespace CrazyGoat\Proto\Deadlock;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -24,7 +24,7 @@ class WaitForEntriesRequest extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Deadlock::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Deadlock::initOnce();
         parent::__construct($data);
     }
 

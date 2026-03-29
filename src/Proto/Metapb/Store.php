@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: metapb.proto
 
-namespace Metapb;
+namespace CrazyGoat\Proto\Metapb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -92,7 +92,7 @@ class Store extends \Google\Protobuf\Internal\Message
      *     @type string $address
      *           Address to handle client requests (kv, cop, etc.)
      *     @type int $state
-     *     @type \Metapb\StoreLabel[] $labels
+     *     @type \CrazyGoat\Proto\Metapb\StoreLabel[] $labels
      *     @type string $version
      *     @type string $peer_address
      *           Address to handle peer requests (raft messages from other store).
@@ -112,7 +112,7 @@ class Store extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Metapb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Metapb::initOnce();
         parent::__construct($data);
     }
 
@@ -180,7 +180,7 @@ class Store extends \Google\Protobuf\Internal\Message
      */
     public function setState($var)
     {
-        GPBUtil::checkEnum($var, \Metapb\StoreState::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Metapb\StoreState::class);
         $this->state = $var;
 
         return $this;
@@ -188,7 +188,7 @@ class Store extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.StoreLabel labels = 4;</code>
-     * @return RepeatedField<\Metapb\StoreLabel>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\StoreLabel>
      */
     public function getLabels()
     {
@@ -197,12 +197,12 @@ class Store extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.StoreLabel labels = 4;</code>
-     * @param \Metapb\StoreLabel[] $var
+     * @param \CrazyGoat\Proto\Metapb\StoreLabel[] $var
      * @return $this
      */
     public function setLabels($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\StoreLabel::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\StoreLabel::class);
         $this->labels = $arr;
 
         return $this;
@@ -426,7 +426,7 @@ class Store extends \Google\Protobuf\Internal\Message
      */
     public function setNodeState($var)
     {
-        GPBUtil::checkEnum($var, \Metapb\NodeState::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Metapb\NodeState::class);
         $this->node_state = $var;
 
         return $this;

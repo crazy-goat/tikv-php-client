@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,14 +33,14 @@ class ExecDetails extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\TimeDetail $time_detail
+     *     @type \CrazyGoat\Proto\Kvrpcpb\TimeDetail $time_detail
      *           Available when ctx.record_time_stat = true or meet slow query.
-     *     @type \Kvrpcpb\ScanDetail $scan_detail
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ScanDetail $scan_detail
      *           Available when ctx.record_scan_stat = true or meet slow query.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -48,7 +48,7 @@ class ExecDetails extends \Google\Protobuf\Internal\Message
      * Available when ctx.record_time_stat = true or meet slow query.
      *
      * Generated from protobuf field <code>.kvrpcpb.TimeDetail time_detail = 1;</code>
-     * @return \Kvrpcpb\TimeDetail|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\TimeDetail|null
      */
     public function getTimeDetail()
     {
@@ -69,12 +69,12 @@ class ExecDetails extends \Google\Protobuf\Internal\Message
      * Available when ctx.record_time_stat = true or meet slow query.
      *
      * Generated from protobuf field <code>.kvrpcpb.TimeDetail time_detail = 1;</code>
-     * @param \Kvrpcpb\TimeDetail $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\TimeDetail $var
      * @return $this
      */
     public function setTimeDetail($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\TimeDetail::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\TimeDetail::class);
         $this->time_detail = $var;
 
         return $this;
@@ -84,7 +84,7 @@ class ExecDetails extends \Google\Protobuf\Internal\Message
      * Available when ctx.record_scan_stat = true or meet slow query.
      *
      * Generated from protobuf field <code>.kvrpcpb.ScanDetail scan_detail = 2;</code>
-     * @return \Kvrpcpb\ScanDetail|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ScanDetail|null
      */
     public function getScanDetail()
     {
@@ -105,12 +105,12 @@ class ExecDetails extends \Google\Protobuf\Internal\Message
      * Available when ctx.record_scan_stat = true or meet slow query.
      *
      * Generated from protobuf field <code>.kvrpcpb.ScanDetail scan_detail = 2;</code>
-     * @param \Kvrpcpb\ScanDetail $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ScanDetail $var
      * @return $this
      */
     public function setScanDetail($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ScanDetail::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ScanDetail::class);
         $this->scan_detail = $var;
 
         return $this;

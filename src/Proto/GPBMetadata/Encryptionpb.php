@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: encryptionpb.proto
 
-namespace GPBMetadata;
+namespace CrazyGoat\Proto\GPBMetadata;
 
 class Encryptionpb
 {
@@ -16,7 +16,7 @@ class Encryptionpb
           return;
         }
         $pool->internalAddGeneratedFile(
-            "\x0A~\x0A\x12encryptionpb.proto\x12\x0Cencryptionpb\"\x10\x0A\x0EEncryptionMeta\"\x12\x0A\x10EncryptionMethod\"\x0B\x0A\x09MasterKey\"\x14\x0A\x12FileEncryptionInfo\"\x09\x0A\x07DataKeyb\x06proto3"
+            "\x0A\xBD\x01\x0A\x12encryptionpb.proto\x12\x0Cencryptionpb\"\x10\x0A\x0EEncryptionMeta\"\x12\x0A\x10EncryptionMethod\"\x0B\x0A\x09MasterKey\"\x14\x0A\x12FileEncryptionInfo\"\x09\x0A\x07DataKeyB=\xCA\x02\x1CCrazyGoat\\Proto\\Encryptionpb\xE2\x02\x1BCrazyGoat\\Proto\\GPBMetadatab\x06proto3"
         , true);
 
         static::$is_initialized = true;

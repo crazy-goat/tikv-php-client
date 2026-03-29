@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: eraftpb.proto
 
-namespace Eraftpb;
+namespace CrazyGoat\Proto\Eraftpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -93,9 +93,9 @@ class Message extends \Google\Protobuf\Internal\Message
      *     @type int|string $term
      *     @type int|string $log_term
      *     @type int|string $index
-     *     @type \Eraftpb\Entry[] $entries
+     *     @type \CrazyGoat\Proto\Eraftpb\Entry[] $entries
      *     @type int|string $commit
-     *     @type \Eraftpb\Snapshot $snapshot
+     *     @type \CrazyGoat\Proto\Eraftpb\Snapshot $snapshot
      *     @type int|string $request_snapshot
      *     @type bool $reject
      *     @type int|string $reject_hint
@@ -110,7 +110,7 @@ class Message extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Eraftpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Eraftpb::initOnce();
         parent::__construct($data);
     }
 
@@ -130,7 +130,7 @@ class Message extends \Google\Protobuf\Internal\Message
      */
     public function setMsgType($var)
     {
-        GPBUtil::checkEnum($var, \Eraftpb\MessageType::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Eraftpb\MessageType::class);
         $this->msg_type = $var;
 
         return $this;
@@ -248,7 +248,7 @@ class Message extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .eraftpb.Entry entries = 7;</code>
-     * @return RepeatedField<\Eraftpb\Entry>
+     * @return RepeatedField<\CrazyGoat\Proto\Eraftpb\Entry>
      */
     public function getEntries()
     {
@@ -257,12 +257,12 @@ class Message extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .eraftpb.Entry entries = 7;</code>
-     * @param \Eraftpb\Entry[] $var
+     * @param \CrazyGoat\Proto\Eraftpb\Entry[] $var
      * @return $this
      */
     public function setEntries($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Eraftpb\Entry::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Eraftpb\Entry::class);
         $this->entries = $arr;
 
         return $this;
@@ -292,7 +292,7 @@ class Message extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.eraftpb.Snapshot snapshot = 9;</code>
-     * @return \Eraftpb\Snapshot|null
+     * @return \CrazyGoat\Proto\Eraftpb\Snapshot|null
      */
     public function getSnapshot()
     {
@@ -311,12 +311,12 @@ class Message extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.eraftpb.Snapshot snapshot = 9;</code>
-     * @param \Eraftpb\Snapshot $var
+     * @param \CrazyGoat\Proto\Eraftpb\Snapshot $var
      * @return $this
      */
     public function setSnapshot($var)
     {
-        GPBUtil::checkMessage($var, \Eraftpb\Snapshot::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Eraftpb\Snapshot::class);
         $this->snapshot = $var;
 
         return $this;

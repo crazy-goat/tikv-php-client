@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -34,7 +34,7 @@ class SplitRegion extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
@@ -54,7 +54,7 @@ class SplitRegion extends \Google\Protobuf\Internal\Message
      */
     public function setPolicy($var)
     {
-        GPBUtil::checkEnum($var, \Pdpb\CheckPolicy::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Pdpb\CheckPolicy::class);
         $this->policy = $var;
 
         return $this;

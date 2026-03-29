@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -32,18 +32,18 @@ class VersionedKeyRange extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Coprocessor\KeyRange $range
+     *     @type \CrazyGoat\Proto\Coprocessor\KeyRange $range
      *     @type int|string $read_ts
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.coprocessor.KeyRange range = 1;</code>
-     * @return \Coprocessor\KeyRange|null
+     * @return \CrazyGoat\Proto\Coprocessor\KeyRange|null
      */
     public function getRange()
     {
@@ -62,12 +62,12 @@ class VersionedKeyRange extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.coprocessor.KeyRange range = 1;</code>
-     * @param \Coprocessor\KeyRange $var
+     * @param \CrazyGoat\Proto\Coprocessor\KeyRange $var
      * @return $this
      */
     public function setRange($var)
     {
-        GPBUtil::checkMessage($var, \Coprocessor\KeyRange::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Coprocessor\KeyRange::class);
         $this->range = $var;
 
         return $this;

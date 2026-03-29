@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -58,8 +58,8 @@ class CheckTxnStatusResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Errorpb\Error $region_error
-     *     @type \Kvrpcpb\KeyError $error
+     *     @type \CrazyGoat\Proto\Errorpb\Error $region_error
+     *     @type \CrazyGoat\Proto\Kvrpcpb\KeyError $error
      *     @type int|string $lock_ttl
      *           Three kinds of transaction status:
      *             locked: lock_ttl > 0
@@ -68,19 +68,19 @@ class CheckTxnStatusResponse extends \Google\Protobuf\Internal\Message
      *     @type int|string $commit_version
      *     @type int $action
      *           The action performed by TiKV (and why if the action is to rollback).
-     *     @type \Kvrpcpb\LockInfo $lock_info
-     *     @type \Kvrpcpb\ExecDetailsV2 $exec_details_v2
+     *     @type \CrazyGoat\Proto\Kvrpcpb\LockInfo $lock_info
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2 $exec_details_v2
      *           Execution details about the request processing.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @return \Errorpb\Error|null
+     * @return \CrazyGoat\Proto\Errorpb\Error|null
      */
     public function getRegionError()
     {
@@ -99,12 +99,12 @@ class CheckTxnStatusResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @param \Errorpb\Error $var
+     * @param \CrazyGoat\Proto\Errorpb\Error $var
      * @return $this
      */
     public function setRegionError($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\Error::class);
         $this->region_error = $var;
 
         return $this;
@@ -112,7 +112,7 @@ class CheckTxnStatusResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.KeyError error = 2;</code>
-     * @return \Kvrpcpb\KeyError|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\KeyError|null
      */
     public function getError()
     {
@@ -131,12 +131,12 @@ class CheckTxnStatusResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.KeyError error = 2;</code>
-     * @param \Kvrpcpb\KeyError $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\KeyError $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\KeyError::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\KeyError::class);
         $this->error = $var;
 
         return $this;
@@ -216,7 +216,7 @@ class CheckTxnStatusResponse extends \Google\Protobuf\Internal\Message
      */
     public function setAction($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\Action::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\Action::class);
         $this->action = $var;
 
         return $this;
@@ -224,7 +224,7 @@ class CheckTxnStatusResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.LockInfo lock_info = 6;</code>
-     * @return \Kvrpcpb\LockInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\LockInfo|null
      */
     public function getLockInfo()
     {
@@ -243,12 +243,12 @@ class CheckTxnStatusResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.LockInfo lock_info = 6;</code>
-     * @param \Kvrpcpb\LockInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\LockInfo $var
      * @return $this
      */
     public function setLockInfo($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\LockInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\LockInfo::class);
         $this->lock_info = $var;
 
         return $this;
@@ -258,7 +258,7 @@ class CheckTxnStatusResponse extends \Google\Protobuf\Internal\Message
      * Execution details about the request processing.
      *
      * Generated from protobuf field <code>.kvrpcpb.ExecDetailsV2 exec_details_v2 = 7;</code>
-     * @return \Kvrpcpb\ExecDetailsV2|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2|null
      */
     public function getExecDetailsV2()
     {
@@ -279,12 +279,12 @@ class CheckTxnStatusResponse extends \Google\Protobuf\Internal\Message
      * Execution details about the request processing.
      *
      * Generated from protobuf field <code>.kvrpcpb.ExecDetailsV2 exec_details_v2 = 7;</code>
-     * @param \Kvrpcpb\ExecDetailsV2 $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2 $var
      * @return $this
      */
     public function setExecDetailsV2($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ExecDetailsV2::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2::class);
         $this->exec_details_v2 = $var;
 
         return $this;

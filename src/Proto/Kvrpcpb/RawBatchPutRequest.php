@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -50,8 +50,8 @@ class RawBatchPutRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\Context $context
-     *     @type \Kvrpcpb\KvPair[] $pairs
+     *     @type \CrazyGoat\Proto\Kvrpcpb\Context $context
+     *     @type \CrazyGoat\Proto\Kvrpcpb\KvPair[] $pairs
      *     @type string $cf
      *     @type int|string $ttl
      *     @type bool $for_cas
@@ -62,13 +62,13 @@ class RawBatchPutRequest extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @return \Kvrpcpb\Context|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\Context|null
      */
     public function getContext()
     {
@@ -87,12 +87,12 @@ class RawBatchPutRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @param \Kvrpcpb\Context $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\Context $var
      * @return $this
      */
     public function setContext($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\Context::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\Context::class);
         $this->context = $var;
 
         return $this;
@@ -100,7 +100,7 @@ class RawBatchPutRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.KvPair pairs = 2;</code>
-     * @return RepeatedField<\Kvrpcpb\KvPair>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\KvPair>
      */
     public function getPairs()
     {
@@ -109,12 +109,12 @@ class RawBatchPutRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.KvPair pairs = 2;</code>
-     * @param \Kvrpcpb\KvPair[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\KvPair[] $var
      * @return $this
      */
     public function setPairs($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\KvPair::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\KvPair::class);
         $this->pairs = $arr;
 
         return $this;

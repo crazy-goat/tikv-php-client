@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -34,12 +34,12 @@ class RegionInfo extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int|string $region_id
-     *     @type \Metapb\RegionEpoch $region_epoch
-     *     @type \Coprocessor\KeyRange[] $ranges
+     *     @type \CrazyGoat\Proto\Metapb\RegionEpoch $region_epoch
+     *     @type \CrazyGoat\Proto\Coprocessor\KeyRange[] $ranges
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
@@ -67,7 +67,7 @@ class RegionInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
-     * @return \Metapb\RegionEpoch|null
+     * @return \CrazyGoat\Proto\Metapb\RegionEpoch|null
      */
     public function getRegionEpoch()
     {
@@ -86,12 +86,12 @@ class RegionInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
-     * @param \Metapb\RegionEpoch $var
+     * @param \CrazyGoat\Proto\Metapb\RegionEpoch $var
      * @return $this
      */
     public function setRegionEpoch($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\RegionEpoch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\RegionEpoch::class);
         $this->region_epoch = $var;
 
         return $this;
@@ -99,7 +99,7 @@ class RegionInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.KeyRange ranges = 3;</code>
-     * @return RepeatedField<\Coprocessor\KeyRange>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\KeyRange>
      */
     public function getRanges()
     {
@@ -108,12 +108,12 @@ class RegionInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.KeyRange ranges = 3;</code>
-     * @param \Coprocessor\KeyRange[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\KeyRange[] $var
      * @return $this
      */
     public function setRanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\KeyRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\KeyRange::class);
         $this->ranges = $arr;
 
         return $this;

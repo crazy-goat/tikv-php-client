@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,19 +33,19 @@ class MvccInfo extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\MvccLock $lock
-     *     @type \Kvrpcpb\MvccWrite[] $writes
-     *     @type \Kvrpcpb\MvccValue[] $values
+     *     @type \CrazyGoat\Proto\Kvrpcpb\MvccLock $lock
+     *     @type \CrazyGoat\Proto\Kvrpcpb\MvccWrite[] $writes
+     *     @type \CrazyGoat\Proto\Kvrpcpb\MvccValue[] $values
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.MvccLock lock = 1;</code>
-     * @return \Kvrpcpb\MvccLock|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\MvccLock|null
      */
     public function getLock()
     {
@@ -64,12 +64,12 @@ class MvccInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.MvccLock lock = 1;</code>
-     * @param \Kvrpcpb\MvccLock $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\MvccLock $var
      * @return $this
      */
     public function setLock($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\MvccLock::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\MvccLock::class);
         $this->lock = $var;
 
         return $this;
@@ -77,7 +77,7 @@ class MvccInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.MvccWrite writes = 2;</code>
-     * @return RepeatedField<\Kvrpcpb\MvccWrite>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\MvccWrite>
      */
     public function getWrites()
     {
@@ -86,12 +86,12 @@ class MvccInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.MvccWrite writes = 2;</code>
-     * @param \Kvrpcpb\MvccWrite[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\MvccWrite[] $var
      * @return $this
      */
     public function setWrites($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\MvccWrite::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\MvccWrite::class);
         $this->writes = $arr;
 
         return $this;
@@ -99,7 +99,7 @@ class MvccInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.MvccValue values = 3;</code>
-     * @return RepeatedField<\Kvrpcpb\MvccValue>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\MvccValue>
      */
     public function getValues()
     {
@@ -108,12 +108,12 @@ class MvccInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.MvccValue values = 3;</code>
-     * @param \Kvrpcpb\MvccValue[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\MvccValue[] $var
      * @return $this
      */
     public function setValues($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\MvccValue::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\MvccValue::class);
         $this->values = $arr;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: tikvpb.proto
 
-namespace Tikvpb;
+namespace CrazyGoat\Proto\Tikvpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -31,19 +31,19 @@ class BatchRaftMessage extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Raft_serverpb\RaftMessage[] $msgs
+     *     @type \CrazyGoat\Proto\RaftServerpb\RaftMessage[] $msgs
      *     @type int|string $last_observed_time
      *           Used for measure the send duration.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Tikvpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Tikvpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .raft_serverpb.RaftMessage msgs = 1;</code>
-     * @return RepeatedField<\Raft_serverpb\RaftMessage>
+     * @return RepeatedField<\CrazyGoat\Proto\RaftServerpb\RaftMessage>
      */
     public function getMsgs()
     {
@@ -52,12 +52,12 @@ class BatchRaftMessage extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .raft_serverpb.RaftMessage msgs = 1;</code>
-     * @param \Raft_serverpb\RaftMessage[] $var
+     * @param \CrazyGoat\Proto\RaftServerpb\RaftMessage[] $var
      * @return $this
      */
     public function setMsgs($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Raft_serverpb\RaftMessage::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\RaftServerpb\RaftMessage::class);
         $this->msgs = $arr;
 
         return $this;

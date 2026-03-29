@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,19 +33,19 @@ class GetAllKeyspacesGCStatesResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Pdpb\GCState[] $gc_states
-     *     @type \Pdpb\GlobalGCBarrierInfo[] $global_gc_barriers
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\GCState[] $gc_states
+     *     @type \CrazyGoat\Proto\Pdpb\GlobalGCBarrierInfo[] $global_gc_barriers
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -64,12 +64,12 @@ class GetAllKeyspacesGCStatesResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -77,7 +77,7 @@ class GetAllKeyspacesGCStatesResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GCState gc_states = 2;</code>
-     * @return RepeatedField<\Pdpb\GCState>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\GCState>
      */
     public function getGcStates()
     {
@@ -86,12 +86,12 @@ class GetAllKeyspacesGCStatesResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GCState gc_states = 2;</code>
-     * @param \Pdpb\GCState[] $var
+     * @param \CrazyGoat\Proto\Pdpb\GCState[] $var
      * @return $this
      */
     public function setGcStates($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\GCState::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\GCState::class);
         $this->gc_states = $arr;
 
         return $this;
@@ -99,7 +99,7 @@ class GetAllKeyspacesGCStatesResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GlobalGCBarrierInfo global_gc_barriers = 3;</code>
-     * @return RepeatedField<\Pdpb\GlobalGCBarrierInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\GlobalGCBarrierInfo>
      */
     public function getGlobalGcBarriers()
     {
@@ -108,12 +108,12 @@ class GetAllKeyspacesGCStatesResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GlobalGCBarrierInfo global_gc_barriers = 3;</code>
-     * @param \Pdpb\GlobalGCBarrierInfo[] $var
+     * @param \CrazyGoat\Proto\Pdpb\GlobalGCBarrierInfo[] $var
      * @return $this
      */
     public function setGlobalGcBarriers($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\GlobalGCBarrierInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\GlobalGCBarrierInfo::class);
         $this->global_gc_barriers = $arr;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: mpp.proto
 
-namespace Mpp;
+namespace CrazyGoat\Proto\Mpp;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -31,18 +31,18 @@ class CancelTaskRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Mpp\TaskMeta $meta
-     *     @type \Mpp\Error $error
+     *     @type \CrazyGoat\Proto\Mpp\TaskMeta $meta
+     *     @type \CrazyGoat\Proto\Mpp\Error $error
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Mpp::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Mpp::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.mpp.TaskMeta meta = 1;</code>
-     * @return \Mpp\TaskMeta|null
+     * @return \CrazyGoat\Proto\Mpp\TaskMeta|null
      */
     public function getMeta()
     {
@@ -61,12 +61,12 @@ class CancelTaskRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.mpp.TaskMeta meta = 1;</code>
-     * @param \Mpp\TaskMeta $var
+     * @param \CrazyGoat\Proto\Mpp\TaskMeta $var
      * @return $this
      */
     public function setMeta($var)
     {
-        GPBUtil::checkMessage($var, \Mpp\TaskMeta::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Mpp\TaskMeta::class);
         $this->meta = $var;
 
         return $this;
@@ -74,7 +74,7 @@ class CancelTaskRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.mpp.Error error = 2;</code>
-     * @return \Mpp\Error|null
+     * @return \CrazyGoat\Proto\Mpp\Error|null
      */
     public function getError()
     {
@@ -93,12 +93,12 @@ class CancelTaskRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.mpp.Error error = 2;</code>
-     * @param \Mpp\Error $var
+     * @param \CrazyGoat\Proto\Mpp\Error $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Mpp\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Mpp\Error::class);
         $this->error = $var;
 
         return $this;

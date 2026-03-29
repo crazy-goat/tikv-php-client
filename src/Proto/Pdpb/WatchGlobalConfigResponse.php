@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,19 +33,19 @@ class WatchGlobalConfigResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\GlobalConfigItem[] $changes
+     *     @type \CrazyGoat\Proto\Pdpb\GlobalConfigItem[] $changes
      *     @type int|string $revision
-     *     @type \Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GlobalConfigItem changes = 1;</code>
-     * @return RepeatedField<\Pdpb\GlobalConfigItem>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\GlobalConfigItem>
      */
     public function getChanges()
     {
@@ -54,12 +54,12 @@ class WatchGlobalConfigResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GlobalConfigItem changes = 1;</code>
-     * @param \Pdpb\GlobalConfigItem[] $var
+     * @param \CrazyGoat\Proto\Pdpb\GlobalConfigItem[] $var
      * @return $this
      */
     public function setChanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\GlobalConfigItem::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\GlobalConfigItem::class);
         $this->changes = $arr;
 
         return $this;
@@ -89,7 +89,7 @@ class WatchGlobalConfigResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 3;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -108,12 +108,12 @@ class WatchGlobalConfigResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 3;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;

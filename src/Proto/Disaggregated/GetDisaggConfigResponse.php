@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disaggregated.proto
 
-namespace Disaggregated;
+namespace CrazyGoat\Proto\Disaggregated;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -25,17 +25,17 @@ class GetDisaggConfigResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Disaggregated\DisaggS3Config $s3_config
+     *     @type \CrazyGoat\Proto\Disaggregated\DisaggS3Config $s3_config
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Disaggregated::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Disaggregated::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.disaggregated.DisaggS3Config s3_config = 1;</code>
-     * @return \Disaggregated\DisaggS3Config|null
+     * @return \CrazyGoat\Proto\Disaggregated\DisaggS3Config|null
      */
     public function getS3Config()
     {
@@ -54,12 +54,12 @@ class GetDisaggConfigResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.DisaggS3Config s3_config = 1;</code>
-     * @param \Disaggregated\DisaggS3Config $var
+     * @param \CrazyGoat\Proto\Disaggregated\DisaggS3Config $var
      * @return $this
      */
     public function setS3Config($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\DisaggS3Config::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\DisaggS3Config::class);
         $this->s3_config = $var;
 
         return $this;

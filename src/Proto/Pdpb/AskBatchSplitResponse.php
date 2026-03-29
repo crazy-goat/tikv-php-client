@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -29,18 +29,18 @@ class AskBatchSplitResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Pdpb\SplitID[] $ids
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\SplitID[] $ids
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -59,12 +59,12 @@ class AskBatchSplitResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -72,7 +72,7 @@ class AskBatchSplitResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.SplitID ids = 2;</code>
-     * @return RepeatedField<\Pdpb\SplitID>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\SplitID>
      */
     public function getIds()
     {
@@ -81,12 +81,12 @@ class AskBatchSplitResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.SplitID ids = 2;</code>
-     * @param \Pdpb\SplitID[] $var
+     * @param \CrazyGoat\Proto\Pdpb\SplitID[] $var
      * @return $this
      */
     public function setIds($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\SplitID::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\SplitID::class);
         $this->ids = $arr;
 
         return $this;

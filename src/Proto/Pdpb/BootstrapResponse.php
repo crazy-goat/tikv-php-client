@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -29,18 +29,18 @@ class BootstrapResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Replication_modepb\ReplicationStatus $replication_status
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\ReplicationModepb\ReplicationStatus $replication_status
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -59,12 +59,12 @@ class BootstrapResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -72,7 +72,7 @@ class BootstrapResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.replication_modepb.ReplicationStatus replication_status = 2;</code>
-     * @return \Replication_modepb\ReplicationStatus|null
+     * @return \CrazyGoat\Proto\ReplicationModepb\ReplicationStatus|null
      */
     public function getReplicationStatus()
     {
@@ -91,12 +91,12 @@ class BootstrapResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.replication_modepb.ReplicationStatus replication_status = 2;</code>
-     * @param \Replication_modepb\ReplicationStatus $var
+     * @param \CrazyGoat\Proto\ReplicationModepb\ReplicationStatus $var
      * @return $this
      */
     public function setReplicationStatus($var)
     {
-        GPBUtil::checkMessage($var, \Replication_modepb\ReplicationStatus::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\ReplicationModepb\ReplicationStatus::class);
         $this->replication_status = $var;
 
         return $this;

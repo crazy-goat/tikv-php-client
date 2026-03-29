@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -43,13 +43,13 @@ class BatchResponse extends \Google\Protobuf\Internal\Message
      *
      *     @type string $data
      *     @type string $other_error
-     *     @type \Kvrpcpb\ExecDetails $exec_details
-     *     @type \Metapb\Region[] $retry_regions
-     *     @type \Coprocessor\ShardInfo[] $retry_shards
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ExecDetails $exec_details
+     *     @type \CrazyGoat\Proto\Metapb\Region[] $retry_regions
+     *     @type \CrazyGoat\Proto\Coprocessor\ShardInfo[] $retry_shards
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
@@ -99,7 +99,7 @@ class BatchResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ExecDetails exec_details = 3;</code>
-     * @return \Kvrpcpb\ExecDetails|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ExecDetails|null
      */
     public function getExecDetails()
     {
@@ -118,12 +118,12 @@ class BatchResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ExecDetails exec_details = 3;</code>
-     * @param \Kvrpcpb\ExecDetails $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ExecDetails $var
      * @return $this
      */
     public function setExecDetails($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ExecDetails::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ExecDetails::class);
         $this->exec_details = $var;
 
         return $this;
@@ -131,7 +131,7 @@ class BatchResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.Region retry_regions = 4;</code>
-     * @return RepeatedField<\Metapb\Region>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Region>
      */
     public function getRetryRegions()
     {
@@ -140,12 +140,12 @@ class BatchResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.Region retry_regions = 4;</code>
-     * @param \Metapb\Region[] $var
+     * @param \CrazyGoat\Proto\Metapb\Region[] $var
      * @return $this
      */
     public function setRetryRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Region::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Region::class);
         $this->retry_regions = $arr;
 
         return $this;
@@ -153,7 +153,7 @@ class BatchResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.ShardInfo retry_shards = 5;</code>
-     * @return RepeatedField<\Coprocessor\ShardInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\ShardInfo>
      */
     public function getRetryShards()
     {
@@ -162,12 +162,12 @@ class BatchResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.ShardInfo retry_shards = 5;</code>
-     * @param \Coprocessor\ShardInfo[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\ShardInfo[] $var
      * @return $this
      */
     public function setRetryShards($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\ShardInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\ShardInfo::class);
         $this->retry_shards = $arr;
 
         return $this;

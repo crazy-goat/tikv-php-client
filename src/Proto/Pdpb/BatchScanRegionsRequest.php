@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -50,9 +50,9 @@ class BatchScanRegionsRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\RequestHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\RequestHeader $header
      *     @type bool $need_buckets
-     *     @type \Pdpb\KeyRange[] $ranges
+     *     @type \CrazyGoat\Proto\Pdpb\KeyRange[] $ranges
      *           the given ranges must be in order.
      *     @type int $limit
      *           limit the total number of regions to scan.
@@ -64,13 +64,13 @@ class BatchScanRegionsRequest extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @return \Pdpb\RequestHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\RequestHeader|null
      */
     public function getHeader()
     {
@@ -89,12 +89,12 @@ class BatchScanRegionsRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @param \Pdpb\RequestHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\RequestHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RequestHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RequestHeader::class);
         $this->header = $var;
 
         return $this;
@@ -126,7 +126,7 @@ class BatchScanRegionsRequest extends \Google\Protobuf\Internal\Message
      * the given ranges must be in order.
      *
      * Generated from protobuf field <code>repeated .pdpb.KeyRange ranges = 3;</code>
-     * @return RepeatedField<\Pdpb\KeyRange>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\KeyRange>
      */
     public function getRanges()
     {
@@ -137,12 +137,12 @@ class BatchScanRegionsRequest extends \Google\Protobuf\Internal\Message
      * the given ranges must be in order.
      *
      * Generated from protobuf field <code>repeated .pdpb.KeyRange ranges = 3;</code>
-     * @param \Pdpb\KeyRange[] $var
+     * @param \CrazyGoat\Proto\Pdpb\KeyRange[] $var
      * @return $this
      */
     public function setRanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\KeyRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\KeyRange::class);
         $this->ranges = $arr;
 
         return $this;

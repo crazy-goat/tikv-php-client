@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: tracepb.proto
 
-namespace Tracepb;
+namespace CrazyGoat\Proto\Tracepb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -55,11 +55,11 @@ class Span extends \Google\Protobuf\Internal\Message
      *     @type int|string $begin_unix_ns
      *     @type int|string $duration_ns
      *     @type string $event
-     *     @type \Tracepb\Property[] $properties
+     *     @type \CrazyGoat\Proto\Tracepb\Property[] $properties
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Tracepb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Tracepb::initOnce();
         parent::__construct($data);
     }
 
@@ -181,7 +181,7 @@ class Span extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .tracepb.Property properties = 6;</code>
-     * @return RepeatedField<\Tracepb\Property>
+     * @return RepeatedField<\CrazyGoat\Proto\Tracepb\Property>
      */
     public function getProperties()
     {
@@ -190,12 +190,12 @@ class Span extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .tracepb.Property properties = 6;</code>
-     * @param \Tracepb\Property[] $var
+     * @param \CrazyGoat\Proto\Tracepb\Property[] $var
      * @return $this
      */
     public function setProperties($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Tracepb\Property::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Tracepb\Property::class);
         $this->properties = $arr;
 
         return $this;

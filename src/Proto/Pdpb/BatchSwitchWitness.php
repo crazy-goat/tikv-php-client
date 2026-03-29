@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -25,17 +25,17 @@ class BatchSwitchWitness extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\SwitchWitness[] $switch_witnesses
+     *     @type \CrazyGoat\Proto\Pdpb\SwitchWitness[] $switch_witnesses
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.SwitchWitness switch_witnesses = 1;</code>
-     * @return RepeatedField<\Pdpb\SwitchWitness>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\SwitchWitness>
      */
     public function getSwitchWitnesses()
     {
@@ -44,12 +44,12 @@ class BatchSwitchWitness extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.SwitchWitness switch_witnesses = 1;</code>
-     * @param \Pdpb\SwitchWitness[] $var
+     * @param \CrazyGoat\Proto\Pdpb\SwitchWitness[] $var
      * @return $this
      */
     public function setSwitchWitnesses($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\SwitchWitness::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\SwitchWitness::class);
         $this->switch_witnesses = $arr;
 
         return $this;

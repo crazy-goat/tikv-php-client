@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -49,7 +49,7 @@ class GlobalConfigItem extends \Google\Protobuf\Internal\Message
      *     @type string $name
      *     @type string $value
      *           this field 'value' is replaced by the field 'payload'.
-     *     @type \Pdpb\Error $error
+     *     @type \CrazyGoat\Proto\Pdpb\Error $error
      *     @type int $kind
      *     @type string $payload
      *           Since item value needs to support marshal of different struct types,
@@ -57,7 +57,7 @@ class GlobalConfigItem extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
@@ -111,7 +111,7 @@ class GlobalConfigItem extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Error error = 3;</code>
-     * @return \Pdpb\Error|null
+     * @return \CrazyGoat\Proto\Pdpb\Error|null
      */
     public function getError()
     {
@@ -130,12 +130,12 @@ class GlobalConfigItem extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Error error = 3;</code>
-     * @param \Pdpb\Error $var
+     * @param \CrazyGoat\Proto\Pdpb\Error $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\Error::class);
         $this->error = $var;
 
         return $this;
@@ -157,7 +157,7 @@ class GlobalConfigItem extends \Google\Protobuf\Internal\Message
      */
     public function setKind($var)
     {
-        GPBUtil::checkEnum($var, \Pdpb\EventType::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Pdpb\EventType::class);
         $this->kind = $var;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -59,16 +59,16 @@ class GetResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Errorpb\Error $region_error
+     *     @type \CrazyGoat\Proto\Errorpb\Error $region_error
      *           A region error indicates that the request was sent to the wrong TiKV node
      *           (or other, similar errors).
-     *     @type \Kvrpcpb\KeyError $error
+     *     @type \CrazyGoat\Proto\Kvrpcpb\KeyError $error
      *           A value could not be retrieved due to the state of the database for the requested key.
      *     @type string $value
      *           A successful result.
      *     @type bool $not_found
      *           True if the key does not exist in the database.
-     *     @type \Kvrpcpb\ExecDetailsV2 $exec_details_v2
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2 $exec_details_v2
      *           Time and scan details when processing the request.
      *     @type int|string $commit_ts
      *           The commit timestamp of the key.
@@ -76,7 +76,7 @@ class GetResponse extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -85,7 +85,7 @@ class GetResponse extends \Google\Protobuf\Internal\Message
      * (or other, similar errors).
      *
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @return \Errorpb\Error|null
+     * @return \CrazyGoat\Proto\Errorpb\Error|null
      */
     public function getRegionError()
     {
@@ -107,12 +107,12 @@ class GetResponse extends \Google\Protobuf\Internal\Message
      * (or other, similar errors).
      *
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @param \Errorpb\Error $var
+     * @param \CrazyGoat\Proto\Errorpb\Error $var
      * @return $this
      */
     public function setRegionError($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\Error::class);
         $this->region_error = $var;
 
         return $this;
@@ -122,7 +122,7 @@ class GetResponse extends \Google\Protobuf\Internal\Message
      * A value could not be retrieved due to the state of the database for the requested key.
      *
      * Generated from protobuf field <code>.kvrpcpb.KeyError error = 2;</code>
-     * @return \Kvrpcpb\KeyError|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\KeyError|null
      */
     public function getError()
     {
@@ -143,12 +143,12 @@ class GetResponse extends \Google\Protobuf\Internal\Message
      * A value could not be retrieved due to the state of the database for the requested key.
      *
      * Generated from protobuf field <code>.kvrpcpb.KeyError error = 2;</code>
-     * @param \Kvrpcpb\KeyError $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\KeyError $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\KeyError::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\KeyError::class);
         $this->error = $var;
 
         return $this;
@@ -210,7 +210,7 @@ class GetResponse extends \Google\Protobuf\Internal\Message
      * Time and scan details when processing the request.
      *
      * Generated from protobuf field <code>.kvrpcpb.ExecDetailsV2 exec_details_v2 = 6;</code>
-     * @return \Kvrpcpb\ExecDetailsV2|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2|null
      */
     public function getExecDetailsV2()
     {
@@ -231,12 +231,12 @@ class GetResponse extends \Google\Protobuf\Internal\Message
      * Time and scan details when processing the request.
      *
      * Generated from protobuf field <code>.kvrpcpb.ExecDetailsV2 exec_details_v2 = 6;</code>
-     * @param \Kvrpcpb\ExecDetailsV2 $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2 $var
      * @return $this
      */
     public function setExecDetailsV2($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ExecDetailsV2::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ExecDetailsV2::class);
         $this->exec_details_v2 = $var;
 
         return $this;

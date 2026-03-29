@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: tracepb.proto
 
-namespace Tracepb;
+namespace CrazyGoat\Proto\Tracepb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -24,7 +24,7 @@ class TraceRecordRequest extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Tracepb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Tracepb::initOnce();
         parent::__construct($data);
     }
 

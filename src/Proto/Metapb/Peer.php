@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: metapb.proto
 
-namespace Metapb;
+namespace CrazyGoat\Proto\Metapb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -44,7 +44,7 @@ class Peer extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Metapb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Metapb::initOnce();
         parent::__construct($data);
     }
 
@@ -108,7 +108,7 @@ class Peer extends \Google\Protobuf\Internal\Message
      */
     public function setRole($var)
     {
-        GPBUtil::checkEnum($var, \Metapb\PeerRole::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Metapb\PeerRole::class);
         $this->role = $var;
 
         return $this;

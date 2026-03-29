@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -30,11 +30,11 @@ class DemoteFailedVoters extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int|string $region_id
-     *     @type \Metapb\Peer[] $failed_voters
+     *     @type \CrazyGoat\Proto\Metapb\Peer[] $failed_voters
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
@@ -62,7 +62,7 @@ class DemoteFailedVoters extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.Peer failed_voters = 2;</code>
-     * @return RepeatedField<\Metapb\Peer>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Peer>
      */
     public function getFailedVoters()
     {
@@ -71,12 +71,12 @@ class DemoteFailedVoters extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.Peer failed_voters = 2;</code>
-     * @param \Metapb\Peer[] $var
+     * @param \CrazyGoat\Proto\Metapb\Peer[] $var
      * @return $this
      */
     public function setFailedVoters($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Peer::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->failed_voters = $arr;
 
         return $this;

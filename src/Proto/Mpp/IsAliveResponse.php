@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: mpp.proto
 
-namespace Mpp;
+namespace CrazyGoat\Proto\Mpp;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -34,7 +34,7 @@ class IsAliveResponse extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Mpp::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Mpp::initOnce();
         parent::__construct($data);
     }
 

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -35,20 +35,20 @@ class SyncMaxTSRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\RequestHeader $header
-     *     @type \Pdpb\Timestamp $max_ts
+     *     @type \CrazyGoat\Proto\Pdpb\RequestHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\Timestamp $max_ts
      *     @type bool $skip_check
      *           If skip_check is true, the sync will try to write the max_ts without checking whether it's bigger.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @return \Pdpb\RequestHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\RequestHeader|null
      */
     public function getHeader()
     {
@@ -67,12 +67,12 @@ class SyncMaxTSRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @param \Pdpb\RequestHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\RequestHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RequestHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RequestHeader::class);
         $this->header = $var;
 
         return $this;
@@ -80,7 +80,7 @@ class SyncMaxTSRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Timestamp max_ts = 2;</code>
-     * @return \Pdpb\Timestamp|null
+     * @return \CrazyGoat\Proto\Pdpb\Timestamp|null
      */
     public function getMaxTs()
     {
@@ -99,12 +99,12 @@ class SyncMaxTSRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Timestamp max_ts = 2;</code>
-     * @param \Pdpb\Timestamp $var
+     * @param \CrazyGoat\Proto\Pdpb\Timestamp $var
      * @return $this
      */
     public function setMaxTs($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Timestamp::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\Timestamp::class);
         $this->max_ts = $var;
 
         return $this;

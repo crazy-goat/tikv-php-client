@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: deadlock.proto
 
-namespace Deadlock;
+namespace CrazyGoat\Proto\Deadlock;
 
 use UnexpectedValueException;
 

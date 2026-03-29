@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: mpp.proto
 
-namespace Mpp;
+namespace CrazyGoat\Proto\Mpp;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -57,26 +57,26 @@ class DispatchTaskRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Mpp\TaskMeta $meta
+     *     @type \CrazyGoat\Proto\Mpp\TaskMeta $meta
      *     @type string $encoded_plan
      *     @type int|string $timeout
-     *     @type \Coprocessor\RegionInfo[] $regions
+     *     @type \CrazyGoat\Proto\Coprocessor\RegionInfo[] $regions
      *     @type int|string $schema_ver
      *           If this task contains table scan, we still need their region info.
-     *     @type \Coprocessor\TableRegions[] $table_regions
+     *     @type \CrazyGoat\Proto\Coprocessor\TableRegions[] $table_regions
      *           Used for partition table scan
-     *     @type \Coprocessor\TableShardInfos[] $table_shard_infos
+     *     @type \CrazyGoat\Proto\Coprocessor\TableShardInfos[] $table_shard_infos
      *           Shard infos for TiCI/FTS routing in MPP dispatch path.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Mpp::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Mpp::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.mpp.TaskMeta meta = 1;</code>
-     * @return \Mpp\TaskMeta|null
+     * @return \CrazyGoat\Proto\Mpp\TaskMeta|null
      */
     public function getMeta()
     {
@@ -95,12 +95,12 @@ class DispatchTaskRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.mpp.TaskMeta meta = 1;</code>
-     * @param \Mpp\TaskMeta $var
+     * @param \CrazyGoat\Proto\Mpp\TaskMeta $var
      * @return $this
      */
     public function setMeta($var)
     {
-        GPBUtil::checkMessage($var, \Mpp\TaskMeta::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Mpp\TaskMeta::class);
         $this->meta = $var;
 
         return $this;
@@ -152,7 +152,7 @@ class DispatchTaskRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.RegionInfo regions = 4;</code>
-     * @return RepeatedField<\Coprocessor\RegionInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\RegionInfo>
      */
     public function getRegions()
     {
@@ -161,12 +161,12 @@ class DispatchTaskRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.RegionInfo regions = 4;</code>
-     * @param \Coprocessor\RegionInfo[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\RegionInfo[] $var
      * @return $this
      */
     public function setRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\RegionInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\RegionInfo::class);
         $this->regions = $arr;
 
         return $this;
@@ -202,7 +202,7 @@ class DispatchTaskRequest extends \Google\Protobuf\Internal\Message
      * Used for partition table scan
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableRegions table_regions = 6;</code>
-     * @return RepeatedField<\Coprocessor\TableRegions>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\TableRegions>
      */
     public function getTableRegions()
     {
@@ -213,12 +213,12 @@ class DispatchTaskRequest extends \Google\Protobuf\Internal\Message
      * Used for partition table scan
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableRegions table_regions = 6;</code>
-     * @param \Coprocessor\TableRegions[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\TableRegions[] $var
      * @return $this
      */
     public function setTableRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\TableRegions::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\TableRegions::class);
         $this->table_regions = $arr;
 
         return $this;
@@ -228,7 +228,7 @@ class DispatchTaskRequest extends \Google\Protobuf\Internal\Message
      * Shard infos for TiCI/FTS routing in MPP dispatch path.
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableShardInfos table_shard_infos = 7;</code>
-     * @return RepeatedField<\Coprocessor\TableShardInfos>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\TableShardInfos>
      */
     public function getTableShardInfos()
     {
@@ -239,12 +239,12 @@ class DispatchTaskRequest extends \Google\Protobuf\Internal\Message
      * Shard infos for TiCI/FTS routing in MPP dispatch path.
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableShardInfos table_shard_infos = 7;</code>
-     * @param \Coprocessor\TableShardInfos[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\TableShardInfos[] $var
      * @return $this
      */
     public function setTableShardInfos($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\TableShardInfos::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\TableShardInfos::class);
         $this->table_shard_infos = $arr;
 
         return $this;

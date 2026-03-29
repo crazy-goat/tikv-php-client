@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: metapb.proto
 
-namespace Metapb;
+namespace CrazyGoat\Proto\Metapb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -69,9 +69,9 @@ class Region extends \Google\Protobuf\Internal\Message
      *     @type string $start_key
      *           Region key range [start_key, end_key).
      *     @type string $end_key
-     *     @type \Metapb\RegionEpoch $region_epoch
-     *     @type \Metapb\Peer[] $peers
-     *     @type \Encryptionpb\EncryptionMeta $encryption_meta
+     *     @type \CrazyGoat\Proto\Metapb\RegionEpoch $region_epoch
+     *     @type \CrazyGoat\Proto\Metapb\Peer[] $peers
+     *     @type \CrazyGoat\Proto\Encryptionpb\EncryptionMeta $encryption_meta
      *           Encryption metadata for start_key and end_key. encryption_meta.iv is IV for start_key.
      *           IV for end_key is calculated from (encryption_meta.iv + len(start_key)).
      *           The field is only used by PD and should be ignored otherwise.
@@ -84,7 +84,7 @@ class Region extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Metapb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Metapb::initOnce();
         parent::__construct($data);
     }
 
@@ -160,7 +160,7 @@ class Region extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 4;</code>
-     * @return \Metapb\RegionEpoch|null
+     * @return \CrazyGoat\Proto\Metapb\RegionEpoch|null
      */
     public function getRegionEpoch()
     {
@@ -179,12 +179,12 @@ class Region extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 4;</code>
-     * @param \Metapb\RegionEpoch $var
+     * @param \CrazyGoat\Proto\Metapb\RegionEpoch $var
      * @return $this
      */
     public function setRegionEpoch($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\RegionEpoch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\RegionEpoch::class);
         $this->region_epoch = $var;
 
         return $this;
@@ -192,7 +192,7 @@ class Region extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.Peer peers = 5;</code>
-     * @return RepeatedField<\Metapb\Peer>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Peer>
      */
     public function getPeers()
     {
@@ -201,12 +201,12 @@ class Region extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.Peer peers = 5;</code>
-     * @param \Metapb\Peer[] $var
+     * @param \CrazyGoat\Proto\Metapb\Peer[] $var
      * @return $this
      */
     public function setPeers($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Peer::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->peers = $arr;
 
         return $this;
@@ -219,7 +219,7 @@ class Region extends \Google\Protobuf\Internal\Message
      * If encryption_meta is empty (i.e. nil), it means start_key and end_key are unencrypted.
      *
      * Generated from protobuf field <code>.encryptionpb.EncryptionMeta encryption_meta = 6;</code>
-     * @return \Encryptionpb\EncryptionMeta|null
+     * @return \CrazyGoat\Proto\Encryptionpb\EncryptionMeta|null
      */
     public function getEncryptionMeta()
     {
@@ -243,12 +243,12 @@ class Region extends \Google\Protobuf\Internal\Message
      * If encryption_meta is empty (i.e. nil), it means start_key and end_key are unencrypted.
      *
      * Generated from protobuf field <code>.encryptionpb.EncryptionMeta encryption_meta = 6;</code>
-     * @param \Encryptionpb\EncryptionMeta $var
+     * @param \CrazyGoat\Proto\Encryptionpb\EncryptionMeta $var
      * @return $this
      */
     public function setEncryptionMeta($var)
     {
-        GPBUtil::checkMessage($var, \Encryptionpb\EncryptionMeta::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Encryptionpb\EncryptionMeta::class);
         $this->encryption_meta = $var;
 
         return $this;

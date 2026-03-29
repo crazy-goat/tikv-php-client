@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disaggregated.proto
 
-namespace Disaggregated;
+namespace CrazyGoat\Proto\Disaggregated;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -25,17 +25,17 @@ class TryAddLockResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Disaggregated\S3LockResult $result
+     *     @type \CrazyGoat\Proto\Disaggregated\S3LockResult $result
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Disaggregated::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Disaggregated::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.disaggregated.S3LockResult result = 1;</code>
-     * @return \Disaggregated\S3LockResult|null
+     * @return \CrazyGoat\Proto\Disaggregated\S3LockResult|null
      */
     public function getResult()
     {
@@ -54,12 +54,12 @@ class TryAddLockResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.S3LockResult result = 1;</code>
-     * @param \Disaggregated\S3LockResult $var
+     * @param \CrazyGoat\Proto\Disaggregated\S3LockResult $var
      * @return $this
      */
     public function setResult($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\S3LockResult::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\S3LockResult::class);
         $this->result = $var;
 
         return $this;

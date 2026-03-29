@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: replication_modepb.proto
 
-namespace GPBMetadata;
+namespace CrazyGoat\Proto\GPBMetadata;
 
 class ReplicationModepb
 {
@@ -16,7 +16,7 @@ class ReplicationModepb
           return;
         }
         $pool->internalAddGeneratedFile(
-            "\x0A\x7F\x0A\x18replication_modepb.proto\x12\x12replication_modepb\"\x13\x0A\x11ReplicationStatus\"\x19\x0A\x17RegionReplicationStatus\"\x17\x0A\x15StoreDRAutoSyncStatusb\x06proto3"
+            "\x0A\xC3\x01\x0A\x18replication_modepb.proto\x12\x12replication_modepb\"\x13\x0A\x11ReplicationStatus\"\x19\x0A\x17RegionReplicationStatus\"\x17\x0A\x15StoreDRAutoSyncStatusBB\xCA\x02!CrazyGoat\\Proto\\ReplicationModepb\xE2\x02\x1BCrazyGoat\\Proto\\GPBMetadatab\x06proto3"
         , true);
 
         static::$is_initialized = true;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disaggregated.proto
 
-namespace Disaggregated;
+namespace CrazyGoat\Proto\Disaggregated;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -22,19 +22,19 @@ class S3LockResult extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Disaggregated\Success $success
-     *     @type \Disaggregated\NotOwner $not_owner
-     *     @type \Disaggregated\Conflict $conflict
+     *     @type \CrazyGoat\Proto\Disaggregated\Success $success
+     *     @type \CrazyGoat\Proto\Disaggregated\NotOwner $not_owner
+     *     @type \CrazyGoat\Proto\Disaggregated\Conflict $conflict
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Disaggregated::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Disaggregated::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.disaggregated.Success success = 1;</code>
-     * @return \Disaggregated\Success|null
+     * @return \CrazyGoat\Proto\Disaggregated\Success|null
      */
     public function getSuccess()
     {
@@ -48,12 +48,12 @@ class S3LockResult extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.Success success = 1;</code>
-     * @param \Disaggregated\Success $var
+     * @param \CrazyGoat\Proto\Disaggregated\Success $var
      * @return $this
      */
     public function setSuccess($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\Success::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\Success::class);
         $this->writeOneof(1, $var);
 
         return $this;
@@ -61,7 +61,7 @@ class S3LockResult extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.NotOwner not_owner = 2;</code>
-     * @return \Disaggregated\NotOwner|null
+     * @return \CrazyGoat\Proto\Disaggregated\NotOwner|null
      */
     public function getNotOwner()
     {
@@ -75,12 +75,12 @@ class S3LockResult extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.NotOwner not_owner = 2;</code>
-     * @param \Disaggregated\NotOwner $var
+     * @param \CrazyGoat\Proto\Disaggregated\NotOwner $var
      * @return $this
      */
     public function setNotOwner($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\NotOwner::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\NotOwner::class);
         $this->writeOneof(2, $var);
 
         return $this;
@@ -88,7 +88,7 @@ class S3LockResult extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.Conflict conflict = 3;</code>
-     * @return \Disaggregated\Conflict|null
+     * @return \CrazyGoat\Proto\Disaggregated\Conflict|null
      */
     public function getConflict()
     {
@@ -102,12 +102,12 @@ class S3LockResult extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.Conflict conflict = 3;</code>
-     * @param \Disaggregated\Conflict $var
+     * @param \CrazyGoat\Proto\Disaggregated\Conflict $var
      * @return $this
      */
     public function setConflict($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\Conflict::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\Conflict::class);
         $this->writeOneof(3, $var);
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: tikvpb.proto
 
-namespace Tikvpb\BatchCommandsResponse;
+namespace CrazyGoat\Proto\Tikvpb\BatchCommandsResponse;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -22,52 +22,52 @@ class Response extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\GetResponse $Get
-     *     @type \Kvrpcpb\ScanResponse $Scan
-     *     @type \Kvrpcpb\PrewriteResponse $Prewrite
-     *     @type \Kvrpcpb\CommitResponse $Commit
-     *     @type \Kvrpcpb\ImportResponse $Import
-     *     @type \Kvrpcpb\CleanupResponse $Cleanup
-     *     @type \Kvrpcpb\BatchGetResponse $BatchGet
-     *     @type \Kvrpcpb\BatchRollbackResponse $BatchRollback
-     *     @type \Kvrpcpb\ScanLockResponse $ScanLock
-     *     @type \Kvrpcpb\ResolveLockResponse $ResolveLock
-     *     @type \Kvrpcpb\GCResponse $GC
-     *     @type \Kvrpcpb\DeleteRangeResponse $DeleteRange
-     *     @type \Kvrpcpb\RawGetResponse $RawGet
-     *     @type \Kvrpcpb\RawBatchGetResponse $RawBatchGet
-     *     @type \Kvrpcpb\RawPutResponse $RawPut
-     *     @type \Kvrpcpb\RawBatchPutResponse $RawBatchPut
-     *     @type \Kvrpcpb\RawDeleteResponse $RawDelete
-     *     @type \Kvrpcpb\RawBatchDeleteResponse $RawBatchDelete
-     *     @type \Kvrpcpb\RawScanResponse $RawScan
-     *     @type \Kvrpcpb\RawDeleteRangeResponse $RawDeleteRange
-     *     @type \Kvrpcpb\RawBatchScanResponse $RawBatchScan
-     *     @type \Coprocessor\Response $Coprocessor
-     *     @type \Kvrpcpb\PessimisticLockResponse $PessimisticLock
-     *     @type \Kvrpcpb\PessimisticRollbackResponse $PessimisticRollback
-     *     @type \Kvrpcpb\CheckTxnStatusResponse $CheckTxnStatus
-     *     @type \Kvrpcpb\TxnHeartBeatResponse $TxnHeartBeat
-     *     @type \Kvrpcpb\CheckSecondaryLocksResponse $CheckSecondaryLocks
-     *     @type \Kvrpcpb\RawCoprocessorResponse $RawCoprocessor
-     *     @type \Kvrpcpb\FlashbackToVersionResponse $FlashbackToVersion
-     *     @type \Kvrpcpb\PrepareFlashbackToVersionResponse $PrepareFlashbackToVersion
-     *     @type \Kvrpcpb\FlushResponse $Flush
-     *     @type \Kvrpcpb\BufferBatchGetResponse $BufferBatchGet
-     *     @type \Kvrpcpb\GetHealthFeedbackResponse $GetHealthFeedback
-     *     @type \Kvrpcpb\BroadcastTxnStatusResponse $BroadcastTxnStatus
-     *     @type \Tikvpb\BatchCommandsEmptyResponse $Empty
+     *     @type \CrazyGoat\Proto\Kvrpcpb\GetResponse $Get
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ScanResponse $Scan
+     *     @type \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse $Prewrite
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CommitResponse $Commit
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ImportResponse $Import
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CleanupResponse $Cleanup
+     *     @type \CrazyGoat\Proto\Kvrpcpb\BatchGetResponse $BatchGet
+     *     @type \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse $BatchRollback
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ScanLockResponse $ScanLock
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ResolveLockResponse $ResolveLock
+     *     @type \CrazyGoat\Proto\Kvrpcpb\GCResponse $GC
+     *     @type \CrazyGoat\Proto\Kvrpcpb\DeleteRangeResponse $DeleteRange
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RawGetResponse $RawGet
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse $RawBatchGet
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RawPutResponse $RawPut
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RawBatchPutResponse $RawBatchPut
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse $RawDelete
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteResponse $RawBatchDelete
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RawScanResponse $RawScan
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeResponse $RawDeleteRange
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RawBatchScanResponse $RawBatchScan
+     *     @type \CrazyGoat\Proto\Coprocessor\Response $Coprocessor
+     *     @type \CrazyGoat\Proto\Kvrpcpb\PessimisticLockResponse $PessimisticLock
+     *     @type \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse $PessimisticRollback
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusResponse $CheckTxnStatus
+     *     @type \CrazyGoat\Proto\Kvrpcpb\TxnHeartBeatResponse $TxnHeartBeat
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksResponse $CheckSecondaryLocks
+     *     @type \CrazyGoat\Proto\Kvrpcpb\RawCoprocessorResponse $RawCoprocessor
+     *     @type \CrazyGoat\Proto\Kvrpcpb\FlashbackToVersionResponse $FlashbackToVersion
+     *     @type \CrazyGoat\Proto\Kvrpcpb\PrepareFlashbackToVersionResponse $PrepareFlashbackToVersion
+     *     @type \CrazyGoat\Proto\Kvrpcpb\FlushResponse $Flush
+     *     @type \CrazyGoat\Proto\Kvrpcpb\BufferBatchGetResponse $BufferBatchGet
+     *     @type \CrazyGoat\Proto\Kvrpcpb\GetHealthFeedbackResponse $GetHealthFeedback
+     *     @type \CrazyGoat\Proto\Kvrpcpb\BroadcastTxnStatusResponse $BroadcastTxnStatus
+     *     @type \CrazyGoat\Proto\Tikvpb\BatchCommandsEmptyResponse $Empty
      *           For some test cases.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Tikvpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Tikvpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.GetResponse Get = 1;</code>
-     * @return \Kvrpcpb\GetResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\GetResponse|null
      */
     public function getGet()
     {
@@ -81,12 +81,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.GetResponse Get = 1;</code>
-     * @param \Kvrpcpb\GetResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\GetResponse $var
      * @return $this
      */
     public function setGet($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\GetResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\GetResponse::class);
         $this->writeOneof(1, $var);
 
         return $this;
@@ -94,7 +94,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ScanResponse Scan = 2;</code>
-     * @return \Kvrpcpb\ScanResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ScanResponse|null
      */
     public function getScan()
     {
@@ -108,12 +108,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ScanResponse Scan = 2;</code>
-     * @param \Kvrpcpb\ScanResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ScanResponse $var
      * @return $this
      */
     public function setScan($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ScanResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ScanResponse::class);
         $this->writeOneof(2, $var);
 
         return $this;
@@ -121,7 +121,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.PrewriteResponse Prewrite = 3;</code>
-     * @return \Kvrpcpb\PrewriteResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse|null
      */
     public function getPrewrite()
     {
@@ -135,12 +135,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.PrewriteResponse Prewrite = 3;</code>
-     * @param \Kvrpcpb\PrewriteResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse $var
      * @return $this
      */
     public function setPrewrite($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\PrewriteResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse::class);
         $this->writeOneof(3, $var);
 
         return $this;
@@ -148,7 +148,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CommitResponse Commit = 4;</code>
-     * @return \Kvrpcpb\CommitResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CommitResponse|null
      */
     public function getCommit()
     {
@@ -162,12 +162,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CommitResponse Commit = 4;</code>
-     * @param \Kvrpcpb\CommitResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CommitResponse $var
      * @return $this
      */
     public function setCommit($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CommitResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CommitResponse::class);
         $this->writeOneof(4, $var);
 
         return $this;
@@ -175,7 +175,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ImportResponse Import = 5;</code>
-     * @return \Kvrpcpb\ImportResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ImportResponse|null
      */
     public function getImport()
     {
@@ -189,12 +189,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ImportResponse Import = 5;</code>
-     * @param \Kvrpcpb\ImportResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ImportResponse $var
      * @return $this
      */
     public function setImport($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ImportResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ImportResponse::class);
         $this->writeOneof(5, $var);
 
         return $this;
@@ -202,7 +202,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CleanupResponse Cleanup = 6;</code>
-     * @return \Kvrpcpb\CleanupResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CleanupResponse|null
      */
     public function getCleanup()
     {
@@ -216,12 +216,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CleanupResponse Cleanup = 6;</code>
-     * @param \Kvrpcpb\CleanupResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CleanupResponse $var
      * @return $this
      */
     public function setCleanup($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CleanupResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CleanupResponse::class);
         $this->writeOneof(6, $var);
 
         return $this;
@@ -229,7 +229,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.BatchGetResponse BatchGet = 7;</code>
-     * @return \Kvrpcpb\BatchGetResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\BatchGetResponse|null
      */
     public function getBatchGet()
     {
@@ -243,12 +243,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.BatchGetResponse BatchGet = 7;</code>
-     * @param \Kvrpcpb\BatchGetResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\BatchGetResponse $var
      * @return $this
      */
     public function setBatchGet($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\BatchGetResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\BatchGetResponse::class);
         $this->writeOneof(7, $var);
 
         return $this;
@@ -256,7 +256,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.BatchRollbackResponse BatchRollback = 8;</code>
-     * @return \Kvrpcpb\BatchRollbackResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse|null
      */
     public function getBatchRollback()
     {
@@ -270,12 +270,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.BatchRollbackResponse BatchRollback = 8;</code>
-     * @param \Kvrpcpb\BatchRollbackResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse $var
      * @return $this
      */
     public function setBatchRollback($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\BatchRollbackResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse::class);
         $this->writeOneof(8, $var);
 
         return $this;
@@ -283,7 +283,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ScanLockResponse ScanLock = 9;</code>
-     * @return \Kvrpcpb\ScanLockResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ScanLockResponse|null
      */
     public function getScanLock()
     {
@@ -297,12 +297,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ScanLockResponse ScanLock = 9;</code>
-     * @param \Kvrpcpb\ScanLockResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ScanLockResponse $var
      * @return $this
      */
     public function setScanLock($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ScanLockResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ScanLockResponse::class);
         $this->writeOneof(9, $var);
 
         return $this;
@@ -310,7 +310,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ResolveLockResponse ResolveLock = 10;</code>
-     * @return \Kvrpcpb\ResolveLockResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ResolveLockResponse|null
      */
     public function getResolveLock()
     {
@@ -324,12 +324,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ResolveLockResponse ResolveLock = 10;</code>
-     * @param \Kvrpcpb\ResolveLockResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ResolveLockResponse $var
      * @return $this
      */
     public function setResolveLock($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ResolveLockResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ResolveLockResponse::class);
         $this->writeOneof(10, $var);
 
         return $this;
@@ -337,7 +337,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.GCResponse GC = 11;</code>
-     * @return \Kvrpcpb\GCResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\GCResponse|null
      */
     public function getGC()
     {
@@ -351,12 +351,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.GCResponse GC = 11;</code>
-     * @param \Kvrpcpb\GCResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\GCResponse $var
      * @return $this
      */
     public function setGC($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\GCResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\GCResponse::class);
         $this->writeOneof(11, $var);
 
         return $this;
@@ -364,7 +364,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.DeleteRangeResponse DeleteRange = 12;</code>
-     * @return \Kvrpcpb\DeleteRangeResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\DeleteRangeResponse|null
      */
     public function getDeleteRange()
     {
@@ -378,12 +378,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.DeleteRangeResponse DeleteRange = 12;</code>
-     * @param \Kvrpcpb\DeleteRangeResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\DeleteRangeResponse $var
      * @return $this
      */
     public function setDeleteRange($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\DeleteRangeResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\DeleteRangeResponse::class);
         $this->writeOneof(12, $var);
 
         return $this;
@@ -391,7 +391,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawGetResponse RawGet = 13;</code>
-     * @return \Kvrpcpb\RawGetResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RawGetResponse|null
      */
     public function getRawGet()
     {
@@ -405,12 +405,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawGetResponse RawGet = 13;</code>
-     * @param \Kvrpcpb\RawGetResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawGetResponse $var
      * @return $this
      */
     public function setRawGet($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RawGetResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RawGetResponse::class);
         $this->writeOneof(13, $var);
 
         return $this;
@@ -418,7 +418,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawBatchGetResponse RawBatchGet = 14;</code>
-     * @return \Kvrpcpb\RawBatchGetResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse|null
      */
     public function getRawBatchGet()
     {
@@ -432,12 +432,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawBatchGetResponse RawBatchGet = 14;</code>
-     * @param \Kvrpcpb\RawBatchGetResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse $var
      * @return $this
      */
     public function setRawBatchGet($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RawBatchGetResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse::class);
         $this->writeOneof(14, $var);
 
         return $this;
@@ -445,7 +445,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawPutResponse RawPut = 15;</code>
-     * @return \Kvrpcpb\RawPutResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RawPutResponse|null
      */
     public function getRawPut()
     {
@@ -459,12 +459,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawPutResponse RawPut = 15;</code>
-     * @param \Kvrpcpb\RawPutResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawPutResponse $var
      * @return $this
      */
     public function setRawPut($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RawPutResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RawPutResponse::class);
         $this->writeOneof(15, $var);
 
         return $this;
@@ -472,7 +472,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawBatchPutResponse RawBatchPut = 16;</code>
-     * @return \Kvrpcpb\RawBatchPutResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RawBatchPutResponse|null
      */
     public function getRawBatchPut()
     {
@@ -486,12 +486,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawBatchPutResponse RawBatchPut = 16;</code>
-     * @param \Kvrpcpb\RawBatchPutResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawBatchPutResponse $var
      * @return $this
      */
     public function setRawBatchPut($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RawBatchPutResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RawBatchPutResponse::class);
         $this->writeOneof(16, $var);
 
         return $this;
@@ -499,7 +499,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawDeleteResponse RawDelete = 17;</code>
-     * @return \Kvrpcpb\RawDeleteResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse|null
      */
     public function getRawDelete()
     {
@@ -513,12 +513,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawDeleteResponse RawDelete = 17;</code>
-     * @param \Kvrpcpb\RawDeleteResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse $var
      * @return $this
      */
     public function setRawDelete($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RawDeleteResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse::class);
         $this->writeOneof(17, $var);
 
         return $this;
@@ -526,7 +526,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawBatchDeleteResponse RawBatchDelete = 18;</code>
-     * @return \Kvrpcpb\RawBatchDeleteResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteResponse|null
      */
     public function getRawBatchDelete()
     {
@@ -540,12 +540,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawBatchDeleteResponse RawBatchDelete = 18;</code>
-     * @param \Kvrpcpb\RawBatchDeleteResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteResponse $var
      * @return $this
      */
     public function setRawBatchDelete($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RawBatchDeleteResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteResponse::class);
         $this->writeOneof(18, $var);
 
         return $this;
@@ -553,7 +553,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawScanResponse RawScan = 19;</code>
-     * @return \Kvrpcpb\RawScanResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RawScanResponse|null
      */
     public function getRawScan()
     {
@@ -567,12 +567,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawScanResponse RawScan = 19;</code>
-     * @param \Kvrpcpb\RawScanResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawScanResponse $var
      * @return $this
      */
     public function setRawScan($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RawScanResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RawScanResponse::class);
         $this->writeOneof(19, $var);
 
         return $this;
@@ -580,7 +580,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawDeleteRangeResponse RawDeleteRange = 20;</code>
-     * @return \Kvrpcpb\RawDeleteRangeResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeResponse|null
      */
     public function getRawDeleteRange()
     {
@@ -594,12 +594,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawDeleteRangeResponse RawDeleteRange = 20;</code>
-     * @param \Kvrpcpb\RawDeleteRangeResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeResponse $var
      * @return $this
      */
     public function setRawDeleteRange($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RawDeleteRangeResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeResponse::class);
         $this->writeOneof(20, $var);
 
         return $this;
@@ -607,7 +607,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawBatchScanResponse RawBatchScan = 21;</code>
-     * @return \Kvrpcpb\RawBatchScanResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RawBatchScanResponse|null
      */
     public function getRawBatchScan()
     {
@@ -621,12 +621,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawBatchScanResponse RawBatchScan = 21;</code>
-     * @param \Kvrpcpb\RawBatchScanResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawBatchScanResponse $var
      * @return $this
      */
     public function setRawBatchScan($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RawBatchScanResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RawBatchScanResponse::class);
         $this->writeOneof(21, $var);
 
         return $this;
@@ -634,7 +634,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.coprocessor.Response Coprocessor = 22;</code>
-     * @return \Coprocessor\Response|null
+     * @return \CrazyGoat\Proto\Coprocessor\Response|null
      */
     public function getCoprocessor()
     {
@@ -648,12 +648,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.coprocessor.Response Coprocessor = 22;</code>
-     * @param \Coprocessor\Response $var
+     * @param \CrazyGoat\Proto\Coprocessor\Response $var
      * @return $this
      */
     public function setCoprocessor($var)
     {
-        GPBUtil::checkMessage($var, \Coprocessor\Response::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Coprocessor\Response::class);
         $this->writeOneof(22, $var);
 
         return $this;
@@ -661,7 +661,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.PessimisticLockResponse PessimisticLock = 23;</code>
-     * @return \Kvrpcpb\PessimisticLockResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\PessimisticLockResponse|null
      */
     public function getPessimisticLock()
     {
@@ -675,12 +675,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.PessimisticLockResponse PessimisticLock = 23;</code>
-     * @param \Kvrpcpb\PessimisticLockResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\PessimisticLockResponse $var
      * @return $this
      */
     public function setPessimisticLock($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\PessimisticLockResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\PessimisticLockResponse::class);
         $this->writeOneof(23, $var);
 
         return $this;
@@ -688,7 +688,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.PessimisticRollbackResponse PessimisticRollback = 24;</code>
-     * @return \Kvrpcpb\PessimisticRollbackResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse|null
      */
     public function getPessimisticRollback()
     {
@@ -702,12 +702,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.PessimisticRollbackResponse PessimisticRollback = 24;</code>
-     * @param \Kvrpcpb\PessimisticRollbackResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse $var
      * @return $this
      */
     public function setPessimisticRollback($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\PessimisticRollbackResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse::class);
         $this->writeOneof(24, $var);
 
         return $this;
@@ -715,7 +715,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CheckTxnStatusResponse CheckTxnStatus = 25;</code>
-     * @return \Kvrpcpb\CheckTxnStatusResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusResponse|null
      */
     public function getCheckTxnStatus()
     {
@@ -729,12 +729,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CheckTxnStatusResponse CheckTxnStatus = 25;</code>
-     * @param \Kvrpcpb\CheckTxnStatusResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusResponse $var
      * @return $this
      */
     public function setCheckTxnStatus($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CheckTxnStatusResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusResponse::class);
         $this->writeOneof(25, $var);
 
         return $this;
@@ -742,7 +742,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.TxnHeartBeatResponse TxnHeartBeat = 26;</code>
-     * @return \Kvrpcpb\TxnHeartBeatResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\TxnHeartBeatResponse|null
      */
     public function getTxnHeartBeat()
     {
@@ -756,12 +756,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.TxnHeartBeatResponse TxnHeartBeat = 26;</code>
-     * @param \Kvrpcpb\TxnHeartBeatResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\TxnHeartBeatResponse $var
      * @return $this
      */
     public function setTxnHeartBeat($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\TxnHeartBeatResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\TxnHeartBeatResponse::class);
         $this->writeOneof(26, $var);
 
         return $this;
@@ -769,7 +769,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CheckSecondaryLocksResponse CheckSecondaryLocks = 33;</code>
-     * @return \Kvrpcpb\CheckSecondaryLocksResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksResponse|null
      */
     public function getCheckSecondaryLocks()
     {
@@ -783,12 +783,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CheckSecondaryLocksResponse CheckSecondaryLocks = 33;</code>
-     * @param \Kvrpcpb\CheckSecondaryLocksResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksResponse $var
      * @return $this
      */
     public function setCheckSecondaryLocks($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CheckSecondaryLocksResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksResponse::class);
         $this->writeOneof(33, $var);
 
         return $this;
@@ -796,7 +796,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawCoprocessorResponse RawCoprocessor = 34;</code>
-     * @return \Kvrpcpb\RawCoprocessorResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\RawCoprocessorResponse|null
      */
     public function getRawCoprocessor()
     {
@@ -810,12 +810,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.RawCoprocessorResponse RawCoprocessor = 34;</code>
-     * @param \Kvrpcpb\RawCoprocessorResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawCoprocessorResponse $var
      * @return $this
      */
     public function setRawCoprocessor($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\RawCoprocessorResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\RawCoprocessorResponse::class);
         $this->writeOneof(34, $var);
 
         return $this;
@@ -823,7 +823,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.FlashbackToVersionResponse FlashbackToVersion = 35;</code>
-     * @return \Kvrpcpb\FlashbackToVersionResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\FlashbackToVersionResponse|null
      */
     public function getFlashbackToVersion()
     {
@@ -837,12 +837,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.FlashbackToVersionResponse FlashbackToVersion = 35;</code>
-     * @param \Kvrpcpb\FlashbackToVersionResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\FlashbackToVersionResponse $var
      * @return $this
      */
     public function setFlashbackToVersion($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\FlashbackToVersionResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\FlashbackToVersionResponse::class);
         $this->writeOneof(35, $var);
 
         return $this;
@@ -850,7 +850,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.PrepareFlashbackToVersionResponse PrepareFlashbackToVersion = 36;</code>
-     * @return \Kvrpcpb\PrepareFlashbackToVersionResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\PrepareFlashbackToVersionResponse|null
      */
     public function getPrepareFlashbackToVersion()
     {
@@ -864,12 +864,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.PrepareFlashbackToVersionResponse PrepareFlashbackToVersion = 36;</code>
-     * @param \Kvrpcpb\PrepareFlashbackToVersionResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\PrepareFlashbackToVersionResponse $var
      * @return $this
      */
     public function setPrepareFlashbackToVersion($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\PrepareFlashbackToVersionResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\PrepareFlashbackToVersionResponse::class);
         $this->writeOneof(36, $var);
 
         return $this;
@@ -877,7 +877,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.FlushResponse Flush = 37;</code>
-     * @return \Kvrpcpb\FlushResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\FlushResponse|null
      */
     public function getFlush()
     {
@@ -891,12 +891,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.FlushResponse Flush = 37;</code>
-     * @param \Kvrpcpb\FlushResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\FlushResponse $var
      * @return $this
      */
     public function setFlush($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\FlushResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\FlushResponse::class);
         $this->writeOneof(37, $var);
 
         return $this;
@@ -904,7 +904,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.BufferBatchGetResponse BufferBatchGet = 38;</code>
-     * @return \Kvrpcpb\BufferBatchGetResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\BufferBatchGetResponse|null
      */
     public function getBufferBatchGet()
     {
@@ -918,12 +918,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.BufferBatchGetResponse BufferBatchGet = 38;</code>
-     * @param \Kvrpcpb\BufferBatchGetResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\BufferBatchGetResponse $var
      * @return $this
      */
     public function setBufferBatchGet($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\BufferBatchGetResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\BufferBatchGetResponse::class);
         $this->writeOneof(38, $var);
 
         return $this;
@@ -931,7 +931,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.GetHealthFeedbackResponse GetHealthFeedback = 39;</code>
-     * @return \Kvrpcpb\GetHealthFeedbackResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\GetHealthFeedbackResponse|null
      */
     public function getGetHealthFeedback()
     {
@@ -945,12 +945,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.GetHealthFeedbackResponse GetHealthFeedback = 39;</code>
-     * @param \Kvrpcpb\GetHealthFeedbackResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\GetHealthFeedbackResponse $var
      * @return $this
      */
     public function setGetHealthFeedback($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\GetHealthFeedbackResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\GetHealthFeedbackResponse::class);
         $this->writeOneof(39, $var);
 
         return $this;
@@ -958,7 +958,7 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.BroadcastTxnStatusResponse BroadcastTxnStatus = 40;</code>
-     * @return \Kvrpcpb\BroadcastTxnStatusResponse|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\BroadcastTxnStatusResponse|null
      */
     public function getBroadcastTxnStatus()
     {
@@ -972,12 +972,12 @@ class Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.BroadcastTxnStatusResponse BroadcastTxnStatus = 40;</code>
-     * @param \Kvrpcpb\BroadcastTxnStatusResponse $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\BroadcastTxnStatusResponse $var
      * @return $this
      */
     public function setBroadcastTxnStatus($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\BroadcastTxnStatusResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\BroadcastTxnStatusResponse::class);
         $this->writeOneof(40, $var);
 
         return $this;
@@ -987,7 +987,7 @@ class Response extends \Google\Protobuf\Internal\Message
      * For some test cases.
      *
      * Generated from protobuf field <code>.tikvpb.BatchCommandsEmptyResponse Empty = 255;</code>
-     * @return \Tikvpb\BatchCommandsEmptyResponse|null
+     * @return \CrazyGoat\Proto\Tikvpb\BatchCommandsEmptyResponse|null
      */
     public function getEmpty()
     {
@@ -1003,12 +1003,12 @@ class Response extends \Google\Protobuf\Internal\Message
      * For some test cases.
      *
      * Generated from protobuf field <code>.tikvpb.BatchCommandsEmptyResponse Empty = 255;</code>
-     * @param \Tikvpb\BatchCommandsEmptyResponse $var
+     * @param \CrazyGoat\Proto\Tikvpb\BatchCommandsEmptyResponse $var
      * @return $this
      */
     public function setEmpty($var)
     {
-        GPBUtil::checkMessage($var, \Tikvpb\BatchCommandsEmptyResponse::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Tikvpb\BatchCommandsEmptyResponse::class);
         $this->writeOneof(255, $var);
 
         return $this;

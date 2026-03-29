@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -54,7 +54,7 @@ class WriteConflict extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -184,7 +184,7 @@ class WriteConflict extends \Google\Protobuf\Internal\Message
      */
     public function setReason($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\WriteConflict\Reason::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\WriteConflict\Reason::class);
         $this->reason = $var;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,19 +33,19 @@ class WatchGCSafePointV2Response extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Pdpb\SafePointEvent[] $events
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\SafePointEvent[] $events
      *     @type int|string $revision
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -64,12 +64,12 @@ class WatchGCSafePointV2Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -77,7 +77,7 @@ class WatchGCSafePointV2Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.SafePointEvent events = 2;</code>
-     * @return RepeatedField<\Pdpb\SafePointEvent>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\SafePointEvent>
      */
     public function getEvents()
     {
@@ -86,12 +86,12 @@ class WatchGCSafePointV2Response extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.SafePointEvent events = 2;</code>
-     * @param \Pdpb\SafePointEvent[] $var
+     * @param \CrazyGoat\Proto\Pdpb\SafePointEvent[] $var
      * @return $this
      */
     public function setEvents($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\SafePointEvent::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\SafePointEvent::class);
         $this->events = $arr;
 
         return $this;

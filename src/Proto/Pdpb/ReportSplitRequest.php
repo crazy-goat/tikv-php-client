@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,19 +33,19 @@ class ReportSplitRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\RequestHeader $header
-     *     @type \Metapb\Region $left
-     *     @type \Metapb\Region $right
+     *     @type \CrazyGoat\Proto\Pdpb\RequestHeader $header
+     *     @type \CrazyGoat\Proto\Metapb\Region $left
+     *     @type \CrazyGoat\Proto\Metapb\Region $right
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @return \Pdpb\RequestHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\RequestHeader|null
      */
     public function getHeader()
     {
@@ -64,12 +64,12 @@ class ReportSplitRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @param \Pdpb\RequestHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\RequestHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RequestHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RequestHeader::class);
         $this->header = $var;
 
         return $this;
@@ -77,7 +77,7 @@ class ReportSplitRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Region left = 2;</code>
-     * @return \Metapb\Region|null
+     * @return \CrazyGoat\Proto\Metapb\Region|null
      */
     public function getLeft()
     {
@@ -96,12 +96,12 @@ class ReportSplitRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Region left = 2;</code>
-     * @param \Metapb\Region $var
+     * @param \CrazyGoat\Proto\Metapb\Region $var
      * @return $this
      */
     public function setLeft($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Region::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Region::class);
         $this->left = $var;
 
         return $this;
@@ -109,7 +109,7 @@ class ReportSplitRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Region right = 3;</code>
-     * @return \Metapb\Region|null
+     * @return \CrazyGoat\Proto\Metapb\Region|null
      */
     public function getRight()
     {
@@ -128,12 +128,12 @@ class ReportSplitRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Region right = 3;</code>
-     * @param \Metapb\Region $var
+     * @param \CrazyGoat\Proto\Metapb\Region $var
      * @return $this
      */
     public function setRight($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Region::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Region::class);
         $this->right = $var;
 
         return $this;

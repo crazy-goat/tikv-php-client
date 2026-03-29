@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -237,19 +237,19 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      *           Bytes read for the store during this period.
      *     @type int|string $keys_read
      *           Keys read for the store during this period.
-     *     @type \Pdpb\TimeInterval $interval
+     *     @type \CrazyGoat\Proto\Pdpb\TimeInterval $interval
      *           Actually reported time interval
-     *     @type \Pdpb\RecordPair[] $cpu_usages
+     *     @type \CrazyGoat\Proto\Pdpb\RecordPair[] $cpu_usages
      *           Threads' CPU usages in the store
-     *     @type \Pdpb\RecordPair[] $read_io_rates
+     *     @type \CrazyGoat\Proto\Pdpb\RecordPair[] $read_io_rates
      *           Threads' read disk I/O rates in the store
-     *     @type \Pdpb\RecordPair[] $write_io_rates
+     *     @type \CrazyGoat\Proto\Pdpb\RecordPair[] $write_io_rates
      *           Threads' write disk I/O rates in the store
-     *     @type \Pdpb\RecordPair[] $op_latencies
+     *     @type \CrazyGoat\Proto\Pdpb\RecordPair[] $op_latencies
      *           Operations' latencies in the store
-     *     @type \Pdpb\PeerStat[] $peer_stats
+     *     @type \CrazyGoat\Proto\Pdpb\PeerStat[] $peer_stats
      *           Hot peer stat in the store
-     *     @type \Pdpb\QueryStats $query_stats
+     *     @type \CrazyGoat\Proto\Pdpb\QueryStats $query_stats
      *           Store query stats
      *     @type int|string $slow_score
      *           Score that represents the speed of the store, ranges in [1, 100], lower is better.
@@ -257,9 +257,9 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      *           Damaged regions on the store that need to be removed by PD.
      *     @type bool $is_apply_busy
      *           If the apply worker is busy, namely high apply wait duration
-     *     @type \Pdpb\SnapshotStat[] $snapshot_stats
+     *     @type \CrazyGoat\Proto\Pdpb\SnapshotStat[] $snapshot_stats
      *           Snapshot stats in the store
-     *     @type \Pdpb\SlowTrend $slow_trend
+     *     @type \CrazyGoat\Proto\Pdpb\SlowTrend $slow_trend
      *     @type bool $is_grpc_paused
      *           If the grpc server is paused.
      *     @type int|string $total_memory
@@ -269,14 +269,14 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      *     @type array|\Google\Protobuf\Internal\MapField $network_slow_scores
      *           Network_slow_scores indicate the network status between TiKV nodes, ranging from 1 to 100 (lower is better).
      *           StoreID -> score
-     *     @type \Pdpb\DfsStatItem[] $dfs
+     *     @type \CrazyGoat\Proto\Pdpb\DfsStatItem[] $dfs
      *           The statistics about DFS uploads.
      *     @type bool $is_stopping
      *           True if the store is undergoing graceful shutdown.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
@@ -644,7 +644,7 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Actually reported time interval
      *
      * Generated from protobuf field <code>.pdpb.TimeInterval interval = 15;</code>
-     * @return \Pdpb\TimeInterval|null
+     * @return \CrazyGoat\Proto\Pdpb\TimeInterval|null
      */
     public function getInterval()
     {
@@ -665,12 +665,12 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Actually reported time interval
      *
      * Generated from protobuf field <code>.pdpb.TimeInterval interval = 15;</code>
-     * @param \Pdpb\TimeInterval $var
+     * @param \CrazyGoat\Proto\Pdpb\TimeInterval $var
      * @return $this
      */
     public function setInterval($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\TimeInterval::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\TimeInterval::class);
         $this->interval = $var;
 
         return $this;
@@ -680,7 +680,7 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Threads' CPU usages in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.RecordPair cpu_usages = 16;</code>
-     * @return RepeatedField<\Pdpb\RecordPair>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\RecordPair>
      */
     public function getCpuUsages()
     {
@@ -691,12 +691,12 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Threads' CPU usages in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.RecordPair cpu_usages = 16;</code>
-     * @param \Pdpb\RecordPair[] $var
+     * @param \CrazyGoat\Proto\Pdpb\RecordPair[] $var
      * @return $this
      */
     public function setCpuUsages($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\RecordPair::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\RecordPair::class);
         $this->cpu_usages = $arr;
 
         return $this;
@@ -706,7 +706,7 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Threads' read disk I/O rates in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.RecordPair read_io_rates = 17;</code>
-     * @return RepeatedField<\Pdpb\RecordPair>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\RecordPair>
      */
     public function getReadIoRates()
     {
@@ -717,12 +717,12 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Threads' read disk I/O rates in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.RecordPair read_io_rates = 17;</code>
-     * @param \Pdpb\RecordPair[] $var
+     * @param \CrazyGoat\Proto\Pdpb\RecordPair[] $var
      * @return $this
      */
     public function setReadIoRates($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\RecordPair::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\RecordPair::class);
         $this->read_io_rates = $arr;
 
         return $this;
@@ -732,7 +732,7 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Threads' write disk I/O rates in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.RecordPair write_io_rates = 18;</code>
-     * @return RepeatedField<\Pdpb\RecordPair>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\RecordPair>
      */
     public function getWriteIoRates()
     {
@@ -743,12 +743,12 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Threads' write disk I/O rates in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.RecordPair write_io_rates = 18;</code>
-     * @param \Pdpb\RecordPair[] $var
+     * @param \CrazyGoat\Proto\Pdpb\RecordPair[] $var
      * @return $this
      */
     public function setWriteIoRates($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\RecordPair::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\RecordPair::class);
         $this->write_io_rates = $arr;
 
         return $this;
@@ -758,7 +758,7 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Operations' latencies in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.RecordPair op_latencies = 19;</code>
-     * @return RepeatedField<\Pdpb\RecordPair>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\RecordPair>
      */
     public function getOpLatencies()
     {
@@ -769,12 +769,12 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Operations' latencies in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.RecordPair op_latencies = 19;</code>
-     * @param \Pdpb\RecordPair[] $var
+     * @param \CrazyGoat\Proto\Pdpb\RecordPair[] $var
      * @return $this
      */
     public function setOpLatencies($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\RecordPair::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\RecordPair::class);
         $this->op_latencies = $arr;
 
         return $this;
@@ -784,7 +784,7 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Hot peer stat in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.PeerStat peer_stats = 20;</code>
-     * @return RepeatedField<\Pdpb\PeerStat>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\PeerStat>
      */
     public function getPeerStats()
     {
@@ -795,12 +795,12 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Hot peer stat in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.PeerStat peer_stats = 20;</code>
-     * @param \Pdpb\PeerStat[] $var
+     * @param \CrazyGoat\Proto\Pdpb\PeerStat[] $var
      * @return $this
      */
     public function setPeerStats($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\PeerStat::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\PeerStat::class);
         $this->peer_stats = $arr;
 
         return $this;
@@ -810,7 +810,7 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Store query stats
      *
      * Generated from protobuf field <code>.pdpb.QueryStats query_stats = 21;</code>
-     * @return \Pdpb\QueryStats|null
+     * @return \CrazyGoat\Proto\Pdpb\QueryStats|null
      */
     public function getQueryStats()
     {
@@ -831,12 +831,12 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Store query stats
      *
      * Generated from protobuf field <code>.pdpb.QueryStats query_stats = 21;</code>
-     * @param \Pdpb\QueryStats $var
+     * @param \CrazyGoat\Proto\Pdpb\QueryStats $var
      * @return $this
      */
     public function setQueryStats($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\QueryStats::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\QueryStats::class);
         $this->query_stats = $var;
 
         return $this;
@@ -924,7 +924,7 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Snapshot stats in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.SnapshotStat snapshot_stats = 25;</code>
-     * @return RepeatedField<\Pdpb\SnapshotStat>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\SnapshotStat>
      */
     public function getSnapshotStats()
     {
@@ -935,12 +935,12 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * Snapshot stats in the store
      *
      * Generated from protobuf field <code>repeated .pdpb.SnapshotStat snapshot_stats = 25;</code>
-     * @param \Pdpb\SnapshotStat[] $var
+     * @param \CrazyGoat\Proto\Pdpb\SnapshotStat[] $var
      * @return $this
      */
     public function setSnapshotStats($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\SnapshotStat::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\SnapshotStat::class);
         $this->snapshot_stats = $arr;
 
         return $this;
@@ -948,7 +948,7 @@ class StoreStats extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.SlowTrend slow_trend = 26;</code>
-     * @return \Pdpb\SlowTrend|null
+     * @return \CrazyGoat\Proto\Pdpb\SlowTrend|null
      */
     public function getSlowTrend()
     {
@@ -967,12 +967,12 @@ class StoreStats extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.SlowTrend slow_trend = 26;</code>
-     * @param \Pdpb\SlowTrend $var
+     * @param \CrazyGoat\Proto\Pdpb\SlowTrend $var
      * @return $this
      */
     public function setSlowTrend($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\SlowTrend::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\SlowTrend::class);
         $this->slow_trend = $var;
 
         return $this;
@@ -1088,7 +1088,7 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * The statistics about DFS uploads.
      *
      * Generated from protobuf field <code>repeated .pdpb.DfsStatItem dfs = 31;</code>
-     * @return RepeatedField<\Pdpb\DfsStatItem>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\DfsStatItem>
      */
     public function getDfs()
     {
@@ -1099,12 +1099,12 @@ class StoreStats extends \Google\Protobuf\Internal\Message
      * The statistics about DFS uploads.
      *
      * Generated from protobuf field <code>repeated .pdpb.DfsStatItem dfs = 31;</code>
-     * @param \Pdpb\DfsStatItem[] $var
+     * @param \CrazyGoat\Proto\Pdpb\DfsStatItem[] $var
      * @return $this
      */
     public function setDfs($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\DfsStatItem::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\DfsStatItem::class);
         $this->dfs = $arr;
 
         return $this;

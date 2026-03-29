@@ -4,12 +4,12 @@ declare(strict_types=1);
 namespace CrazyGoat\TiKV\Client\Connection;
 
 use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
-use Pdpb\GetRegionRequest;
-use Pdpb\GetRegionResponse;
-use Pdpb\GetStoreRequest;
-use Pdpb\GetStoreResponse;
-use Pdpb\RequestHeader;
-use Metapb\Store;
+use CrazyGoat\Proto\Pdpb\GetRegionRequest;
+use CrazyGoat\Proto\Pdpb\GetRegionResponse;
+use CrazyGoat\Proto\Pdpb\GetStoreRequest;
+use CrazyGoat\Proto\Pdpb\GetStoreResponse;
+use CrazyGoat\Proto\Pdpb\RequestHeader;
+use CrazyGoat\Proto\Metapb\Store;
 
 class PdClient
 {

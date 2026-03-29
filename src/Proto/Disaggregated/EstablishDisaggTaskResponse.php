@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disaggregated.proto
 
-namespace Disaggregated;
+namespace CrazyGoat\Proto\Disaggregated;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -44,25 +44,25 @@ class EstablishDisaggTaskResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Disaggregated\EstablishDisaggTaskError $error
+     *     @type \CrazyGoat\Proto\Disaggregated\EstablishDisaggTaskError $error
      *     @type int|string $store_id
      *           Write node maintains a snapshot with a lease time.
      *           Read node should read the delta pages
      *           (ColumnFileInMemory and ColumnFileTiny)
      *           along with this store_id and snapshot_id.
-     *     @type \Disaggregated\DisaggTaskMeta $snapshot_id
+     *     @type \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta $snapshot_id
      *     @type string[] $tables
      *           Serialized disaggregated tasks (per physical table)
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Disaggregated::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Disaggregated::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.disaggregated.EstablishDisaggTaskError error = 1;</code>
-     * @return \Disaggregated\EstablishDisaggTaskError|null
+     * @return \CrazyGoat\Proto\Disaggregated\EstablishDisaggTaskError|null
      */
     public function getError()
     {
@@ -81,12 +81,12 @@ class EstablishDisaggTaskResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.EstablishDisaggTaskError error = 1;</code>
-     * @param \Disaggregated\EstablishDisaggTaskError $var
+     * @param \CrazyGoat\Proto\Disaggregated\EstablishDisaggTaskError $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\EstablishDisaggTaskError::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\EstablishDisaggTaskError::class);
         $this->error = $var;
 
         return $this;
@@ -126,7 +126,7 @@ class EstablishDisaggTaskResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.DisaggTaskMeta snapshot_id = 4;</code>
-     * @return \Disaggregated\DisaggTaskMeta|null
+     * @return \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta|null
      */
     public function getSnapshotId()
     {
@@ -145,12 +145,12 @@ class EstablishDisaggTaskResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.DisaggTaskMeta snapshot_id = 4;</code>
-     * @param \Disaggregated\DisaggTaskMeta $var
+     * @param \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta $var
      * @return $this
      */
     public function setSnapshotId($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\DisaggTaskMeta::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta::class);
         $this->snapshot_id = $var;
 
         return $this;

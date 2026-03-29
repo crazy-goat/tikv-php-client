@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -28,13 +28,13 @@ class StoreSafeTSRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\KeyRange $key_range
+     *     @type \CrazyGoat\Proto\Kvrpcpb\KeyRange $key_range
      *           Get the minimal `safe_ts` from regions that overlap with the key range [`start_key`, `end_key`)
      *           An empty key range means all regions in the store
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -43,7 +43,7 @@ class StoreSafeTSRequest extends \Google\Protobuf\Internal\Message
      * An empty key range means all regions in the store
      *
      * Generated from protobuf field <code>.kvrpcpb.KeyRange key_range = 1;</code>
-     * @return \Kvrpcpb\KeyRange|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\KeyRange|null
      */
     public function getKeyRange()
     {
@@ -65,12 +65,12 @@ class StoreSafeTSRequest extends \Google\Protobuf\Internal\Message
      * An empty key range means all regions in the store
      *
      * Generated from protobuf field <code>.kvrpcpb.KeyRange key_range = 1;</code>
-     * @param \Kvrpcpb\KeyRange $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\KeyRange $var
      * @return $this
      */
     public function setKeyRange($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\KeyRange::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\KeyRange::class);
         $this->key_range = $var;
 
         return $this;

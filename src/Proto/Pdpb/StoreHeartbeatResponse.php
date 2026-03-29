@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -67,32 +67,32 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Replication_modepb\ReplicationStatus $replication_status
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\ReplicationModepb\ReplicationStatus $replication_status
      *     @type string $cluster_version
      *     @type bool $require_detailed_report
      *           Used by online unsafe recovery to request store report.
      *           Now it's substituted by reusing recovery_plan field. PD will send a empty
      *           recovery plan instead to request store report.
-     *     @type \Pdpb\RecoveryPlan $recovery_plan
+     *     @type \CrazyGoat\Proto\Pdpb\RecoveryPlan $recovery_plan
      *           Operations of recovery. After the plan is executed, TiKV should attach the
      *           store report in store heartbeat.
-     *     @type \Pdpb\AwakenRegions $awaken_regions
+     *     @type \CrazyGoat\Proto\Pdpb\AwakenRegions $awaken_regions
      *           Pd can return awaken_regions to let TiKV awaken hibernated regions itself.
-     *     @type \Pdpb\ControlGrpc $control_grpc
+     *     @type \CrazyGoat\Proto\Pdpb\ControlGrpc $control_grpc
      *           Pd can return operations to let TiKV forcely PAUSE | RESUME grpc server.
      *     @type int $state
      *           NodeState is going to mark the state of the store.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -111,12 +111,12 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -124,7 +124,7 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.replication_modepb.ReplicationStatus replication_status = 2;</code>
-     * @return \Replication_modepb\ReplicationStatus|null
+     * @return \CrazyGoat\Proto\ReplicationModepb\ReplicationStatus|null
      */
     public function getReplicationStatus()
     {
@@ -143,12 +143,12 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.replication_modepb.ReplicationStatus replication_status = 2;</code>
-     * @param \Replication_modepb\ReplicationStatus $var
+     * @param \CrazyGoat\Proto\ReplicationModepb\ReplicationStatus $var
      * @return $this
      */
     public function setReplicationStatus($var)
     {
-        GPBUtil::checkMessage($var, \Replication_modepb\ReplicationStatus::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\ReplicationModepb\ReplicationStatus::class);
         $this->replication_status = $var;
 
         return $this;
@@ -217,7 +217,7 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * store report in store heartbeat.
      *
      * Generated from protobuf field <code>.pdpb.RecoveryPlan recovery_plan = 5;</code>
-     * @return \Pdpb\RecoveryPlan|null
+     * @return \CrazyGoat\Proto\Pdpb\RecoveryPlan|null
      */
     public function getRecoveryPlan()
     {
@@ -239,12 +239,12 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * store report in store heartbeat.
      *
      * Generated from protobuf field <code>.pdpb.RecoveryPlan recovery_plan = 5;</code>
-     * @param \Pdpb\RecoveryPlan $var
+     * @param \CrazyGoat\Proto\Pdpb\RecoveryPlan $var
      * @return $this
      */
     public function setRecoveryPlan($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RecoveryPlan::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RecoveryPlan::class);
         $this->recovery_plan = $var;
 
         return $this;
@@ -254,7 +254,7 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * Pd can return awaken_regions to let TiKV awaken hibernated regions itself.
      *
      * Generated from protobuf field <code>.pdpb.AwakenRegions awaken_regions = 6;</code>
-     * @return \Pdpb\AwakenRegions|null
+     * @return \CrazyGoat\Proto\Pdpb\AwakenRegions|null
      */
     public function getAwakenRegions()
     {
@@ -275,12 +275,12 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * Pd can return awaken_regions to let TiKV awaken hibernated regions itself.
      *
      * Generated from protobuf field <code>.pdpb.AwakenRegions awaken_regions = 6;</code>
-     * @param \Pdpb\AwakenRegions $var
+     * @param \CrazyGoat\Proto\Pdpb\AwakenRegions $var
      * @return $this
      */
     public function setAwakenRegions($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\AwakenRegions::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\AwakenRegions::class);
         $this->awaken_regions = $var;
 
         return $this;
@@ -290,7 +290,7 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * Pd can return operations to let TiKV forcely PAUSE | RESUME grpc server.
      *
      * Generated from protobuf field <code>.pdpb.ControlGrpc control_grpc = 7;</code>
-     * @return \Pdpb\ControlGrpc|null
+     * @return \CrazyGoat\Proto\Pdpb\ControlGrpc|null
      */
     public function getControlGrpc()
     {
@@ -311,12 +311,12 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * Pd can return operations to let TiKV forcely PAUSE | RESUME grpc server.
      *
      * Generated from protobuf field <code>.pdpb.ControlGrpc control_grpc = 7;</code>
-     * @param \Pdpb\ControlGrpc $var
+     * @param \CrazyGoat\Proto\Pdpb\ControlGrpc $var
      * @return $this
      */
     public function setControlGrpc($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ControlGrpc::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ControlGrpc::class);
         $this->control_grpc = $var;
 
         return $this;
@@ -342,7 +342,7 @@ class StoreHeartbeatResponse extends \Google\Protobuf\Internal\Message
      */
     public function setState($var)
     {
-        GPBUtil::checkEnum($var, \Metapb\NodeState::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Metapb\NodeState::class);
         $this->state = $var;
 
         return $this;

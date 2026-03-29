@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,19 +33,19 @@ class ReportBucketsRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\RequestHeader $header
-     *     @type \Metapb\RegionEpoch $region_epoch
-     *     @type \Metapb\Buckets $buckets
+     *     @type \CrazyGoat\Proto\Pdpb\RequestHeader $header
+     *     @type \CrazyGoat\Proto\Metapb\RegionEpoch $region_epoch
+     *     @type \CrazyGoat\Proto\Metapb\Buckets $buckets
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @return \Pdpb\RequestHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\RequestHeader|null
      */
     public function getHeader()
     {
@@ -64,12 +64,12 @@ class ReportBucketsRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @param \Pdpb\RequestHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\RequestHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RequestHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RequestHeader::class);
         $this->header = $var;
 
         return $this;
@@ -77,7 +77,7 @@ class ReportBucketsRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
-     * @return \Metapb\RegionEpoch|null
+     * @return \CrazyGoat\Proto\Metapb\RegionEpoch|null
      */
     public function getRegionEpoch()
     {
@@ -96,12 +96,12 @@ class ReportBucketsRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
-     * @param \Metapb\RegionEpoch $var
+     * @param \CrazyGoat\Proto\Metapb\RegionEpoch $var
      * @return $this
      */
     public function setRegionEpoch($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\RegionEpoch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\RegionEpoch::class);
         $this->region_epoch = $var;
 
         return $this;
@@ -109,7 +109,7 @@ class ReportBucketsRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Buckets buckets = 3;</code>
-     * @return \Metapb\Buckets|null
+     * @return \CrazyGoat\Proto\Metapb\Buckets|null
      */
     public function getBuckets()
     {
@@ -128,12 +128,12 @@ class ReportBucketsRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Buckets buckets = 3;</code>
-     * @param \Metapb\Buckets $var
+     * @param \CrazyGoat\Proto\Metapb\Buckets $var
      * @return $this
      */
     public function setBuckets($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Buckets::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Buckets::class);
         $this->buckets = $var;
 
         return $this;

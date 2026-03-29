@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -37,20 +37,20 @@ class AskBatchSplitRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\RequestHeader $header
-     *     @type \Metapb\Region $region
+     *     @type \CrazyGoat\Proto\Pdpb\RequestHeader $header
+     *     @type \CrazyGoat\Proto\Metapb\Region $region
      *     @type int $split_count
      *     @type int $reason
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @return \Pdpb\RequestHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\RequestHeader|null
      */
     public function getHeader()
     {
@@ -69,12 +69,12 @@ class AskBatchSplitRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @param \Pdpb\RequestHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\RequestHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RequestHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RequestHeader::class);
         $this->header = $var;
 
         return $this;
@@ -82,7 +82,7 @@ class AskBatchSplitRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Region region = 2;</code>
-     * @return \Metapb\Region|null
+     * @return \CrazyGoat\Proto\Metapb\Region|null
      */
     public function getRegion()
     {
@@ -101,12 +101,12 @@ class AskBatchSplitRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Region region = 2;</code>
-     * @param \Metapb\Region $var
+     * @param \CrazyGoat\Proto\Metapb\Region $var
      * @return $this
      */
     public function setRegion($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Region::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Region::class);
         $this->region = $var;
 
         return $this;
@@ -150,7 +150,7 @@ class AskBatchSplitRequest extends \Google\Protobuf\Internal\Message
      */
     public function setReason($var)
     {
-        GPBUtil::checkEnum($var, \Pdpb\SplitReason::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Pdpb\SplitReason::class);
         $this->reason = $var;
 
         return $this;

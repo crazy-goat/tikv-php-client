@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -43,7 +43,7 @@ class ResourceControlContext extends \Google\Protobuf\Internal\Message
      *
      *     @type string $resource_group_name
      *           It's used to identify which resource group the request belongs to.
-     *     @type \Resource_manager\Consumption $penalty
+     *     @type \CrazyGoat\Proto\ResourceManager\Consumption $penalty
      *           The resource consumption of the resource group that have completed at all TiKVs between the previous request to this TiKV and current request.
      *           It's used as penalty to make the local resource scheduling on one TiKV takes the gloabl resource consumption into consideration.
      *     @type int|string $override_priority
@@ -52,7 +52,7 @@ class ResourceControlContext extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -87,7 +87,7 @@ class ResourceControlContext extends \Google\Protobuf\Internal\Message
      * It's used as penalty to make the local resource scheduling on one TiKV takes the gloabl resource consumption into consideration.
      *
      * Generated from protobuf field <code>.resource_manager.Consumption penalty = 2;</code>
-     * @return \Resource_manager\Consumption|null
+     * @return \CrazyGoat\Proto\ResourceManager\Consumption|null
      */
     public function getPenalty()
     {
@@ -109,12 +109,12 @@ class ResourceControlContext extends \Google\Protobuf\Internal\Message
      * It's used as penalty to make the local resource scheduling on one TiKV takes the gloabl resource consumption into consideration.
      *
      * Generated from protobuf field <code>.resource_manager.Consumption penalty = 2;</code>
-     * @param \Resource_manager\Consumption $var
+     * @param \CrazyGoat\Proto\ResourceManager\Consumption $var
      * @return $this
      */
     public function setPenalty($var)
     {
-        GPBUtil::checkMessage($var, \Resource_manager\Consumption::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\ResourceManager\Consumption::class);
         $this->penalty = $var;
 
         return $this;

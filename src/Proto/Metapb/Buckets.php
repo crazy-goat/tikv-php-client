@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: metapb.proto
 
-namespace Metapb;
+namespace CrazyGoat\Proto\Metapb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -54,14 +54,14 @@ class Buckets extends \Google\Protobuf\Internal\Message
      *           A hint indicate if keys have changed.
      *     @type string[] $keys
      *           keys of buckets, include start/end key of region
-     *     @type \Metapb\BucketStats $stats
+     *     @type \CrazyGoat\Proto\Metapb\BucketStats $stats
      *           bucket stats
      *     @type int|string $period_in_ms
      *           The period in milliseconds that stats are collected with in
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Metapb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Metapb::initOnce();
         parent::__construct($data);
     }
 
@@ -143,7 +143,7 @@ class Buckets extends \Google\Protobuf\Internal\Message
      * bucket stats
      *
      * Generated from protobuf field <code>.metapb.BucketStats stats = 4;</code>
-     * @return \Metapb\BucketStats|null
+     * @return \CrazyGoat\Proto\Metapb\BucketStats|null
      */
     public function getStats()
     {
@@ -164,12 +164,12 @@ class Buckets extends \Google\Protobuf\Internal\Message
      * bucket stats
      *
      * Generated from protobuf field <code>.metapb.BucketStats stats = 4;</code>
-     * @param \Metapb\BucketStats $var
+     * @param \CrazyGoat\Proto\Metapb\BucketStats $var
      * @return $this
      */
     public function setStats($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\BucketStats::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\BucketStats::class);
         $this->stats = $var;
 
         return $this;

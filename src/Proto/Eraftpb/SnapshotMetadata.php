@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: eraftpb.proto
 
-namespace Eraftpb;
+namespace CrazyGoat\Proto\Eraftpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -39,7 +39,7 @@ class SnapshotMetadata extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Eraftpb\ConfState $conf_state
+     *     @type \CrazyGoat\Proto\Eraftpb\ConfState $conf_state
      *           The current `ConfState`.
      *     @type int|string $index
      *           The applied index.
@@ -48,7 +48,7 @@ class SnapshotMetadata extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Eraftpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Eraftpb::initOnce();
         parent::__construct($data);
     }
 
@@ -56,7 +56,7 @@ class SnapshotMetadata extends \Google\Protobuf\Internal\Message
      * The current `ConfState`.
      *
      * Generated from protobuf field <code>.eraftpb.ConfState conf_state = 1;</code>
-     * @return \Eraftpb\ConfState|null
+     * @return \CrazyGoat\Proto\Eraftpb\ConfState|null
      */
     public function getConfState()
     {
@@ -77,12 +77,12 @@ class SnapshotMetadata extends \Google\Protobuf\Internal\Message
      * The current `ConfState`.
      *
      * Generated from protobuf field <code>.eraftpb.ConfState conf_state = 1;</code>
-     * @param \Eraftpb\ConfState $var
+     * @param \CrazyGoat\Proto\Eraftpb\ConfState $var
      * @return $this
      */
     public function setConfState($var)
     {
-        GPBUtil::checkMessage($var, \Eraftpb\ConfState::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Eraftpb\ConfState::class);
         $this->conf_state = $var;
 
         return $this;

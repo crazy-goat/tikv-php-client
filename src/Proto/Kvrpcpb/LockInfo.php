@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -106,7 +106,7 @@ class LockInfo extends \Google\Protobuf\Internal\Message
      *           The time elapsed since last update of lock wait info when waiting.
      *           It's used in timeout errors. 0 means unknown or not applicable.
      *           It can be used to help the client decide whether to try resolving the lock.
-     *     @type \Kvrpcpb\LockInfo[] $shared_lock_infos
+     *     @type \CrazyGoat\Proto\Kvrpcpb\LockInfo[] $shared_lock_infos
      *           When lock_type is SharedLock, this describes transactions holding the shared lock.
      *           Important: when lock_type is SharedLock, all shared locks must use shared_lock_infos;
      *           DO NOT read from the wrapper LockInfo.
@@ -118,7 +118,7 @@ class LockInfo extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -252,7 +252,7 @@ class LockInfo extends \Google\Protobuf\Internal\Message
      */
     public function setLockType($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\Op::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\Op::class);
         $this->lock_type = $var;
 
         return $this;
@@ -389,7 +389,7 @@ class LockInfo extends \Google\Protobuf\Internal\Message
      * when needed.
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.LockInfo shared_lock_infos = 12;</code>
-     * @return RepeatedField<\Kvrpcpb\LockInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\LockInfo>
      */
     public function getSharedLockInfos()
     {
@@ -405,12 +405,12 @@ class LockInfo extends \Google\Protobuf\Internal\Message
      * when needed.
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.LockInfo shared_lock_infos = 12;</code>
-     * @param \Kvrpcpb\LockInfo[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\LockInfo[] $var
      * @return $this
      */
     public function setSharedLockInfos($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\LockInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\LockInfo::class);
         $this->shared_lock_infos = $arr;
 
         return $this;

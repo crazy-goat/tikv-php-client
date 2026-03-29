@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -138,13 +138,13 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\RequestHeader $header
-     *     @type \Metapb\Region $region
-     *     @type \Metapb\Peer $leader
+     *     @type \CrazyGoat\Proto\Pdpb\RequestHeader $header
+     *     @type \CrazyGoat\Proto\Metapb\Region $region
+     *     @type \CrazyGoat\Proto\Metapb\Peer $leader
      *           Leader Peer sending the heartbeat.
-     *     @type \Pdpb\PeerStats[] $down_peers
+     *     @type \CrazyGoat\Proto\Pdpb\PeerStats[] $down_peers
      *           Leader considers that these peers are down.
-     *     @type \Metapb\Peer[] $pending_peers
+     *     @type \CrazyGoat\Proto\Metapb\Peer[] $pending_peers
      *           Pending peers are the peers that the leader can't consider as
      *           working followers.
      *     @type int|string $bytes_written
@@ -155,20 +155,20 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      *     @type int|string $keys_read
      *     @type int|string $approximate_size
      *           Approximate region size.
-     *     @type \Pdpb\TimeInterval $interval
+     *     @type \CrazyGoat\Proto\Pdpb\TimeInterval $interval
      *           Actually reported time interval
      *     @type int|string $approximate_keys
      *           Approximate number of keys.
      *     @type int|string $term
      *           Term is the term of raft group.
-     *     @type \Replication_modepb\RegionReplicationStatus $replication_status
-     *     @type \Pdpb\QueryStats $query_stats
+     *     @type \CrazyGoat\Proto\ReplicationModepb\RegionReplicationStatus $replication_status
+     *     @type \CrazyGoat\Proto\Pdpb\QueryStats $query_stats
      *           QueryStats reported write query stats, and there are read query stats in store heartbeat
      *     @type int|string $cpu_usage
      *           cpu_usage is the total CPU time usage of the leader region since the last heartbeat,
      *           which is calculated by cpu_time_delta/heartbeat_reported_interval.
      *           Deprecated: use cpu_stats instead.
-     *     @type \Pdpb\CPUStats $cpu_stats
+     *     @type \CrazyGoat\Proto\Pdpb\CPUStats $cpu_stats
      *           cpu_stats reports CPU usage breakdown for the leader region by kind
      *           (e.g. unified read).
      *     @type int|string $approximate_kv_size
@@ -177,18 +177,18 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      *     @type int|string $approximate_columnar_kv_size
      *           Approximate size of column-based key-value pairs for billing.
      *           It's counted on size of user key & value (excluding metadata fields), before compression, and latest versions only.
-     *     @type \Metapb\BucketMeta $bucket_meta
+     *     @type \CrazyGoat\Proto\Metapb\BucketMeta $bucket_meta
      *           BucketMeta is the bucket version and keys of this region if TiKV enabled the bucket feature
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @return \Pdpb\RequestHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\RequestHeader|null
      */
     public function getHeader()
     {
@@ -207,12 +207,12 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @param \Pdpb\RequestHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\RequestHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RequestHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RequestHeader::class);
         $this->header = $var;
 
         return $this;
@@ -220,7 +220,7 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Region region = 2;</code>
-     * @return \Metapb\Region|null
+     * @return \CrazyGoat\Proto\Metapb\Region|null
      */
     public function getRegion()
     {
@@ -239,12 +239,12 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Region region = 2;</code>
-     * @param \Metapb\Region $var
+     * @param \CrazyGoat\Proto\Metapb\Region $var
      * @return $this
      */
     public function setRegion($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Region::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Region::class);
         $this->region = $var;
 
         return $this;
@@ -254,7 +254,7 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * Leader Peer sending the heartbeat.
      *
      * Generated from protobuf field <code>.metapb.Peer leader = 3;</code>
-     * @return \Metapb\Peer|null
+     * @return \CrazyGoat\Proto\Metapb\Peer|null
      */
     public function getLeader()
     {
@@ -275,12 +275,12 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * Leader Peer sending the heartbeat.
      *
      * Generated from protobuf field <code>.metapb.Peer leader = 3;</code>
-     * @param \Metapb\Peer $var
+     * @param \CrazyGoat\Proto\Metapb\Peer $var
      * @return $this
      */
     public function setLeader($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Peer::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->leader = $var;
 
         return $this;
@@ -290,7 +290,7 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * Leader considers that these peers are down.
      *
      * Generated from protobuf field <code>repeated .pdpb.PeerStats down_peers = 4;</code>
-     * @return RepeatedField<\Pdpb\PeerStats>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\PeerStats>
      */
     public function getDownPeers()
     {
@@ -301,12 +301,12 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * Leader considers that these peers are down.
      *
      * Generated from protobuf field <code>repeated .pdpb.PeerStats down_peers = 4;</code>
-     * @param \Pdpb\PeerStats[] $var
+     * @param \CrazyGoat\Proto\Pdpb\PeerStats[] $var
      * @return $this
      */
     public function setDownPeers($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\PeerStats::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\PeerStats::class);
         $this->down_peers = $arr;
 
         return $this;
@@ -317,7 +317,7 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * working followers.
      *
      * Generated from protobuf field <code>repeated .metapb.Peer pending_peers = 5;</code>
-     * @return RepeatedField<\Metapb\Peer>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Peer>
      */
     public function getPendingPeers()
     {
@@ -329,12 +329,12 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * working followers.
      *
      * Generated from protobuf field <code>repeated .metapb.Peer pending_peers = 5;</code>
-     * @param \Metapb\Peer[] $var
+     * @param \CrazyGoat\Proto\Metapb\Peer[] $var
      * @return $this
      */
     public function setPendingPeers($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Peer::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->pending_peers = $arr;
 
         return $this;
@@ -466,7 +466,7 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * Actually reported time interval
      *
      * Generated from protobuf field <code>.pdpb.TimeInterval interval = 12;</code>
-     * @return \Pdpb\TimeInterval|null
+     * @return \CrazyGoat\Proto\Pdpb\TimeInterval|null
      */
     public function getInterval()
     {
@@ -487,12 +487,12 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * Actually reported time interval
      *
      * Generated from protobuf field <code>.pdpb.TimeInterval interval = 12;</code>
-     * @param \Pdpb\TimeInterval $var
+     * @param \CrazyGoat\Proto\Pdpb\TimeInterval $var
      * @return $this
      */
     public function setInterval($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\TimeInterval::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\TimeInterval::class);
         $this->interval = $var;
 
         return $this;
@@ -552,7 +552,7 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.replication_modepb.RegionReplicationStatus replication_status = 15;</code>
-     * @return \Replication_modepb\RegionReplicationStatus|null
+     * @return \CrazyGoat\Proto\ReplicationModepb\RegionReplicationStatus|null
      */
     public function getReplicationStatus()
     {
@@ -571,12 +571,12 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.replication_modepb.RegionReplicationStatus replication_status = 15;</code>
-     * @param \Replication_modepb\RegionReplicationStatus $var
+     * @param \CrazyGoat\Proto\ReplicationModepb\RegionReplicationStatus $var
      * @return $this
      */
     public function setReplicationStatus($var)
     {
-        GPBUtil::checkMessage($var, \Replication_modepb\RegionReplicationStatus::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\ReplicationModepb\RegionReplicationStatus::class);
         $this->replication_status = $var;
 
         return $this;
@@ -586,7 +586,7 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * QueryStats reported write query stats, and there are read query stats in store heartbeat
      *
      * Generated from protobuf field <code>.pdpb.QueryStats query_stats = 16;</code>
-     * @return \Pdpb\QueryStats|null
+     * @return \CrazyGoat\Proto\Pdpb\QueryStats|null
      */
     public function getQueryStats()
     {
@@ -607,12 +607,12 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * QueryStats reported write query stats, and there are read query stats in store heartbeat
      *
      * Generated from protobuf field <code>.pdpb.QueryStats query_stats = 16;</code>
-     * @param \Pdpb\QueryStats $var
+     * @param \CrazyGoat\Proto\Pdpb\QueryStats $var
      * @return $this
      */
     public function setQueryStats($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\QueryStats::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\QueryStats::class);
         $this->query_stats = $var;
 
         return $this;
@@ -659,7 +659,7 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * (e.g. unified read).
      *
      * Generated from protobuf field <code>.pdpb.CPUStats cpu_stats = 21;</code>
-     * @return \Pdpb\CPUStats|null
+     * @return \CrazyGoat\Proto\Pdpb\CPUStats|null
      */
     public function getCpuStats()
     {
@@ -681,12 +681,12 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * (e.g. unified read).
      *
      * Generated from protobuf field <code>.pdpb.CPUStats cpu_stats = 21;</code>
-     * @param \Pdpb\CPUStats $var
+     * @param \CrazyGoat\Proto\Pdpb\CPUStats $var
      * @return $this
      */
     public function setCpuStats($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\CPUStats::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\CPUStats::class);
         $this->cpu_stats = $var;
 
         return $this;
@@ -752,7 +752,7 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * BucketMeta is the bucket version and keys of this region if TiKV enabled the bucket feature
      *
      * Generated from protobuf field <code>.metapb.BucketMeta bucket_meta = 20;</code>
-     * @return \Metapb\BucketMeta|null
+     * @return \CrazyGoat\Proto\Metapb\BucketMeta|null
      */
     public function getBucketMeta()
     {
@@ -773,12 +773,12 @@ class RegionHeartbeatRequest extends \Google\Protobuf\Internal\Message
      * BucketMeta is the bucket version and keys of this region if TiKV enabled the bucket feature
      *
      * Generated from protobuf field <code>.metapb.BucketMeta bucket_meta = 20;</code>
-     * @param \Metapb\BucketMeta $var
+     * @param \CrazyGoat\Proto\Metapb\BucketMeta $var
      * @return $this
      */
     public function setBucketMeta($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\BucketMeta::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\BucketMeta::class);
         $this->bucket_meta = $var;
 
         return $this;

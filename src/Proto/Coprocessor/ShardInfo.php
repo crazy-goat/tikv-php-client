@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -35,11 +35,11 @@ class ShardInfo extends \Google\Protobuf\Internal\Message
      *
      *     @type int|string $shard_id
      *     @type int|string $shard_epoch
-     *     @type \Coprocessor\KeyRange[] $ranges
+     *     @type \CrazyGoat\Proto\Coprocessor\KeyRange[] $ranges
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
@@ -89,7 +89,7 @@ class ShardInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.KeyRange ranges = 3;</code>
-     * @return RepeatedField<\Coprocessor\KeyRange>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\KeyRange>
      */
     public function getRanges()
     {
@@ -98,12 +98,12 @@ class ShardInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.KeyRange ranges = 3;</code>
-     * @param \Coprocessor\KeyRange[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\KeyRange[] $var
      * @return $this
      */
     public function setRanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\KeyRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\KeyRange::class);
         $this->ranges = $arr;
 
         return $this;

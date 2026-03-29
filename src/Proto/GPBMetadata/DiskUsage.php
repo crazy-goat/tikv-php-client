@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disk_usage.proto
 
-namespace GPBMetadata;
+namespace CrazyGoat\Proto\GPBMetadata;
 
 class DiskUsage
 {
@@ -16,7 +16,7 @@ class DiskUsage
           return;
         }
         $pool->internalAddGeneratedFile(
-            "\x0At\x0A\x10disk_usage.proto\x12\x0Adisk_usage*8\x0A\x09DiskUsage\x12\x0A\x0A\x06Normal\x10\x00\x12\x0E\x0A\x0AAlmostFull\x10\x01\x12\x0F\x0A\x0BAlreadyFull\x10\x02B\x12\x0A\x10org.tikv.kvprotob\x06proto3"
+            "\x0A\xAE\x01\x0A\x10disk_usage.proto\x12\x0Adisk_usage*8\x0A\x09DiskUsage\x12\x0A\x0A\x06Normal\x10\x00\x12\x0E\x0A\x0AAlmostFull\x10\x01\x12\x0F\x0A\x0BAlreadyFull\x10\x02BL\x0A\x10org.tikv.kvproto\xCA\x02\x19CrazyGoat\\Proto\\DiskUsage\xE2\x02\x1BCrazyGoat\\Proto\\GPBMetadatab\x06proto3"
         , true);
 
         static::$is_initialized = true;

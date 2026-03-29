@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -129,8 +129,8 @@ class PrewriteRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\Context $context
-     *     @type \Kvrpcpb\Mutation[] $mutations
+     *     @type \CrazyGoat\Proto\Kvrpcpb\Context $context
+     *     @type \CrazyGoat\Proto\Kvrpcpb\Mutation[] $mutations
      *           The data to be written to the database.
      *     @type string $primary_lock
      *           The client picks one key to be primary (unrelated to the primary key concept in SQL). This
@@ -163,7 +163,7 @@ class PrewriteRequest extends \Google\Protobuf\Internal\Message
      *           inconsistency with schema change.
      *     @type int $assertion_level
      *           The level of assertion to use on this prewrte request.
-     *     @type \Kvrpcpb\PrewriteRequest\ForUpdateTSConstraint[] $for_update_ts_constraints
+     *     @type \CrazyGoat\Proto\Kvrpcpb\PrewriteRequest\ForUpdateTSConstraint[] $for_update_ts_constraints
      *           for_update_ts constriants that should be checked when prewriting a pessimistic transaction.
      *           See https://github.com/tikv/tikv/issues/14311
      *     @type int[]|string[] $txn_file_chunks
@@ -171,13 +171,13 @@ class PrewriteRequest extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @return \Kvrpcpb\Context|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\Context|null
      */
     public function getContext()
     {
@@ -196,12 +196,12 @@ class PrewriteRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @param \Kvrpcpb\Context $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\Context $var
      * @return $this
      */
     public function setContext($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\Context::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\Context::class);
         $this->context = $var;
 
         return $this;
@@ -211,7 +211,7 @@ class PrewriteRequest extends \Google\Protobuf\Internal\Message
      * The data to be written to the database.
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.Mutation mutations = 2;</code>
-     * @return RepeatedField<\Kvrpcpb\Mutation>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\Mutation>
      */
     public function getMutations()
     {
@@ -222,12 +222,12 @@ class PrewriteRequest extends \Google\Protobuf\Internal\Message
      * The data to be written to the database.
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.Mutation mutations = 2;</code>
-     * @param \Kvrpcpb\Mutation[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\Mutation[] $var
      * @return $this
      */
     public function setMutations($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\Mutation::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\Mutation::class);
         $this->mutations = $arr;
 
         return $this;
@@ -359,7 +359,7 @@ class PrewriteRequest extends \Google\Protobuf\Internal\Message
      */
     public function setPessimisticActions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::ENUM, \Kvrpcpb\PrewriteRequest\PessimisticAction::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::ENUM, \CrazyGoat\Proto\Kvrpcpb\PrewriteRequest\PessimisticAction::class);
         $this->pessimistic_actions = $arr;
 
         return $this;
@@ -571,7 +571,7 @@ class PrewriteRequest extends \Google\Protobuf\Internal\Message
      */
     public function setAssertionLevel($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\AssertionLevel::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\AssertionLevel::class);
         $this->assertion_level = $var;
 
         return $this;
@@ -582,7 +582,7 @@ class PrewriteRequest extends \Google\Protobuf\Internal\Message
      * See https://github.com/tikv/tikv/issues/14311
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.PrewriteRequest.ForUpdateTSConstraint for_update_ts_constraints = 16;</code>
-     * @return RepeatedField<\Kvrpcpb\PrewriteRequest\ForUpdateTSConstraint>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\PrewriteRequest\ForUpdateTSConstraint>
      */
     public function getForUpdateTsConstraints()
     {
@@ -594,12 +594,12 @@ class PrewriteRequest extends \Google\Protobuf\Internal\Message
      * See https://github.com/tikv/tikv/issues/14311
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.PrewriteRequest.ForUpdateTSConstraint for_update_ts_constraints = 16;</code>
-     * @param \Kvrpcpb\PrewriteRequest\ForUpdateTSConstraint[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\PrewriteRequest\ForUpdateTSConstraint[] $var
      * @return $this
      */
     public function setForUpdateTsConstraints($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\PrewriteRequest\ForUpdateTSConstraint::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\PrewriteRequest\ForUpdateTSConstraint::class);
         $this->for_update_ts_constraints = $arr;
 
         return $this;

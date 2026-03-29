@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -30,11 +30,11 @@ class MvccDebugInfo extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $key
-     *     @type \Kvrpcpb\MvccInfo $mvcc
+     *     @type \CrazyGoat\Proto\Kvrpcpb\MvccInfo $mvcc
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -62,7 +62,7 @@ class MvccDebugInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.MvccInfo mvcc = 2;</code>
-     * @return \Kvrpcpb\MvccInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\MvccInfo|null
      */
     public function getMvcc()
     {
@@ -81,12 +81,12 @@ class MvccDebugInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.MvccInfo mvcc = 2;</code>
-     * @param \Kvrpcpb\MvccInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\MvccInfo $var
      * @return $this
      */
     public function setMvcc($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\MvccInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\MvccInfo::class);
         $this->mvcc = $var;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disaggregated.proto
 
-namespace Disaggregated;
+namespace CrazyGoat\Proto\Disaggregated;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -32,12 +32,12 @@ class ErrorLocked extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $msg
-     *     @type \Kvrpcpb\LockInfo[] $locked
+     *     @type \CrazyGoat\Proto\Kvrpcpb\LockInfo[] $locked
      *           The read node needs to resolve these locks.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Disaggregated::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Disaggregated::initOnce();
         parent::__construct($data);
     }
 
@@ -67,7 +67,7 @@ class ErrorLocked extends \Google\Protobuf\Internal\Message
      * The read node needs to resolve these locks.
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.LockInfo locked = 2;</code>
-     * @return RepeatedField<\Kvrpcpb\LockInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\LockInfo>
      */
     public function getLocked()
     {
@@ -78,12 +78,12 @@ class ErrorLocked extends \Google\Protobuf\Internal\Message
      * The read node needs to resolve these locks.
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.LockInfo locked = 2;</code>
-     * @param \Kvrpcpb\LockInfo[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\LockInfo[] $var
      * @return $this
      */
     public function setLocked($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\LockInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\LockInfo::class);
         $this->locked = $arr;
 
         return $this;

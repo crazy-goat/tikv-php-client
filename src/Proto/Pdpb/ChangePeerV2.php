@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -27,12 +27,12 @@ class ChangePeerV2 extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ChangePeer[] $changes
+     *     @type \CrazyGoat\Proto\Pdpb\ChangePeer[] $changes
      *           If changes is empty, it means that to exit joint state.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
@@ -40,7 +40,7 @@ class ChangePeerV2 extends \Google\Protobuf\Internal\Message
      * If changes is empty, it means that to exit joint state.
      *
      * Generated from protobuf field <code>repeated .pdpb.ChangePeer changes = 1;</code>
-     * @return RepeatedField<\Pdpb\ChangePeer>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\ChangePeer>
      */
     public function getChanges()
     {
@@ -51,12 +51,12 @@ class ChangePeerV2 extends \Google\Protobuf\Internal\Message
      * If changes is empty, it means that to exit joint state.
      *
      * Generated from protobuf field <code>repeated .pdpb.ChangePeer changes = 1;</code>
-     * @param \Pdpb\ChangePeer[] $var
+     * @param \CrazyGoat\Proto\Pdpb\ChangePeer[] $var
      * @return $this
      */
     public function setChanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\ChangePeer::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\ChangePeer::class);
         $this->changes = $arr;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb\PrewriteRequest;
+namespace CrazyGoat\Proto\Kvrpcpb\PrewriteRequest;
 
 use UnexpectedValueException;
 

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -35,12 +35,12 @@ class TableShardInfos extends \Google\Protobuf\Internal\Message
      *
      *     @type string $executor_id
      *           The executor ID is used to identify the tici executor.
-     *     @type \Coprocessor\ShardInfo[] $shard_infos
+     *     @type \CrazyGoat\Proto\Coprocessor\ShardInfo[] $shard_infos
      *           The shard_infos contains the shard information for each tici executor.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
@@ -74,7 +74,7 @@ class TableShardInfos extends \Google\Protobuf\Internal\Message
      * The shard_infos contains the shard information for each tici executor.
      *
      * Generated from protobuf field <code>repeated .coprocessor.ShardInfo shard_infos = 2;</code>
-     * @return RepeatedField<\Coprocessor\ShardInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\ShardInfo>
      */
     public function getShardInfos()
     {
@@ -85,12 +85,12 @@ class TableShardInfos extends \Google\Protobuf\Internal\Message
      * The shard_infos contains the shard information for each tici executor.
      *
      * Generated from protobuf field <code>repeated .coprocessor.ShardInfo shard_infos = 2;</code>
-     * @param \Coprocessor\ShardInfo[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\ShardInfo[] $var
      * @return $this
      */
     public function setShardInfos($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\ShardInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\ShardInfo::class);
         $this->shard_infos = $arr;
 
         return $this;

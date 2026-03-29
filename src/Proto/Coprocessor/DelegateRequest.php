@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -47,9 +47,9 @@ class DelegateRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\Context $context
+     *     @type \CrazyGoat\Proto\Kvrpcpb\Context $context
      *     @type int|string $start_ts
-     *     @type \Coprocessor\KeyRange[] $ranges
+     *     @type \CrazyGoat\Proto\Coprocessor\KeyRange[] $ranges
      *     @type int|string $mem_table_sequence
      *           Used for avoid redundant mem-table copying.
      *           If the sequence is the same, tikv-server will not return the mem-table.
@@ -59,13 +59,13 @@ class DelegateRequest extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @return \Kvrpcpb\Context|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\Context|null
      */
     public function getContext()
     {
@@ -84,12 +84,12 @@ class DelegateRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @param \Kvrpcpb\Context $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\Context $var
      * @return $this
      */
     public function setContext($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\Context::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\Context::class);
         $this->context = $var;
 
         return $this;
@@ -119,7 +119,7 @@ class DelegateRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.KeyRange ranges = 3;</code>
-     * @return RepeatedField<\Coprocessor\KeyRange>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\KeyRange>
      */
     public function getRanges()
     {
@@ -128,12 +128,12 @@ class DelegateRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.KeyRange ranges = 3;</code>
-     * @param \Coprocessor\KeyRange[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\KeyRange[] $var
      * @return $this
      */
     public function setRanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\KeyRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\KeyRange::class);
         $this->ranges = $arr;
 
         return $this;

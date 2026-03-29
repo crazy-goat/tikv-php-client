@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -25,17 +25,17 @@ class StoreGlobalConfigResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\Error $error
+     *     @type \CrazyGoat\Proto\Pdpb\Error $error
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.Error error = 1;</code>
-     * @return \Pdpb\Error|null
+     * @return \CrazyGoat\Proto\Pdpb\Error|null
      */
     public function getError()
     {
@@ -54,12 +54,12 @@ class StoreGlobalConfigResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Error error = 1;</code>
-     * @param \Pdpb\Error $var
+     * @param \CrazyGoat\Proto\Pdpb\Error $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\Error::class);
         $this->error = $var;
 
         return $this;

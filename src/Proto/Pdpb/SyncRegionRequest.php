@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -36,21 +36,21 @@ class SyncRegionRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\RequestHeader $header
-     *     @type \Pdpb\Member $member
+     *     @type \CrazyGoat\Proto\Pdpb\RequestHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\Member $member
      *     @type int|string $start_index
      *           the follower PD will use the start index to locate historical changes
      *           that require synchronization.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @return \Pdpb\RequestHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\RequestHeader|null
      */
     public function getHeader()
     {
@@ -69,12 +69,12 @@ class SyncRegionRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @param \Pdpb\RequestHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\RequestHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RequestHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RequestHeader::class);
         $this->header = $var;
 
         return $this;
@@ -82,7 +82,7 @@ class SyncRegionRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Member member = 2;</code>
-     * @return \Pdpb\Member|null
+     * @return \CrazyGoat\Proto\Pdpb\Member|null
      */
     public function getMember()
     {
@@ -101,12 +101,12 @@ class SyncRegionRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Member member = 2;</code>
-     * @param \Pdpb\Member $var
+     * @param \CrazyGoat\Proto\Pdpb\Member $var
      * @return $this
      */
     public function setMember($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Member::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\Member::class);
         $this->member = $var;
 
         return $this;

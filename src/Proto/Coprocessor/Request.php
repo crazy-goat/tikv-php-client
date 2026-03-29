@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -99,11 +99,11 @@ class Request extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\Context $context
+     *     @type \CrazyGoat\Proto\Kvrpcpb\Context $context
      *     @type int|string $tp
      *     @type string $data
      *     @type int|string $start_ts
-     *     @type \Coprocessor\KeyRange[] $ranges
+     *     @type \CrazyGoat\Proto\Coprocessor\KeyRange[] $ranges
      *     @type bool $is_cache_enabled
      *           If cache is enabled, TiKV returns cache hit instead of data if
      *           its last version matches this `cache_if_match_version`.
@@ -113,27 +113,27 @@ class Request extends \Google\Protobuf\Internal\Message
      *     @type bool $is_trace_enabled
      *     @type int|string $paging_size
      *           paging_size is 0 when it's disabled, otherwise, it should be a positive number.
-     *     @type \Coprocessor\StoreBatchTask[] $tasks
+     *     @type \CrazyGoat\Proto\Coprocessor\StoreBatchTask[] $tasks
      *           tasks stores the batched coprocessor tasks sent to the same tikv store.
      *     @type int|string $connection_id
      *           This is the session id between a client and tidb
      *     @type string $connection_alias
      *           This is the session alias between a client and tidb
-     *     @type \Coprocessor\TableShardInfos[] $table_shard_infos
+     *     @type \CrazyGoat\Proto\Coprocessor\TableShardInfos[] $table_shard_infos
      *           Shard infos for FTS index, used by TiFlash reading TiCI.
-     *     @type \Coprocessor\VersionedKeyRange[] $versioned_ranges
+     *     @type \CrazyGoat\Proto\Coprocessor\VersionedKeyRange[] $versioned_ranges
      *           Versioned point ranges for TiCI lookup.
      *           When `versioned_ranges` is non-empty, all `versioned_ranges[i].range` must be point range.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @return \Kvrpcpb\Context|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\Context|null
      */
     public function getContext()
     {
@@ -152,12 +152,12 @@ class Request extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @param \Kvrpcpb\Context $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\Context $var
      * @return $this
      */
     public function setContext($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\Context::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\Context::class);
         $this->context = $var;
 
         return $this;
@@ -231,7 +231,7 @@ class Request extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.KeyRange ranges = 4;</code>
-     * @return RepeatedField<\Coprocessor\KeyRange>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\KeyRange>
      */
     public function getRanges()
     {
@@ -240,12 +240,12 @@ class Request extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.KeyRange ranges = 4;</code>
-     * @param \Coprocessor\KeyRange[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\KeyRange[] $var
      * @return $this
      */
     public function setRanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\KeyRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\KeyRange::class);
         $this->ranges = $arr;
 
         return $this;
@@ -379,7 +379,7 @@ class Request extends \Google\Protobuf\Internal\Message
      * tasks stores the batched coprocessor tasks sent to the same tikv store.
      *
      * Generated from protobuf field <code>repeated .coprocessor.StoreBatchTask tasks = 11;</code>
-     * @return RepeatedField<\Coprocessor\StoreBatchTask>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\StoreBatchTask>
      */
     public function getTasks()
     {
@@ -390,12 +390,12 @@ class Request extends \Google\Protobuf\Internal\Message
      * tasks stores the batched coprocessor tasks sent to the same tikv store.
      *
      * Generated from protobuf field <code>repeated .coprocessor.StoreBatchTask tasks = 11;</code>
-     * @param \Coprocessor\StoreBatchTask[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\StoreBatchTask[] $var
      * @return $this
      */
     public function setTasks($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\StoreBatchTask::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\StoreBatchTask::class);
         $this->tasks = $arr;
 
         return $this;
@@ -457,7 +457,7 @@ class Request extends \Google\Protobuf\Internal\Message
      * Shard infos for FTS index, used by TiFlash reading TiCI.
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableShardInfos table_shard_infos = 14;</code>
-     * @return RepeatedField<\Coprocessor\TableShardInfos>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\TableShardInfos>
      */
     public function getTableShardInfos()
     {
@@ -468,12 +468,12 @@ class Request extends \Google\Protobuf\Internal\Message
      * Shard infos for FTS index, used by TiFlash reading TiCI.
      *
      * Generated from protobuf field <code>repeated .coprocessor.TableShardInfos table_shard_infos = 14;</code>
-     * @param \Coprocessor\TableShardInfos[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\TableShardInfos[] $var
      * @return $this
      */
     public function setTableShardInfos($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\TableShardInfos::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\TableShardInfos::class);
         $this->table_shard_infos = $arr;
 
         return $this;
@@ -484,7 +484,7 @@ class Request extends \Google\Protobuf\Internal\Message
      * When `versioned_ranges` is non-empty, all `versioned_ranges[i].range` must be point range.
      *
      * Generated from protobuf field <code>repeated .coprocessor.VersionedKeyRange versioned_ranges = 15;</code>
-     * @return RepeatedField<\Coprocessor\VersionedKeyRange>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\VersionedKeyRange>
      */
     public function getVersionedRanges()
     {
@@ -496,12 +496,12 @@ class Request extends \Google\Protobuf\Internal\Message
      * When `versioned_ranges` is non-empty, all `versioned_ranges[i].range` must be point range.
      *
      * Generated from protobuf field <code>repeated .coprocessor.VersionedKeyRange versioned_ranges = 15;</code>
-     * @param \Coprocessor\VersionedKeyRange[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\VersionedKeyRange[] $var
      * @return $this
      */
     public function setVersionedRanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\VersionedKeyRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\VersionedKeyRange::class);
         $this->versioned_ranges = $arr;
 
         return $this;

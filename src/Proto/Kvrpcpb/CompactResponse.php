@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -40,7 +40,7 @@ class CompactResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\CompactError $error
+     *     @type \CrazyGoat\Proto\Kvrpcpb\CompactError $error
      *     @type bool $has_remaining
      *           The compaction is done incrementally. If there are more data to compact, this field
      *           will be set. The client can request to compact more data according to the `compacted_end_key`.
@@ -49,13 +49,13 @@ class CompactResponse extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CompactError error = 1;</code>
-     * @return \Kvrpcpb\CompactError|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\CompactError|null
      */
     public function getError()
     {
@@ -74,12 +74,12 @@ class CompactResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.CompactError error = 1;</code>
-     * @param \Kvrpcpb\CompactError $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\CompactError $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\CompactError::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\CompactError::class);
         $this->error = $var;
 
         return $this;

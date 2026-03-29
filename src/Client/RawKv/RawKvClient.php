@@ -5,15 +5,15 @@ namespace CrazyGoat\TiKV\Client\RawKv;
 
 use CrazyGoat\TiKV\Client\Connection\PdClient;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
-use Kvrpcpb\Context;
-use Kvrpcpb\RawGetRequest;
-use Kvrpcpb\RawGetResponse;
-use Kvrpcpb\RawPutRequest;
-use Kvrpcpb\RawPutResponse;
-use Kvrpcpb\RawDeleteRequest;
-use Kvrpcpb\RawDeleteResponse;
-use Metapb\Peer;
-use Metapb\RegionEpoch;
+use CrazyGoat\Proto\Kvrpcpb\Context;
+use CrazyGoat\Proto\Kvrpcpb\RawGetRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawGetResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawPutRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawPutResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawDeleteRequest;
+use CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse;
+use CrazyGoat\Proto\Metapb\Peer;
+use CrazyGoat\Proto\Metapb\RegionEpoch;
 
 class RawKvClient
 {

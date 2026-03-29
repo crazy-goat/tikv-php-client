@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -40,7 +40,7 @@ class KvPair extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\KeyError $error
+     *     @type \CrazyGoat\Proto\Kvrpcpb\KeyError $error
      *     @type string $key
      *     @type string $value
      *     @type int|string $commit_ts
@@ -49,13 +49,13 @@ class KvPair extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.KeyError error = 1;</code>
-     * @return \Kvrpcpb\KeyError|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\KeyError|null
      */
     public function getError()
     {
@@ -74,12 +74,12 @@ class KvPair extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.KeyError error = 1;</code>
-     * @param \Kvrpcpb\KeyError $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\KeyError $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\KeyError::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\KeyError::class);
         $this->error = $var;
 
         return $this;

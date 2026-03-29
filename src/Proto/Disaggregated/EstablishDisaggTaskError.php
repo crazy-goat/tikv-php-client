@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disaggregated.proto
 
-namespace Disaggregated;
+namespace CrazyGoat\Proto\Disaggregated;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -22,19 +22,19 @@ class EstablishDisaggTaskError extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Disaggregated\ErrorRegion $error_region
-     *     @type \Disaggregated\ErrorLocked $error_locked
-     *     @type \Disaggregated\ErrorOther $error_other
+     *     @type \CrazyGoat\Proto\Disaggregated\ErrorRegion $error_region
+     *     @type \CrazyGoat\Proto\Disaggregated\ErrorLocked $error_locked
+     *     @type \CrazyGoat\Proto\Disaggregated\ErrorOther $error_other
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Disaggregated::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Disaggregated::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.disaggregated.ErrorRegion error_region = 1;</code>
-     * @return \Disaggregated\ErrorRegion|null
+     * @return \CrazyGoat\Proto\Disaggregated\ErrorRegion|null
      */
     public function getErrorRegion()
     {
@@ -48,12 +48,12 @@ class EstablishDisaggTaskError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.ErrorRegion error_region = 1;</code>
-     * @param \Disaggregated\ErrorRegion $var
+     * @param \CrazyGoat\Proto\Disaggregated\ErrorRegion $var
      * @return $this
      */
     public function setErrorRegion($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\ErrorRegion::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\ErrorRegion::class);
         $this->writeOneof(1, $var);
 
         return $this;
@@ -61,7 +61,7 @@ class EstablishDisaggTaskError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.ErrorLocked error_locked = 2;</code>
-     * @return \Disaggregated\ErrorLocked|null
+     * @return \CrazyGoat\Proto\Disaggregated\ErrorLocked|null
      */
     public function getErrorLocked()
     {
@@ -75,12 +75,12 @@ class EstablishDisaggTaskError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.ErrorLocked error_locked = 2;</code>
-     * @param \Disaggregated\ErrorLocked $var
+     * @param \CrazyGoat\Proto\Disaggregated\ErrorLocked $var
      * @return $this
      */
     public function setErrorLocked($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\ErrorLocked::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\ErrorLocked::class);
         $this->writeOneof(2, $var);
 
         return $this;
@@ -88,7 +88,7 @@ class EstablishDisaggTaskError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.ErrorOther error_other = 99;</code>
-     * @return \Disaggregated\ErrorOther|null
+     * @return \CrazyGoat\Proto\Disaggregated\ErrorOther|null
      */
     public function getErrorOther()
     {
@@ -102,12 +102,12 @@ class EstablishDisaggTaskError extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.disaggregated.ErrorOther error_other = 99;</code>
-     * @param \Disaggregated\ErrorOther $var
+     * @param \CrazyGoat\Proto\Disaggregated\ErrorOther $var
      * @return $this
      */
     public function setErrorOther($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\ErrorOther::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\ErrorOther::class);
         $this->writeOneof(99, $var);
 
         return $this;

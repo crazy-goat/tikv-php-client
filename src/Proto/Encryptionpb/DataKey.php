@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: encryptionpb.proto
 
-namespace Encryptionpb;
+namespace CrazyGoat\Proto\Encryptionpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -24,7 +24,7 @@ class DataKey extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Encryptionpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Encryptionpb::initOnce();
         parent::__construct($data);
     }
 

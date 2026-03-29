@@ -1,7 +1,7 @@
 <?php
 // GENERATED CODE -- DO NOT EDIT!
 
-namespace Tikvpb;
+namespace CrazyGoat\Proto\Tikvpb;
 
 /**
  * Key/value store API for TiKV.
@@ -19,612 +19,612 @@ class TikvClient extends \Grpc\BaseStub {
 
     /**
      * Commands using a transactional interface.
-     * @param \Kvrpcpb\GetRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\GetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\GetResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\GetResponse>
      */
-    public function KvGet(\Kvrpcpb\GetRequest $argument,
+    public function KvGet(\CrazyGoat\Proto\Kvrpcpb\GetRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvGet',
         $argument,
-        ['\Kvrpcpb\GetResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\GetResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\ScanRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\ScanRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\ScanResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\ScanResponse>
      */
-    public function KvScan(\Kvrpcpb\ScanRequest $argument,
+    public function KvScan(\CrazyGoat\Proto\Kvrpcpb\ScanRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvScan',
         $argument,
-        ['\Kvrpcpb\ScanResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\ScanResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\PrewriteRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\PrewriteRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\PrewriteResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\PrewriteResponse>
      */
-    public function KvPrewrite(\Kvrpcpb\PrewriteRequest $argument,
+    public function KvPrewrite(\CrazyGoat\Proto\Kvrpcpb\PrewriteRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvPrewrite',
         $argument,
-        ['\Kvrpcpb\PrewriteResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\PrewriteResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\PessimisticLockRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\PessimisticLockRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\PessimisticLockResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\PessimisticLockResponse>
      */
-    public function KvPessimisticLock(\Kvrpcpb\PessimisticLockRequest $argument,
+    public function KvPessimisticLock(\CrazyGoat\Proto\Kvrpcpb\PessimisticLockRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvPessimisticLock',
         $argument,
-        ['\Kvrpcpb\PessimisticLockResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\PessimisticLockResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\PessimisticRollbackRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\PessimisticRollbackResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse>
      */
-    public function KVPessimisticRollback(\Kvrpcpb\PessimisticRollbackRequest $argument,
+    public function KVPessimisticRollback(\CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KVPessimisticRollback',
         $argument,
-        ['\Kvrpcpb\PessimisticRollbackResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\TxnHeartBeatRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\TxnHeartBeatRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\TxnHeartBeatResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\TxnHeartBeatResponse>
      */
-    public function KvTxnHeartBeat(\Kvrpcpb\TxnHeartBeatRequest $argument,
+    public function KvTxnHeartBeat(\CrazyGoat\Proto\Kvrpcpb\TxnHeartBeatRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvTxnHeartBeat',
         $argument,
-        ['\Kvrpcpb\TxnHeartBeatResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\TxnHeartBeatResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\CheckTxnStatusRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\CheckTxnStatusResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusResponse>
      */
-    public function KvCheckTxnStatus(\Kvrpcpb\CheckTxnStatusRequest $argument,
+    public function KvCheckTxnStatus(\CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvCheckTxnStatus',
         $argument,
-        ['\Kvrpcpb\CheckTxnStatusResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\CheckSecondaryLocksRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\CheckSecondaryLocksResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksResponse>
      */
-    public function KvCheckSecondaryLocks(\Kvrpcpb\CheckSecondaryLocksRequest $argument,
+    public function KvCheckSecondaryLocks(\CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvCheckSecondaryLocks',
         $argument,
-        ['\Kvrpcpb\CheckSecondaryLocksResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\CommitRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\CommitRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\CommitResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\CommitResponse>
      */
-    public function KvCommit(\Kvrpcpb\CommitRequest $argument,
+    public function KvCommit(\CrazyGoat\Proto\Kvrpcpb\CommitRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvCommit',
         $argument,
-        ['\Kvrpcpb\CommitResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\CommitResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\ImportRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\ImportRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\ImportResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\ImportResponse>
      */
-    public function KvImport(\Kvrpcpb\ImportRequest $argument,
+    public function KvImport(\CrazyGoat\Proto\Kvrpcpb\ImportRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvImport',
         $argument,
-        ['\Kvrpcpb\ImportResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\ImportResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\CleanupRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\CleanupRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\CleanupResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\CleanupResponse>
      */
-    public function KvCleanup(\Kvrpcpb\CleanupRequest $argument,
+    public function KvCleanup(\CrazyGoat\Proto\Kvrpcpb\CleanupRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvCleanup',
         $argument,
-        ['\Kvrpcpb\CleanupResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\CleanupResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\BatchGetRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\BatchGetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\BatchGetResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\BatchGetResponse>
      */
-    public function KvBatchGet(\Kvrpcpb\BatchGetRequest $argument,
+    public function KvBatchGet(\CrazyGoat\Proto\Kvrpcpb\BatchGetRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvBatchGet',
         $argument,
-        ['\Kvrpcpb\BatchGetResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\BatchGetResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\BatchRollbackRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\BatchRollbackRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\BatchRollbackResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse>
      */
-    public function KvBatchRollback(\Kvrpcpb\BatchRollbackRequest $argument,
+    public function KvBatchRollback(\CrazyGoat\Proto\Kvrpcpb\BatchRollbackRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvBatchRollback',
         $argument,
-        ['\Kvrpcpb\BatchRollbackResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\ScanLockRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\ScanLockRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\ScanLockResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\ScanLockResponse>
      */
-    public function KvScanLock(\Kvrpcpb\ScanLockRequest $argument,
+    public function KvScanLock(\CrazyGoat\Proto\Kvrpcpb\ScanLockRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvScanLock',
         $argument,
-        ['\Kvrpcpb\ScanLockResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\ScanLockResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\ResolveLockRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\ResolveLockRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\ResolveLockResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\ResolveLockResponse>
      */
-    public function KvResolveLock(\Kvrpcpb\ResolveLockRequest $argument,
+    public function KvResolveLock(\CrazyGoat\Proto\Kvrpcpb\ResolveLockRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvResolveLock',
         $argument,
-        ['\Kvrpcpb\ResolveLockResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\ResolveLockResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\GCRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\GCRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\GCResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\GCResponse>
      */
-    public function KvGC(\Kvrpcpb\GCRequest $argument,
+    public function KvGC(\CrazyGoat\Proto\Kvrpcpb\GCRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvGC',
         $argument,
-        ['\Kvrpcpb\GCResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\GCResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\DeleteRangeRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\DeleteRangeRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\DeleteRangeResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\DeleteRangeResponse>
      */
-    public function KvDeleteRange(\Kvrpcpb\DeleteRangeRequest $argument,
+    public function KvDeleteRange(\CrazyGoat\Proto\Kvrpcpb\DeleteRangeRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvDeleteRange',
         $argument,
-        ['\Kvrpcpb\DeleteRangeResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\DeleteRangeResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\PrepareFlashbackToVersionRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\PrepareFlashbackToVersionRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\PrepareFlashbackToVersionResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\PrepareFlashbackToVersionResponse>
      */
-    public function KvPrepareFlashbackToVersion(\Kvrpcpb\PrepareFlashbackToVersionRequest $argument,
+    public function KvPrepareFlashbackToVersion(\CrazyGoat\Proto\Kvrpcpb\PrepareFlashbackToVersionRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvPrepareFlashbackToVersion',
         $argument,
-        ['\Kvrpcpb\PrepareFlashbackToVersionResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\PrepareFlashbackToVersionResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\FlashbackToVersionRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\FlashbackToVersionRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\FlashbackToVersionResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\FlashbackToVersionResponse>
      */
-    public function KvFlashbackToVersion(\Kvrpcpb\FlashbackToVersionRequest $argument,
+    public function KvFlashbackToVersion(\CrazyGoat\Proto\Kvrpcpb\FlashbackToVersionRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvFlashbackToVersion',
         $argument,
-        ['\Kvrpcpb\FlashbackToVersionResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\FlashbackToVersionResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\FlushRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\FlushRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\FlushResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\FlushResponse>
      */
-    public function KvFlush(\Kvrpcpb\FlushRequest $argument,
+    public function KvFlush(\CrazyGoat\Proto\Kvrpcpb\FlushRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvFlush',
         $argument,
-        ['\Kvrpcpb\FlushResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\FlushResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\BufferBatchGetRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\BufferBatchGetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\BufferBatchGetResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\BufferBatchGetResponse>
      */
-    public function KvBufferBatchGet(\Kvrpcpb\BufferBatchGetRequest $argument,
+    public function KvBufferBatchGet(\CrazyGoat\Proto\Kvrpcpb\BufferBatchGetRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/KvBufferBatchGet',
         $argument,
-        ['\Kvrpcpb\BufferBatchGetResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\BufferBatchGetResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * Raw commands; no transaction support.
-     * @param \Kvrpcpb\RawGetRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawGetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawGetResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawGetResponse>
      */
-    public function RawGet(\Kvrpcpb\RawGetRequest $argument,
+    public function RawGet(\CrazyGoat\Proto\Kvrpcpb\RawGetRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawGet',
         $argument,
-        ['\Kvrpcpb\RawGetResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawGetResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RawBatchGetRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawBatchGetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawBatchGetResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse>
      */
-    public function RawBatchGet(\Kvrpcpb\RawBatchGetRequest $argument,
+    public function RawBatchGet(\CrazyGoat\Proto\Kvrpcpb\RawBatchGetRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawBatchGet',
         $argument,
-        ['\Kvrpcpb\RawBatchGetResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RawPutRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawPutRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawPutResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawPutResponse>
      */
-    public function RawPut(\Kvrpcpb\RawPutRequest $argument,
+    public function RawPut(\CrazyGoat\Proto\Kvrpcpb\RawPutRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawPut',
         $argument,
-        ['\Kvrpcpb\RawPutResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawPutResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RawBatchPutRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawBatchPutRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawBatchPutResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawBatchPutResponse>
      */
-    public function RawBatchPut(\Kvrpcpb\RawBatchPutRequest $argument,
+    public function RawBatchPut(\CrazyGoat\Proto\Kvrpcpb\RawBatchPutRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawBatchPut',
         $argument,
-        ['\Kvrpcpb\RawBatchPutResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawBatchPutResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RawDeleteRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawDeleteRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawDeleteResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse>
      */
-    public function RawDelete(\Kvrpcpb\RawDeleteRequest $argument,
+    public function RawDelete(\CrazyGoat\Proto\Kvrpcpb\RawDeleteRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawDelete',
         $argument,
-        ['\Kvrpcpb\RawDeleteResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RawBatchDeleteRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawBatchDeleteResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteResponse>
      */
-    public function RawBatchDelete(\Kvrpcpb\RawBatchDeleteRequest $argument,
+    public function RawBatchDelete(\CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawBatchDelete',
         $argument,
-        ['\Kvrpcpb\RawBatchDeleteResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RawScanRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawScanRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawScanResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawScanResponse>
      */
-    public function RawScan(\Kvrpcpb\RawScanRequest $argument,
+    public function RawScan(\CrazyGoat\Proto\Kvrpcpb\RawScanRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawScan',
         $argument,
-        ['\Kvrpcpb\RawScanResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawScanResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RawDeleteRangeRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawDeleteRangeResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeResponse>
      */
-    public function RawDeleteRange(\Kvrpcpb\RawDeleteRangeRequest $argument,
+    public function RawDeleteRange(\CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawDeleteRange',
         $argument,
-        ['\Kvrpcpb\RawDeleteRangeResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RawBatchScanRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawBatchScanRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawBatchScanResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawBatchScanResponse>
      */
-    public function RawBatchScan(\Kvrpcpb\RawBatchScanRequest $argument,
+    public function RawBatchScan(\CrazyGoat\Proto\Kvrpcpb\RawBatchScanRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawBatchScan',
         $argument,
-        ['\Kvrpcpb\RawBatchScanResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawBatchScanResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * Get TTL of the key. Returns 0 if TTL is not set for the key.
-     * @param \Kvrpcpb\RawGetKeyTTLRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawGetKeyTTLResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLResponse>
      */
-    public function RawGetKeyTTL(\Kvrpcpb\RawGetKeyTTLRequest $argument,
+    public function RawGetKeyTTL(\CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawGetKeyTTL',
         $argument,
-        ['\Kvrpcpb\RawGetKeyTTLResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * Compare if the value in database equals to `RawCASRequest.previous_value` before putting the new value. If not, this request will have no effect and the value in the database will be returned.
-     * @param \Kvrpcpb\RawCASRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawCASRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawCASResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawCASResponse>
      */
-    public function RawCompareAndSwap(\Kvrpcpb\RawCASRequest $argument,
+    public function RawCompareAndSwap(\CrazyGoat\Proto\Kvrpcpb\RawCASRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawCompareAndSwap',
         $argument,
-        ['\Kvrpcpb\RawCASResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawCASResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RawChecksumRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawChecksumRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawChecksumResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawChecksumResponse>
      */
-    public function RawChecksum(\Kvrpcpb\RawChecksumRequest $argument,
+    public function RawChecksum(\CrazyGoat\Proto\Kvrpcpb\RawChecksumRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawChecksum',
         $argument,
-        ['\Kvrpcpb\RawChecksumResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawChecksumResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * Store commands (sent to a each TiKV node in a cluster, rather than a certain region).
-     * @param \Kvrpcpb\UnsafeDestroyRangeRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\UnsafeDestroyRangeRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\UnsafeDestroyRangeResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\UnsafeDestroyRangeResponse>
      */
-    public function UnsafeDestroyRange(\Kvrpcpb\UnsafeDestroyRangeRequest $argument,
+    public function UnsafeDestroyRange(\CrazyGoat\Proto\Kvrpcpb\UnsafeDestroyRangeRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/UnsafeDestroyRange',
         $argument,
-        ['\Kvrpcpb\UnsafeDestroyRangeResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\UnsafeDestroyRangeResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RegisterLockObserverRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RegisterLockObserverRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RegisterLockObserverResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RegisterLockObserverResponse>
      */
-    public function RegisterLockObserver(\Kvrpcpb\RegisterLockObserverRequest $argument,
+    public function RegisterLockObserver(\CrazyGoat\Proto\Kvrpcpb\RegisterLockObserverRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RegisterLockObserver',
         $argument,
-        ['\Kvrpcpb\RegisterLockObserverResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RegisterLockObserverResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\CheckLockObserverRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\CheckLockObserverRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\CheckLockObserverResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\CheckLockObserverResponse>
      */
-    public function CheckLockObserver(\Kvrpcpb\CheckLockObserverRequest $argument,
+    public function CheckLockObserver(\CrazyGoat\Proto\Kvrpcpb\CheckLockObserverRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/CheckLockObserver',
         $argument,
-        ['\Kvrpcpb\CheckLockObserverResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\CheckLockObserverResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\RemoveLockObserverRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RemoveLockObserverRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RemoveLockObserverResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RemoveLockObserverResponse>
      */
-    public function RemoveLockObserver(\Kvrpcpb\RemoveLockObserverRequest $argument,
+    public function RemoveLockObserver(\CrazyGoat\Proto\Kvrpcpb\RemoveLockObserverRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RemoveLockObserver',
         $argument,
-        ['\Kvrpcpb\RemoveLockObserverResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RemoveLockObserverResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\PhysicalScanLockRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\PhysicalScanLockRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\PhysicalScanLockResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\PhysicalScanLockResponse>
      */
-    public function PhysicalScanLock(\Kvrpcpb\PhysicalScanLockRequest $argument,
+    public function PhysicalScanLock(\CrazyGoat\Proto\Kvrpcpb\PhysicalScanLockRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/PhysicalScanLock',
         $argument,
-        ['\Kvrpcpb\PhysicalScanLockResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\PhysicalScanLockResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * Commands for executing SQL in the TiKV coprocessor (i.e., 'pushed down' to TiKV rather than
      * executed in TiDB).
-     * @param \Coprocessor\Request $argument input argument
+     * @param \CrazyGoat\Proto\Coprocessor\Request $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Coprocessor\Response>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Coprocessor\Response>
      */
-    public function Coprocessor(\Coprocessor\Request $argument,
+    public function Coprocessor(\CrazyGoat\Proto\Coprocessor\Request $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/Coprocessor',
         $argument,
-        ['\Coprocessor\Response', 'decode'],
+        ['\CrazyGoat\Proto\Coprocessor\Response', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Coprocessor\Request $argument input argument
+     * @param \CrazyGoat\Proto\Coprocessor\Request $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
      * @return \Grpc\ServerStreamingCall
      */
-    public function CoprocessorStream(\Coprocessor\Request $argument,
+    public function CoprocessorStream(\CrazyGoat\Proto\Coprocessor\Request $argument,
       $metadata = [], $options = []) {
         return $this->_serverStreamRequest('/tikvpb.Tikv/CoprocessorStream',
         $argument,
-        ['\Coprocessor\Response', 'decode'],
+        ['\CrazyGoat\Proto\Coprocessor\Response', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Coprocessor\BatchRequest $argument input argument
+     * @param \CrazyGoat\Proto\Coprocessor\BatchRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
      * @return \Grpc\ServerStreamingCall
      */
-    public function BatchCoprocessor(\Coprocessor\BatchRequest $argument,
+    public function BatchCoprocessor(\CrazyGoat\Proto\Coprocessor\BatchRequest $argument,
       $metadata = [], $options = []) {
         return $this->_serverStreamRequest('/tikvpb.Tikv/BatchCoprocessor',
         $argument,
-        ['\Coprocessor\BatchResponse', 'decode'],
+        ['\CrazyGoat\Proto\Coprocessor\BatchResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * Command send by remote coprocessor to TiKV for executing coprocessor request.
-     * @param \Coprocessor\DelegateRequest $argument input argument
+     * @param \CrazyGoat\Proto\Coprocessor\DelegateRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Coprocessor\DelegateResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Coprocessor\DelegateResponse>
      */
-    public function DelegateCoprocessor(\Coprocessor\DelegateRequest $argument,
+    public function DelegateCoprocessor(\CrazyGoat\Proto\Coprocessor\DelegateRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/DelegateCoprocessor',
         $argument,
-        ['\Coprocessor\DelegateResponse', 'decode'],
+        ['\CrazyGoat\Proto\Coprocessor\DelegateResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * Command for executing custom user requests in TiKV coprocessor_v2.
-     * @param \Kvrpcpb\RawCoprocessorRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\RawCoprocessorRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\RawCoprocessorResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\RawCoprocessorResponse>
      */
-    public function RawCoprocessor(\Kvrpcpb\RawCoprocessorRequest $argument,
+    public function RawCoprocessor(\CrazyGoat\Proto\Kvrpcpb\RawCoprocessorRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/RawCoprocessor',
         $argument,
-        ['\Kvrpcpb\RawCoprocessorResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\RawCoprocessorResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -636,7 +636,7 @@ class TikvClient extends \Grpc\BaseStub {
      */
     public function Raft($metadata = [], $options = []) {
         return $this->_clientStreamRequest('/tikvpb.Tikv/Raft',
-        ['\Raft_serverpb\Done','decode'],
+        ['\CrazyGoat\Proto\RaftServerpb\Done','decode'],
         $metadata, $options);
     }
 
@@ -647,7 +647,7 @@ class TikvClient extends \Grpc\BaseStub {
      */
     public function BatchRaft($metadata = [], $options = []) {
         return $this->_clientStreamRequest('/tikvpb.Tikv/BatchRaft',
-        ['\Raft_serverpb\Done','decode'],
+        ['\CrazyGoat\Proto\RaftServerpb\Done','decode'],
         $metadata, $options);
     }
 
@@ -658,7 +658,7 @@ class TikvClient extends \Grpc\BaseStub {
      */
     public function Snapshot($metadata = [], $options = []) {
         return $this->_clientStreamRequest('/tikvpb.Tikv/Snapshot',
-        ['\Raft_serverpb\Done','decode'],
+        ['\CrazyGoat\Proto\RaftServerpb\Done','decode'],
         $metadata, $options);
     }
 
@@ -669,66 +669,66 @@ class TikvClient extends \Grpc\BaseStub {
      */
     public function TabletSnapshot($metadata = [], $options = []) {
         return $this->_bidiRequest('/tikvpb.Tikv/TabletSnapshot',
-        ['\Raft_serverpb\TabletSnapshotResponse','decode'],
+        ['\CrazyGoat\Proto\RaftServerpb\TabletSnapshotResponse','decode'],
         $metadata, $options);
     }
 
     /**
      * Sent from PD or TiDB to a TiKV node.
-     * @param \Kvrpcpb\SplitRegionRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\SplitRegionRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\SplitRegionResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\SplitRegionResponse>
      */
-    public function SplitRegion(\Kvrpcpb\SplitRegionRequest $argument,
+    public function SplitRegion(\CrazyGoat\Proto\Kvrpcpb\SplitRegionRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/SplitRegion',
         $argument,
-        ['\Kvrpcpb\SplitRegionResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\SplitRegionResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * Sent from TiFlash or TiKV to a TiKV node.
-     * @param \Kvrpcpb\ReadIndexRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\ReadIndexRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\ReadIndexResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\ReadIndexResponse>
      */
-    public function ReadIndex(\Kvrpcpb\ReadIndexRequest $argument,
+    public function ReadIndex(\CrazyGoat\Proto\Kvrpcpb\ReadIndexRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/ReadIndex',
         $argument,
-        ['\Kvrpcpb\ReadIndexResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\ReadIndexResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * Commands for debugging transactions.
-     * @param \Kvrpcpb\MvccGetByKeyRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\MvccGetByKeyRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\MvccGetByKeyResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\MvccGetByKeyResponse>
      */
-    public function MvccGetByKey(\Kvrpcpb\MvccGetByKeyRequest $argument,
+    public function MvccGetByKey(\CrazyGoat\Proto\Kvrpcpb\MvccGetByKeyRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/MvccGetByKey',
         $argument,
-        ['\Kvrpcpb\MvccGetByKeyResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\MvccGetByKeyResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Kvrpcpb\MvccGetByStartTsRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\MvccGetByStartTsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\MvccGetByStartTsResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\MvccGetByStartTsResponse>
      */
-    public function MvccGetByStartTs(\Kvrpcpb\MvccGetByStartTsRequest $argument,
+    public function MvccGetByStartTs(\CrazyGoat\Proto\Kvrpcpb\MvccGetByStartTsRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/MvccGetByStartTs',
         $argument,
-        ['\Kvrpcpb\MvccGetByStartTsResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\MvccGetByStartTsResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -740,78 +740,78 @@ class TikvClient extends \Grpc\BaseStub {
      */
     public function BatchCommands($metadata = [], $options = []) {
         return $this->_bidiRequest('/tikvpb.Tikv/BatchCommands',
-        ['\Tikvpb\BatchCommandsResponse','decode'],
+        ['\CrazyGoat\Proto\Tikvpb\BatchCommandsResponse','decode'],
         $metadata, $options);
     }
 
     /**
      * These are for mpp execution.
-     * @param \Mpp\DispatchTaskRequest $argument input argument
+     * @param \CrazyGoat\Proto\Mpp\DispatchTaskRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Mpp\DispatchTaskResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Mpp\DispatchTaskResponse>
      */
-    public function DispatchMPPTask(\Mpp\DispatchTaskRequest $argument,
+    public function DispatchMPPTask(\CrazyGoat\Proto\Mpp\DispatchTaskRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/DispatchMPPTask',
         $argument,
-        ['\Mpp\DispatchTaskResponse', 'decode'],
+        ['\CrazyGoat\Proto\Mpp\DispatchTaskResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Mpp\CancelTaskRequest $argument input argument
+     * @param \CrazyGoat\Proto\Mpp\CancelTaskRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Mpp\CancelTaskResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Mpp\CancelTaskResponse>
      */
-    public function CancelMPPTask(\Mpp\CancelTaskRequest $argument,
+    public function CancelMPPTask(\CrazyGoat\Proto\Mpp\CancelTaskRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/CancelMPPTask',
         $argument,
-        ['\Mpp\CancelTaskResponse', 'decode'],
+        ['\CrazyGoat\Proto\Mpp\CancelTaskResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Mpp\EstablishMPPConnectionRequest $argument input argument
+     * @param \CrazyGoat\Proto\Mpp\EstablishMPPConnectionRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
      * @return \Grpc\ServerStreamingCall
      */
-    public function EstablishMPPConnection(\Mpp\EstablishMPPConnectionRequest $argument,
+    public function EstablishMPPConnection(\CrazyGoat\Proto\Mpp\EstablishMPPConnectionRequest $argument,
       $metadata = [], $options = []) {
         return $this->_serverStreamRequest('/tikvpb.Tikv/EstablishMPPConnection',
         $argument,
-        ['\Mpp\MPPDataPacket', 'decode'],
+        ['\CrazyGoat\Proto\Mpp\MPPDataPacket', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Mpp\IsAliveRequest $argument input argument
+     * @param \CrazyGoat\Proto\Mpp\IsAliveRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Mpp\IsAliveResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Mpp\IsAliveResponse>
      */
-    public function IsAlive(\Mpp\IsAliveRequest $argument,
+    public function IsAlive(\CrazyGoat\Proto\Mpp\IsAliveRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/IsAlive',
         $argument,
-        ['\Mpp\IsAliveResponse', 'decode'],
+        ['\CrazyGoat\Proto\Mpp\IsAliveResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * @param \Mpp\ReportTaskStatusRequest $argument input argument
+     * @param \CrazyGoat\Proto\Mpp\ReportTaskStatusRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Mpp\ReportTaskStatusResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Mpp\ReportTaskStatusResponse>
      */
-    public function ReportMPPTaskStatus(\Mpp\ReportTaskStatusRequest $argument,
+    public function ReportMPPTaskStatus(\CrazyGoat\Proto\Mpp\ReportTaskStatusRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/ReportMPPTaskStatus',
         $argument,
-        ['\Mpp\ReportTaskStatusResponse', 'decode'],
+        ['\CrazyGoat\Proto\Mpp\ReportTaskStatusResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -821,46 +821,46 @@ class TikvClient extends \Grpc\BaseStub {
      * / term and epoch match with local information in the store.
      * / After the client collected all responses from all stores, it checks if got a quorum of responses from
      * / other stores for every region, and decides to advance resolved ts from these regions.
-     * @param \Kvrpcpb\CheckLeaderRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\CheckLeaderRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\CheckLeaderResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\CheckLeaderResponse>
      */
-    public function CheckLeader(\Kvrpcpb\CheckLeaderRequest $argument,
+    public function CheckLeader(\CrazyGoat\Proto\Kvrpcpb\CheckLeaderRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/CheckLeader',
         $argument,
-        ['\Kvrpcpb\CheckLeaderResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\CheckLeaderResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Get the minimal `safe_ts` from regions at the store
-     * @param \Kvrpcpb\StoreSafeTSRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\StoreSafeTSRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\StoreSafeTSResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\StoreSafeTSResponse>
      */
-    public function GetStoreSafeTS(\Kvrpcpb\StoreSafeTSRequest $argument,
+    public function GetStoreSafeTS(\CrazyGoat\Proto\Kvrpcpb\StoreSafeTSRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/GetStoreSafeTS',
         $argument,
-        ['\Kvrpcpb\StoreSafeTSResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\StoreSafeTSResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Get the information about lock waiting from TiKV.
-     * @param \Kvrpcpb\GetLockWaitInfoRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\GetLockWaitInfoRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\GetLockWaitInfoResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\GetLockWaitInfoResponse>
      */
-    public function GetLockWaitInfo(\Kvrpcpb\GetLockWaitInfoRequest $argument,
+    public function GetLockWaitInfo(\CrazyGoat\Proto\Kvrpcpb\GetLockWaitInfoRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/GetLockWaitInfo',
         $argument,
-        ['\Kvrpcpb\GetLockWaitInfoResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\GetLockWaitInfoResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -869,167 +869,167 @@ class TikvClient extends \Grpc\BaseStub {
      * / It only compacts data on this node.
      * / TODO: Currently this RPC is designed to be only compatible with TiFlash.
      * / Shall be move out in https://github.com/pingcap/kvproto/issues/912
-     * @param \Kvrpcpb\CompactRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\CompactRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\CompactResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\CompactResponse>
      */
-    public function Compact(\Kvrpcpb\CompactRequest $argument,
+    public function Compact(\CrazyGoat\Proto\Kvrpcpb\CompactRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/Compact',
         $argument,
-        ['\Kvrpcpb\CompactResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\CompactResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Get the information about history lock waiting from TiKV.
-     * @param \Kvrpcpb\GetLockWaitHistoryRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\GetLockWaitHistoryRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\GetLockWaitHistoryResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\GetLockWaitHistoryResponse>
      */
-    public function GetLockWaitHistory(\Kvrpcpb\GetLockWaitHistoryRequest $argument,
+    public function GetLockWaitHistory(\CrazyGoat\Proto\Kvrpcpb\GetLockWaitHistoryRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/GetLockWaitHistory',
         $argument,
-        ['\Kvrpcpb\GetLockWaitHistoryResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\GetLockWaitHistoryResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Get system table from TiFlash
-     * @param \Kvrpcpb\TiFlashSystemTableRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\TiFlashSystemTableRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\TiFlashSystemTableResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\TiFlashSystemTableResponse>
      */
-    public function GetTiFlashSystemTable(\Kvrpcpb\TiFlashSystemTableRequest $argument,
+    public function GetTiFlashSystemTable(\CrazyGoat\Proto\Kvrpcpb\TiFlashSystemTableRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/GetTiFlashSystemTable',
         $argument,
-        ['\Kvrpcpb\TiFlashSystemTableResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\TiFlashSystemTableResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * These are for TiFlash disaggregated architecture
      * / Try to lock a S3 object, atomically
-     * @param \Disaggregated\TryAddLockRequest $argument input argument
+     * @param \CrazyGoat\Proto\Disaggregated\TryAddLockRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Disaggregated\TryAddLockResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Disaggregated\TryAddLockResponse>
      */
-    public function tryAddLock(\Disaggregated\TryAddLockRequest $argument,
+    public function tryAddLock(\CrazyGoat\Proto\Disaggregated\TryAddLockRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/tryAddLock',
         $argument,
-        ['\Disaggregated\TryAddLockResponse', 'decode'],
+        ['\CrazyGoat\Proto\Disaggregated\TryAddLockResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Try to delete a S3 object, atomically
-     * @param \Disaggregated\TryMarkDeleteRequest $argument input argument
+     * @param \CrazyGoat\Proto\Disaggregated\TryMarkDeleteRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Disaggregated\TryMarkDeleteResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Disaggregated\TryMarkDeleteResponse>
      */
-    public function tryMarkDelete(\Disaggregated\TryMarkDeleteRequest $argument,
+    public function tryMarkDelete(\CrazyGoat\Proto\Disaggregated\TryMarkDeleteRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/tryMarkDelete',
         $argument,
-        ['\Disaggregated\TryMarkDeleteResponse', 'decode'],
+        ['\CrazyGoat\Proto\Disaggregated\TryMarkDeleteResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Build the disaggregated task on TiFlash write node
-     * @param \Disaggregated\EstablishDisaggTaskRequest $argument input argument
+     * @param \CrazyGoat\Proto\Disaggregated\EstablishDisaggTaskRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Disaggregated\EstablishDisaggTaskResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Disaggregated\EstablishDisaggTaskResponse>
      */
-    public function EstablishDisaggTask(\Disaggregated\EstablishDisaggTaskRequest $argument,
+    public function EstablishDisaggTask(\CrazyGoat\Proto\Disaggregated\EstablishDisaggTaskRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/EstablishDisaggTask',
         $argument,
-        ['\Disaggregated\EstablishDisaggTaskResponse', 'decode'],
+        ['\CrazyGoat\Proto\Disaggregated\EstablishDisaggTaskResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Cancel the disaggregated task on TiFlash write node
-     * @param \Disaggregated\CancelDisaggTaskRequest $argument input argument
+     * @param \CrazyGoat\Proto\Disaggregated\CancelDisaggTaskRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Disaggregated\CancelDisaggTaskResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Disaggregated\CancelDisaggTaskResponse>
      */
-    public function CancelDisaggTask(\Disaggregated\CancelDisaggTaskRequest $argument,
+    public function CancelDisaggTask(\CrazyGoat\Proto\Disaggregated\CancelDisaggTaskRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/CancelDisaggTask',
         $argument,
-        ['\Disaggregated\CancelDisaggTaskResponse', 'decode'],
+        ['\CrazyGoat\Proto\Disaggregated\CancelDisaggTaskResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Exchange page data between TiFlash write node and compute node
-     * @param \Disaggregated\FetchDisaggPagesRequest $argument input argument
+     * @param \CrazyGoat\Proto\Disaggregated\FetchDisaggPagesRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
      * @return \Grpc\ServerStreamingCall
      */
-    public function FetchDisaggPages(\Disaggregated\FetchDisaggPagesRequest $argument,
+    public function FetchDisaggPages(\CrazyGoat\Proto\Disaggregated\FetchDisaggPagesRequest $argument,
       $metadata = [], $options = []) {
         return $this->_serverStreamRequest('/tikvpb.Tikv/FetchDisaggPages',
         $argument,
-        ['\Disaggregated\PagesPacket', 'decode'],
+        ['\CrazyGoat\Proto\Disaggregated\PagesPacket', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Compute node get configuration from Write node
-     * @param \Disaggregated\GetDisaggConfigRequest $argument input argument
+     * @param \CrazyGoat\Proto\Disaggregated\GetDisaggConfigRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Disaggregated\GetDisaggConfigResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Disaggregated\GetDisaggConfigResponse>
      */
-    public function GetDisaggConfig(\Disaggregated\GetDisaggConfigRequest $argument,
+    public function GetDisaggConfig(\CrazyGoat\Proto\Disaggregated\GetDisaggConfigRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/GetDisaggConfig',
         $argument,
-        ['\Disaggregated\GetDisaggConfigResponse', 'decode'],
+        ['\CrazyGoat\Proto\Disaggregated\GetDisaggConfigResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Get health feedback info from the TiKV node.
-     * @param \Kvrpcpb\GetHealthFeedbackRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\GetHealthFeedbackRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\GetHealthFeedbackResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\GetHealthFeedbackResponse>
      */
-    public function GetHealthFeedback(\Kvrpcpb\GetHealthFeedbackRequest $argument,
+    public function GetHealthFeedback(\CrazyGoat\Proto\Kvrpcpb\GetHealthFeedbackRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/GetHealthFeedback',
         $argument,
-        ['\Kvrpcpb\GetHealthFeedbackResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\GetHealthFeedbackResponse', 'decode'],
         $metadata, $options);
     }
 
     /**
      * / Broadcast the transaction status to all TiKV nodes
-     * @param \Kvrpcpb\BroadcastTxnStatusRequest $argument input argument
+     * @param \CrazyGoat\Proto\Kvrpcpb\BroadcastTxnStatusRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
-     * @return \Grpc\UnaryCall<\Kvrpcpb\BroadcastTxnStatusResponse>
+     * @return \Grpc\UnaryCall<\CrazyGoat\Proto\Kvrpcpb\BroadcastTxnStatusResponse>
      */
-    public function BroadcastTxnStatus(\Kvrpcpb\BroadcastTxnStatusRequest $argument,
+    public function BroadcastTxnStatus(\CrazyGoat\Proto\Kvrpcpb\BroadcastTxnStatusRequest $argument,
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/tikvpb.Tikv/BroadcastTxnStatus',
         $argument,
-        ['\Kvrpcpb\BroadcastTxnStatusResponse', 'decode'],
+        ['\CrazyGoat\Proto\Kvrpcpb\BroadcastTxnStatusResponse', 'decode'],
         $metadata, $options);
     }
 

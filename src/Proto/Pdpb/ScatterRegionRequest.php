@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -62,12 +62,12 @@ class ScatterRegionRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\RequestHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\RequestHeader $header
      *     @type int|string $region_id
-     *     @type \Metapb\Region $region
+     *     @type \CrazyGoat\Proto\Metapb\Region $region
      *           PD will use these region information if it can't find the region.
      *           For example, the region is just split and hasn't report to PD yet.
-     *     @type \Metapb\Peer $leader
+     *     @type \CrazyGoat\Proto\Metapb\Peer $leader
      *     @type string $group
      *           If group is defined, the regions with the same group would be scattered as a whole group.
      *           If not defined, the regions would be scattered in a cluster level.
@@ -78,13 +78,13 @@ class ScatterRegionRequest extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @return \Pdpb\RequestHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\RequestHeader|null
      */
     public function getHeader()
     {
@@ -103,12 +103,12 @@ class ScatterRegionRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.RequestHeader header = 1;</code>
-     * @param \Pdpb\RequestHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\RequestHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\RequestHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\RequestHeader::class);
         $this->header = $var;
 
         return $this;
@@ -147,7 +147,7 @@ class ScatterRegionRequest extends \Google\Protobuf\Internal\Message
      * For example, the region is just split and hasn't report to PD yet.
      *
      * Generated from protobuf field <code>.metapb.Region region = 3;</code>
-     * @return \Metapb\Region|null
+     * @return \CrazyGoat\Proto\Metapb\Region|null
      */
     public function getRegion()
     {
@@ -169,12 +169,12 @@ class ScatterRegionRequest extends \Google\Protobuf\Internal\Message
      * For example, the region is just split and hasn't report to PD yet.
      *
      * Generated from protobuf field <code>.metapb.Region region = 3;</code>
-     * @param \Metapb\Region $var
+     * @param \CrazyGoat\Proto\Metapb\Region $var
      * @return $this
      */
     public function setRegion($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Region::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Region::class);
         $this->region = $var;
 
         return $this;
@@ -182,7 +182,7 @@ class ScatterRegionRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Peer leader = 4;</code>
-     * @return \Metapb\Peer|null
+     * @return \CrazyGoat\Proto\Metapb\Peer|null
      */
     public function getLeader()
     {
@@ -201,12 +201,12 @@ class ScatterRegionRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Peer leader = 4;</code>
-     * @param \Metapb\Peer $var
+     * @param \CrazyGoat\Proto\Metapb\Peer $var
      * @return $this
      */
     public function setLeader($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Peer::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->leader = $var;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,11 +33,11 @@ class ResponseHeader extends \Google\Protobuf\Internal\Message
      *
      *     @type int|string $cluster_id
      *           cluster_id is the ID of the cluster which sent the response.
-     *     @type \Pdpb\Error $error
+     *     @type \CrazyGoat\Proto\Pdpb\Error $error
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
@@ -69,7 +69,7 @@ class ResponseHeader extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Error error = 2;</code>
-     * @return \Pdpb\Error|null
+     * @return \CrazyGoat\Proto\Pdpb\Error|null
      */
     public function getError()
     {
@@ -88,12 +88,12 @@ class ResponseHeader extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Error error = 2;</code>
-     * @param \Pdpb\Error $var
+     * @param \CrazyGoat\Proto\Pdpb\Error $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\Error::class);
         $this->error = $var;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -219,8 +219,8 @@ class Context extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int|string $region_id
-     *     @type \Metapb\RegionEpoch $region_epoch
-     *     @type \Metapb\Peer $peer
+     *     @type \CrazyGoat\Proto\Metapb\RegionEpoch $region_epoch
+     *     @type \CrazyGoat\Proto\Metapb\Peer $peer
      *     @type int|string $term
      *     @type int $priority
      *     @type int $isolation_level
@@ -255,7 +255,7 @@ class Context extends \Google\Protobuf\Internal\Message
      *     @type int[]|string[] $committed_locks
      *           Read request should read through locks belonging to these transactions because these
      *           transactions are committed and theirs commit_ts <= read request's start_ts.
-     *     @type \Tracepb\TraceContext $trace_context
+     *     @type \CrazyGoat\Proto\Tracepb\TraceContext $trace_context
      *           The informantion to trace a request sent to TiKV.
      *     @type string $request_source
      *           The source of the request, will be used as the tag of the metrics reporting.
@@ -265,7 +265,7 @@ class Context extends \Google\Protobuf\Internal\Message
      *     @type int $busy_threshold_ms
      *           If `busy_threshold_ms` is given, TiKV can reject the request and return a `ServerIsBusy`
      *           error before processing if the estimated waiting duration exceeds the threshold.
-     *     @type \Kvrpcpb\ResourceControlContext $resource_control_context
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ResourceControlContext $resource_control_context
      *           Some information used for resource control.
      *     @type string $keyspace_name
      *           The keyspace that the request is sent to.
@@ -276,7 +276,7 @@ class Context extends \Google\Protobuf\Internal\Message
      *     @type int|string $buckets_version
      *           The buckets version that the request is sent to.
      *           NOTE: This field is only meaningful while enable buckets.
-     *     @type \Kvrpcpb\SourceStmt $source_stmt
+     *     @type \CrazyGoat\Proto\Kvrpcpb\SourceStmt $source_stmt
      *           It tells us where the request comes from in TiDB. If it isn't from TiDB, leave it blank.
      *           This is for tests only and thus can be safely changed/removed without affecting compatibility.
      *     @type int|string $cluster_id
@@ -294,7 +294,7 @@ class Context extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -322,7 +322,7 @@ class Context extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
-     * @return \Metapb\RegionEpoch|null
+     * @return \CrazyGoat\Proto\Metapb\RegionEpoch|null
      */
     public function getRegionEpoch()
     {
@@ -341,12 +341,12 @@ class Context extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
-     * @param \Metapb\RegionEpoch $var
+     * @param \CrazyGoat\Proto\Metapb\RegionEpoch $var
      * @return $this
      */
     public function setRegionEpoch($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\RegionEpoch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\RegionEpoch::class);
         $this->region_epoch = $var;
 
         return $this;
@@ -354,7 +354,7 @@ class Context extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Peer peer = 3;</code>
-     * @return \Metapb\Peer|null
+     * @return \CrazyGoat\Proto\Metapb\Peer|null
      */
     public function getPeer()
     {
@@ -373,12 +373,12 @@ class Context extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Peer peer = 3;</code>
-     * @param \Metapb\Peer $var
+     * @param \CrazyGoat\Proto\Metapb\Peer $var
      * @return $this
      */
     public function setPeer($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Peer::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->peer = $var;
 
         return $this;
@@ -422,7 +422,7 @@ class Context extends \Google\Protobuf\Internal\Message
      */
     public function setPriority($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\CommandPri::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\CommandPri::class);
         $this->priority = $var;
 
         return $this;
@@ -444,7 +444,7 @@ class Context extends \Google\Protobuf\Internal\Message
      */
     public function setIsolationLevel($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\IsolationLevel::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\IsolationLevel::class);
         $this->isolation_level = $var;
 
         return $this;
@@ -748,7 +748,7 @@ class Context extends \Google\Protobuf\Internal\Message
      */
     public function setDiskFullOpt($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\DiskFullOpt::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\DiskFullOpt::class);
         $this->disk_full_opt = $var;
 
         return $this;
@@ -800,7 +800,7 @@ class Context extends \Google\Protobuf\Internal\Message
      */
     public function setApiVersion($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\APIVersion::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\APIVersion::class);
         $this->api_version = $var;
 
         return $this;
@@ -838,7 +838,7 @@ class Context extends \Google\Protobuf\Internal\Message
      * The informantion to trace a request sent to TiKV.
      *
      * Generated from protobuf field <code>.tracepb.TraceContext trace_context = 23;</code>
-     * @return \Tracepb\TraceContext|null
+     * @return \CrazyGoat\Proto\Tracepb\TraceContext|null
      */
     public function getTraceContext()
     {
@@ -859,12 +859,12 @@ class Context extends \Google\Protobuf\Internal\Message
      * The informantion to trace a request sent to TiKV.
      *
      * Generated from protobuf field <code>.tracepb.TraceContext trace_context = 23;</code>
-     * @param \Tracepb\TraceContext $var
+     * @param \CrazyGoat\Proto\Tracepb\TraceContext $var
      * @return $this
      */
     public function setTraceContext($var)
     {
-        GPBUtil::checkMessage($var, \Tracepb\TraceContext::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Tracepb\TraceContext::class);
         $this->trace_context = $var;
 
         return $this;
@@ -956,7 +956,7 @@ class Context extends \Google\Protobuf\Internal\Message
      * Some information used for resource control.
      *
      * Generated from protobuf field <code>.kvrpcpb.ResourceControlContext resource_control_context = 28;</code>
-     * @return \Kvrpcpb\ResourceControlContext|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ResourceControlContext|null
      */
     public function getResourceControlContext()
     {
@@ -977,12 +977,12 @@ class Context extends \Google\Protobuf\Internal\Message
      * Some information used for resource control.
      *
      * Generated from protobuf field <code>.kvrpcpb.ResourceControlContext resource_control_context = 28;</code>
-     * @param \Kvrpcpb\ResourceControlContext $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ResourceControlContext $var
      * @return $this
      */
     public function setResourceControlContext($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ResourceControlContext::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ResourceControlContext::class);
         $this->resource_control_context = $var;
 
         return $this;
@@ -1077,7 +1077,7 @@ class Context extends \Google\Protobuf\Internal\Message
      * This is for tests only and thus can be safely changed/removed without affecting compatibility.
      *
      * Generated from protobuf field <code>.kvrpcpb.SourceStmt source_stmt = 34;</code>
-     * @return \Kvrpcpb\SourceStmt|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\SourceStmt|null
      */
     public function getSourceStmt()
     {
@@ -1099,12 +1099,12 @@ class Context extends \Google\Protobuf\Internal\Message
      * This is for tests only and thus can be safely changed/removed without affecting compatibility.
      *
      * Generated from protobuf field <code>.kvrpcpb.SourceStmt source_stmt = 34;</code>
-     * @param \Kvrpcpb\SourceStmt $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\SourceStmt $var
      * @return $this
      */
     public function setSourceStmt($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\SourceStmt::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\SourceStmt::class);
         $this->source_stmt = $var;
 
         return $this;

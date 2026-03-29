@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -95,8 +95,8 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Pdpb\ChangePeer $change_peer
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\ChangePeer $change_peer
      *           Notice, Pd only allows handling reported epoch >= current pd's.
      *           Leader peer reports region status with RegionHeartbeatRequest
      *           to pd regularly, pd will determine whether this region
@@ -111,35 +111,35 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      *           4. Leader may report old Peers (1), ConfVer (1) to pd before ConfChange
      *           finished, pd stills responses ChangePeer Adding 2, of course, we must
      *           guarantee the second ChangePeer can't be applied in TiKV.
-     *     @type \Pdpb\TransferLeader $transfer_leader
+     *     @type \CrazyGoat\Proto\Pdpb\TransferLeader $transfer_leader
      *           Pd can return transfer_leader to let TiKV does leader transfer itself.
      *     @type int|string $region_id
      *           ID of the region
-     *     @type \Metapb\RegionEpoch $region_epoch
-     *     @type \Metapb\Peer $target_peer
+     *     @type \CrazyGoat\Proto\Metapb\RegionEpoch $region_epoch
+     *     @type \CrazyGoat\Proto\Metapb\Peer $target_peer
      *           Leader of the region at the moment of the corresponding request was made.
-     *     @type \Pdpb\Merge $merge
-     *     @type \Pdpb\SplitRegion $split_region
+     *     @type \CrazyGoat\Proto\Pdpb\Merge $merge
+     *     @type \CrazyGoat\Proto\Pdpb\SplitRegion $split_region
      *           PD sends split_region to let TiKV split a region into two regions.
-     *     @type \Pdpb\ChangePeerV2 $change_peer_v2
+     *     @type \CrazyGoat\Proto\Pdpb\ChangePeerV2 $change_peer_v2
      *           Multiple change peer operations atomically.
      *           Note: PD can use both ChangePeer and ChangePeerV2 at the same time
      *                 (not in the same RegionHeartbeatResponse).
      *                 Now, PD use ChangePeerV2 in following scenarios:
      *                 1. replacing peers
      *                 2. demoting voter directly
-     *     @type \Pdpb\BatchSwitchWitness $switch_witnesses
-     *     @type \Pdpb\ChangeSplit $change_split
+     *     @type \CrazyGoat\Proto\Pdpb\BatchSwitchWitness $switch_witnesses
+     *     @type \CrazyGoat\Proto\Pdpb\ChangeSplit $change_split
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -158,12 +158,12 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -186,7 +186,7 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * guarantee the second ChangePeer can't be applied in TiKV.
      *
      * Generated from protobuf field <code>.pdpb.ChangePeer change_peer = 2;</code>
-     * @return \Pdpb\ChangePeer|null
+     * @return \CrazyGoat\Proto\Pdpb\ChangePeer|null
      */
     public function getChangePeer()
     {
@@ -220,12 +220,12 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * guarantee the second ChangePeer can't be applied in TiKV.
      *
      * Generated from protobuf field <code>.pdpb.ChangePeer change_peer = 2;</code>
-     * @param \Pdpb\ChangePeer $var
+     * @param \CrazyGoat\Proto\Pdpb\ChangePeer $var
      * @return $this
      */
     public function setChangePeer($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ChangePeer::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ChangePeer::class);
         $this->change_peer = $var;
 
         return $this;
@@ -235,7 +235,7 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * Pd can return transfer_leader to let TiKV does leader transfer itself.
      *
      * Generated from protobuf field <code>.pdpb.TransferLeader transfer_leader = 3;</code>
-     * @return \Pdpb\TransferLeader|null
+     * @return \CrazyGoat\Proto\Pdpb\TransferLeader|null
      */
     public function getTransferLeader()
     {
@@ -256,12 +256,12 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * Pd can return transfer_leader to let TiKV does leader transfer itself.
      *
      * Generated from protobuf field <code>.pdpb.TransferLeader transfer_leader = 3;</code>
-     * @param \Pdpb\TransferLeader $var
+     * @param \CrazyGoat\Proto\Pdpb\TransferLeader $var
      * @return $this
      */
     public function setTransferLeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\TransferLeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\TransferLeader::class);
         $this->transfer_leader = $var;
 
         return $this;
@@ -295,7 +295,7 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 5;</code>
-     * @return \Metapb\RegionEpoch|null
+     * @return \CrazyGoat\Proto\Metapb\RegionEpoch|null
      */
     public function getRegionEpoch()
     {
@@ -314,12 +314,12 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 5;</code>
-     * @param \Metapb\RegionEpoch $var
+     * @param \CrazyGoat\Proto\Metapb\RegionEpoch $var
      * @return $this
      */
     public function setRegionEpoch($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\RegionEpoch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\RegionEpoch::class);
         $this->region_epoch = $var;
 
         return $this;
@@ -329,7 +329,7 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * Leader of the region at the moment of the corresponding request was made.
      *
      * Generated from protobuf field <code>.metapb.Peer target_peer = 6;</code>
-     * @return \Metapb\Peer|null
+     * @return \CrazyGoat\Proto\Metapb\Peer|null
      */
     public function getTargetPeer()
     {
@@ -350,12 +350,12 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * Leader of the region at the moment of the corresponding request was made.
      *
      * Generated from protobuf field <code>.metapb.Peer target_peer = 6;</code>
-     * @param \Metapb\Peer $var
+     * @param \CrazyGoat\Proto\Metapb\Peer $var
      * @return $this
      */
     public function setTargetPeer($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Peer::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->target_peer = $var;
 
         return $this;
@@ -363,7 +363,7 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Merge merge = 7;</code>
-     * @return \Pdpb\Merge|null
+     * @return \CrazyGoat\Proto\Pdpb\Merge|null
      */
     public function getMerge()
     {
@@ -382,12 +382,12 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Merge merge = 7;</code>
-     * @param \Pdpb\Merge $var
+     * @param \CrazyGoat\Proto\Pdpb\Merge $var
      * @return $this
      */
     public function setMerge($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Merge::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\Merge::class);
         $this->merge = $var;
 
         return $this;
@@ -397,7 +397,7 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * PD sends split_region to let TiKV split a region into two regions.
      *
      * Generated from protobuf field <code>.pdpb.SplitRegion split_region = 8;</code>
-     * @return \Pdpb\SplitRegion|null
+     * @return \CrazyGoat\Proto\Pdpb\SplitRegion|null
      */
     public function getSplitRegion()
     {
@@ -418,12 +418,12 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      * PD sends split_region to let TiKV split a region into two regions.
      *
      * Generated from protobuf field <code>.pdpb.SplitRegion split_region = 8;</code>
-     * @param \Pdpb\SplitRegion $var
+     * @param \CrazyGoat\Proto\Pdpb\SplitRegion $var
      * @return $this
      */
     public function setSplitRegion($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\SplitRegion::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\SplitRegion::class);
         $this->split_region = $var;
 
         return $this;
@@ -438,7 +438,7 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      *       2. demoting voter directly
      *
      * Generated from protobuf field <code>.pdpb.ChangePeerV2 change_peer_v2 = 9;</code>
-     * @return \Pdpb\ChangePeerV2|null
+     * @return \CrazyGoat\Proto\Pdpb\ChangePeerV2|null
      */
     public function getChangePeerV2()
     {
@@ -464,12 +464,12 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
      *       2. demoting voter directly
      *
      * Generated from protobuf field <code>.pdpb.ChangePeerV2 change_peer_v2 = 9;</code>
-     * @param \Pdpb\ChangePeerV2 $var
+     * @param \CrazyGoat\Proto\Pdpb\ChangePeerV2 $var
      * @return $this
      */
     public function setChangePeerV2($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ChangePeerV2::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ChangePeerV2::class);
         $this->change_peer_v2 = $var;
 
         return $this;
@@ -477,7 +477,7 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.BatchSwitchWitness switch_witnesses = 10;</code>
-     * @return \Pdpb\BatchSwitchWitness|null
+     * @return \CrazyGoat\Proto\Pdpb\BatchSwitchWitness|null
      */
     public function getSwitchWitnesses()
     {
@@ -496,12 +496,12 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.BatchSwitchWitness switch_witnesses = 10;</code>
-     * @param \Pdpb\BatchSwitchWitness $var
+     * @param \CrazyGoat\Proto\Pdpb\BatchSwitchWitness $var
      * @return $this
      */
     public function setSwitchWitnesses($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\BatchSwitchWitness::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\BatchSwitchWitness::class);
         $this->switch_witnesses = $var;
 
         return $this;
@@ -509,7 +509,7 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ChangeSplit change_split = 11;</code>
-     * @return \Pdpb\ChangeSplit|null
+     * @return \CrazyGoat\Proto\Pdpb\ChangeSplit|null
      */
     public function getChangeSplit()
     {
@@ -528,12 +528,12 @@ class RegionHeartbeatResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ChangeSplit change_split = 11;</code>
-     * @param \Pdpb\ChangeSplit $var
+     * @param \CrazyGoat\Proto\Pdpb\ChangeSplit $var
      * @return $this
      */
     public function setChangeSplit($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ChangeSplit::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ChangeSplit::class);
         $this->change_split = $var;
 
         return $this;

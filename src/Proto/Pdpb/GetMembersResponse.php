@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -41,21 +41,21 @@ class GetMembersResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Pdpb\Member[] $members
-     *     @type \Pdpb\Member $leader
-     *     @type \Pdpb\Member $etcd_leader
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\Member[] $members
+     *     @type \CrazyGoat\Proto\Pdpb\Member $leader
+     *     @type \CrazyGoat\Proto\Pdpb\Member $etcd_leader
      *     @type array|\Google\Protobuf\Internal\MapField $tso_allocator_leaders
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -74,12 +74,12 @@ class GetMembersResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -87,7 +87,7 @@ class GetMembersResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.Member members = 2;</code>
-     * @return RepeatedField<\Pdpb\Member>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\Member>
      */
     public function getMembers()
     {
@@ -96,12 +96,12 @@ class GetMembersResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.Member members = 2;</code>
-     * @param \Pdpb\Member[] $var
+     * @param \CrazyGoat\Proto\Pdpb\Member[] $var
      * @return $this
      */
     public function setMembers($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\Member::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\Member::class);
         $this->members = $arr;
 
         return $this;
@@ -109,7 +109,7 @@ class GetMembersResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Member leader = 3;</code>
-     * @return \Pdpb\Member|null
+     * @return \CrazyGoat\Proto\Pdpb\Member|null
      */
     public function getLeader()
     {
@@ -128,12 +128,12 @@ class GetMembersResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Member leader = 3;</code>
-     * @param \Pdpb\Member $var
+     * @param \CrazyGoat\Proto\Pdpb\Member $var
      * @return $this
      */
     public function setLeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Member::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\Member::class);
         $this->leader = $var;
 
         return $this;
@@ -141,7 +141,7 @@ class GetMembersResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Member etcd_leader = 4;</code>
-     * @return \Pdpb\Member|null
+     * @return \CrazyGoat\Proto\Pdpb\Member|null
      */
     public function getEtcdLeader()
     {
@@ -160,12 +160,12 @@ class GetMembersResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.Member etcd_leader = 4;</code>
-     * @param \Pdpb\Member $var
+     * @param \CrazyGoat\Proto\Pdpb\Member $var
      * @return $this
      */
     public function setEtcdLeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\Member::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\Member::class);
         $this->etcd_leader = $var;
 
         return $this;
@@ -187,7 +187,7 @@ class GetMembersResponse extends \Google\Protobuf\Internal\Message
      */
     public function setTsoAllocatorLeaders($var)
     {
-        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::STRING, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\Member::class);
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::STRING, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\Member::class);
         $this->tso_allocator_leaders = $arr;
 
         return $this;

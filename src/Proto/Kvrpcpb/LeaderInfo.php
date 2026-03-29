@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -44,12 +44,12 @@ class LeaderInfo extends \Google\Protobuf\Internal\Message
      *     @type int|string $region_id
      *     @type int|string $peer_id
      *     @type int|string $term
-     *     @type \Metapb\RegionEpoch $region_epoch
-     *     @type \Kvrpcpb\ReadState $read_state
+     *     @type \CrazyGoat\Proto\Metapb\RegionEpoch $region_epoch
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ReadState $read_state
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
@@ -121,7 +121,7 @@ class LeaderInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 4;</code>
-     * @return \Metapb\RegionEpoch|null
+     * @return \CrazyGoat\Proto\Metapb\RegionEpoch|null
      */
     public function getRegionEpoch()
     {
@@ -140,12 +140,12 @@ class LeaderInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 4;</code>
-     * @param \Metapb\RegionEpoch $var
+     * @param \CrazyGoat\Proto\Metapb\RegionEpoch $var
      * @return $this
      */
     public function setRegionEpoch($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\RegionEpoch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\RegionEpoch::class);
         $this->region_epoch = $var;
 
         return $this;
@@ -153,7 +153,7 @@ class LeaderInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ReadState read_state = 5;</code>
-     * @return \Kvrpcpb\ReadState|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ReadState|null
      */
     public function getReadState()
     {
@@ -172,12 +172,12 @@ class LeaderInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ReadState read_state = 5;</code>
-     * @param \Kvrpcpb\ReadState $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ReadState $var
      * @return $this
      */
     public function setReadState($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ReadState::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ReadState::class);
         $this->read_state = $var;
 
         return $this;

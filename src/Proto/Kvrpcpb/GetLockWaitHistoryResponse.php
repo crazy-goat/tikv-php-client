@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,19 +33,19 @@ class GetLockWaitHistoryResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Errorpb\Error $region_error
+     *     @type \CrazyGoat\Proto\Errorpb\Error $region_error
      *     @type string $error
-     *     @type \Deadlock\WaitForEntry[] $entries
+     *     @type \CrazyGoat\Proto\Deadlock\WaitForEntry[] $entries
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @return \Errorpb\Error|null
+     * @return \CrazyGoat\Proto\Errorpb\Error|null
      */
     public function getRegionError()
     {
@@ -64,12 +64,12 @@ class GetLockWaitHistoryResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @param \Errorpb\Error $var
+     * @param \CrazyGoat\Proto\Errorpb\Error $var
      * @return $this
      */
     public function setRegionError($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\Error::class);
         $this->region_error = $var;
 
         return $this;
@@ -99,7 +99,7 @@ class GetLockWaitHistoryResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .deadlock.WaitForEntry entries = 3;</code>
-     * @return RepeatedField<\Deadlock\WaitForEntry>
+     * @return RepeatedField<\CrazyGoat\Proto\Deadlock\WaitForEntry>
      */
     public function getEntries()
     {
@@ -108,12 +108,12 @@ class GetLockWaitHistoryResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .deadlock.WaitForEntry entries = 3;</code>
-     * @param \Deadlock\WaitForEntry[] $var
+     * @param \CrazyGoat\Proto\Deadlock\WaitForEntry[] $var
      * @return $this
      */
     public function setEntries($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Deadlock\WaitForEntry::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Deadlock\WaitForEntry::class);
         $this->entries = $arr;
 
         return $this;

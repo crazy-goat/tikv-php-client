@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,19 +33,19 @@ class RawChecksumRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\Context $context
+     *     @type \CrazyGoat\Proto\Kvrpcpb\Context $context
      *     @type int $algorithm
-     *     @type \Kvrpcpb\KeyRange[] $ranges
+     *     @type \CrazyGoat\Proto\Kvrpcpb\KeyRange[] $ranges
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @return \Kvrpcpb\Context|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\Context|null
      */
     public function getContext()
     {
@@ -64,12 +64,12 @@ class RawChecksumRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.Context context = 1;</code>
-     * @param \Kvrpcpb\Context $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\Context $var
      * @return $this
      */
     public function setContext($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\Context::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\Context::class);
         $this->context = $var;
 
         return $this;
@@ -91,7 +91,7 @@ class RawChecksumRequest extends \Google\Protobuf\Internal\Message
      */
     public function setAlgorithm($var)
     {
-        GPBUtil::checkEnum($var, \Kvrpcpb\ChecksumAlgorithm::class);
+        GPBUtil::checkEnum($var, \CrazyGoat\Proto\Kvrpcpb\ChecksumAlgorithm::class);
         $this->algorithm = $var;
 
         return $this;
@@ -99,7 +99,7 @@ class RawChecksumRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.KeyRange ranges = 3;</code>
-     * @return RepeatedField<\Kvrpcpb\KeyRange>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\KeyRange>
      */
     public function getRanges()
     {
@@ -108,12 +108,12 @@ class RawChecksumRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.KeyRange ranges = 3;</code>
-     * @param \Kvrpcpb\KeyRange[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\KeyRange[] $var
      * @return $this
      */
     public function setRanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\KeyRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\KeyRange::class);
         $this->ranges = $arr;
 
         return $this;

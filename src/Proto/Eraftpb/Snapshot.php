@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: eraftpb.proto
 
-namespace Eraftpb;
+namespace CrazyGoat\Proto\Eraftpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -30,11 +30,11 @@ class Snapshot extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $data
-     *     @type \Eraftpb\SnapshotMetadata $metadata
+     *     @type \CrazyGoat\Proto\Eraftpb\SnapshotMetadata $metadata
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Eraftpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Eraftpb::initOnce();
         parent::__construct($data);
     }
 
@@ -62,7 +62,7 @@ class Snapshot extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.eraftpb.SnapshotMetadata metadata = 2;</code>
-     * @return \Eraftpb\SnapshotMetadata|null
+     * @return \CrazyGoat\Proto\Eraftpb\SnapshotMetadata|null
      */
     public function getMetadata()
     {
@@ -81,12 +81,12 @@ class Snapshot extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.eraftpb.SnapshotMetadata metadata = 2;</code>
-     * @param \Eraftpb\SnapshotMetadata $var
+     * @param \CrazyGoat\Proto\Eraftpb\SnapshotMetadata $var
      * @return $this
      */
     public function setMetadata($var)
     {
-        GPBUtil::checkMessage($var, \Eraftpb\SnapshotMetadata::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Eraftpb\SnapshotMetadata::class);
         $this->metadata = $var;
 
         return $this;

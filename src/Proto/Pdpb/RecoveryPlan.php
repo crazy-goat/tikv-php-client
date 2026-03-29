@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -59,15 +59,15 @@ class RecoveryPlan extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Metapb\Region[] $creates
+     *     @type \CrazyGoat\Proto\Metapb\Region[] $creates
      *           Create empty regions to fill the key range hole.
-     *     @type \Metapb\Region[] $updates
+     *     @type \CrazyGoat\Proto\Metapb\Region[] $updates
      *           Update the meta of the regions, including peer lists, epoch and key range.
      *     @type int[]|string[] $tombstones
      *           Tombstone the peers on the store locally.
-     *     @type \Pdpb\DemoteFailedVoters[] $demotes
+     *     @type \CrazyGoat\Proto\Pdpb\DemoteFailedVoters[] $demotes
      *           Issue conf change that demote voters on failed stores to learners on the regions.
-     *     @type \Pdpb\ForceLeader $force_leader
+     *     @type \CrazyGoat\Proto\Pdpb\ForceLeader $force_leader
      *           Make the peers to be force leaders.
      *     @type int|string $step
      *           Step is an increasing number to note the round of recovery,
@@ -75,7 +75,7 @@ class RecoveryPlan extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
@@ -83,7 +83,7 @@ class RecoveryPlan extends \Google\Protobuf\Internal\Message
      * Create empty regions to fill the key range hole.
      *
      * Generated from protobuf field <code>repeated .metapb.Region creates = 1;</code>
-     * @return RepeatedField<\Metapb\Region>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Region>
      */
     public function getCreates()
     {
@@ -94,12 +94,12 @@ class RecoveryPlan extends \Google\Protobuf\Internal\Message
      * Create empty regions to fill the key range hole.
      *
      * Generated from protobuf field <code>repeated .metapb.Region creates = 1;</code>
-     * @param \Metapb\Region[] $var
+     * @param \CrazyGoat\Proto\Metapb\Region[] $var
      * @return $this
      */
     public function setCreates($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Region::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Region::class);
         $this->creates = $arr;
 
         return $this;
@@ -109,7 +109,7 @@ class RecoveryPlan extends \Google\Protobuf\Internal\Message
      * Update the meta of the regions, including peer lists, epoch and key range.
      *
      * Generated from protobuf field <code>repeated .metapb.Region updates = 2 [deprecated = true];</code>
-     * @return RepeatedField<\Metapb\Region>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Region>
      * @deprecated
      */
     public function getUpdates()
@@ -124,13 +124,13 @@ class RecoveryPlan extends \Google\Protobuf\Internal\Message
      * Update the meta of the regions, including peer lists, epoch and key range.
      *
      * Generated from protobuf field <code>repeated .metapb.Region updates = 2 [deprecated = true];</code>
-     * @param \Metapb\Region[] $var
+     * @param \CrazyGoat\Proto\Metapb\Region[] $var
      * @return $this
      * @deprecated
      */
     public function setUpdates($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Region::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Region::class);
         if ($arr->count() !== 0) {
             @trigger_error('updates is deprecated.', E_USER_DEPRECATED);
         }
@@ -169,7 +169,7 @@ class RecoveryPlan extends \Google\Protobuf\Internal\Message
      * Issue conf change that demote voters on failed stores to learners on the regions.
      *
      * Generated from protobuf field <code>repeated .pdpb.DemoteFailedVoters demotes = 4;</code>
-     * @return RepeatedField<\Pdpb\DemoteFailedVoters>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\DemoteFailedVoters>
      */
     public function getDemotes()
     {
@@ -180,12 +180,12 @@ class RecoveryPlan extends \Google\Protobuf\Internal\Message
      * Issue conf change that demote voters on failed stores to learners on the regions.
      *
      * Generated from protobuf field <code>repeated .pdpb.DemoteFailedVoters demotes = 4;</code>
-     * @param \Pdpb\DemoteFailedVoters[] $var
+     * @param \CrazyGoat\Proto\Pdpb\DemoteFailedVoters[] $var
      * @return $this
      */
     public function setDemotes($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\DemoteFailedVoters::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\DemoteFailedVoters::class);
         $this->demotes = $arr;
 
         return $this;
@@ -195,7 +195,7 @@ class RecoveryPlan extends \Google\Protobuf\Internal\Message
      * Make the peers to be force leaders.
      *
      * Generated from protobuf field <code>.pdpb.ForceLeader force_leader = 5;</code>
-     * @return \Pdpb\ForceLeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ForceLeader|null
      */
     public function getForceLeader()
     {
@@ -216,12 +216,12 @@ class RecoveryPlan extends \Google\Protobuf\Internal\Message
      * Make the peers to be force leaders.
      *
      * Generated from protobuf field <code>.pdpb.ForceLeader force_leader = 5;</code>
-     * @param \Pdpb\ForceLeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ForceLeader $var
      * @return $this
      */
     public function setForceLeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ForceLeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ForceLeader::class);
         $this->force_leader = $var;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -29,18 +29,18 @@ class StoreGlobalConfigRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\GlobalConfigItem[] $changes
+     *     @type \CrazyGoat\Proto\Pdpb\GlobalConfigItem[] $changes
      *     @type string $config_path
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GlobalConfigItem changes = 1;</code>
-     * @return RepeatedField<\Pdpb\GlobalConfigItem>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\GlobalConfigItem>
      */
     public function getChanges()
     {
@@ -49,12 +49,12 @@ class StoreGlobalConfigRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .pdpb.GlobalConfigItem changes = 1;</code>
-     * @param \Pdpb\GlobalConfigItem[] $var
+     * @param \CrazyGoat\Proto\Pdpb\GlobalConfigItem[] $var
      * @return $this
      */
     public function setChanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\GlobalConfigItem::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\GlobalConfigItem::class);
         $this->changes = $arr;
 
         return $this;

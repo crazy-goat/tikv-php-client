@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: disaggregated.proto
 
-namespace Disaggregated;
+namespace CrazyGoat\Proto\Disaggregated;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -42,7 +42,7 @@ class FetchDisaggPagesRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Disaggregated\DisaggTaskMeta $snapshot_id
+     *     @type \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta $snapshot_id
      *           The snapshot id to fetch pages
      *     @type int|string $table_id
      *     @type int|string $segment_id
@@ -52,7 +52,7 @@ class FetchDisaggPagesRequest extends \Google\Protobuf\Internal\Message
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Disaggregated::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Disaggregated::initOnce();
         parent::__construct($data);
     }
 
@@ -60,7 +60,7 @@ class FetchDisaggPagesRequest extends \Google\Protobuf\Internal\Message
      * The snapshot id to fetch pages
      *
      * Generated from protobuf field <code>.disaggregated.DisaggTaskMeta snapshot_id = 1;</code>
-     * @return \Disaggregated\DisaggTaskMeta|null
+     * @return \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta|null
      */
     public function getSnapshotId()
     {
@@ -81,12 +81,12 @@ class FetchDisaggPagesRequest extends \Google\Protobuf\Internal\Message
      * The snapshot id to fetch pages
      *
      * Generated from protobuf field <code>.disaggregated.DisaggTaskMeta snapshot_id = 1;</code>
-     * @param \Disaggregated\DisaggTaskMeta $var
+     * @param \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta $var
      * @return $this
      */
     public function setSnapshotId($var)
     {
-        GPBUtil::checkMessage($var, \Disaggregated\DisaggTaskMeta::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Disaggregated\DisaggTaskMeta::class);
         $this->snapshot_id = $var;
 
         return $this;

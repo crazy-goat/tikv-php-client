@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -33,19 +33,19 @@ class GetStoreResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Metapb\Store $store
-     *     @type \Pdpb\StoreStats $stats
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Metapb\Store $store
+     *     @type \CrazyGoat\Proto\Pdpb\StoreStats $stats
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -64,12 +64,12 @@ class GetStoreResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -77,7 +77,7 @@ class GetStoreResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Store store = 2;</code>
-     * @return \Metapb\Store|null
+     * @return \CrazyGoat\Proto\Metapb\Store|null
      */
     public function getStore()
     {
@@ -96,12 +96,12 @@ class GetStoreResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Store store = 2;</code>
-     * @param \Metapb\Store $var
+     * @param \CrazyGoat\Proto\Metapb\Store $var
      * @return $this
      */
     public function setStore($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Store::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Store::class);
         $this->store = $var;
 
         return $this;
@@ -109,7 +109,7 @@ class GetStoreResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.StoreStats stats = 3;</code>
-     * @return \Pdpb\StoreStats|null
+     * @return \CrazyGoat\Proto\Pdpb\StoreStats|null
      */
     public function getStats()
     {
@@ -128,12 +128,12 @@ class GetStoreResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.StoreStats stats = 3;</code>
-     * @param \Pdpb\StoreStats $var
+     * @param \CrazyGoat\Proto\Pdpb\StoreStats $var
      * @return $this
      */
     public function setStats($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\StoreStats::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\StoreStats::class);
         $this->stats = $var;
 
         return $this;

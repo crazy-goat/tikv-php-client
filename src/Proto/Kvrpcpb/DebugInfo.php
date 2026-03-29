@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -25,17 +25,17 @@ class DebugInfo extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\MvccDebugInfo[] $mvcc_info
+     *     @type \CrazyGoat\Proto\Kvrpcpb\MvccDebugInfo[] $mvcc_info
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.MvccDebugInfo mvcc_info = 1;</code>
-     * @return RepeatedField<\Kvrpcpb\MvccDebugInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\MvccDebugInfo>
      */
     public function getMvccInfo()
     {
@@ -44,12 +44,12 @@ class DebugInfo extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.MvccDebugInfo mvcc_info = 1;</code>
-     * @param \Kvrpcpb\MvccDebugInfo[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\MvccDebugInfo[] $var
      * @return $this
      */
     public function setMvccInfo($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\MvccDebugInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\MvccDebugInfo::class);
         $this->mvcc_info = $arr;
 
         return $this;

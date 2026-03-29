@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -41,22 +41,22 @@ class ScanRegionsResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Metapb\Region[] $region_metas
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Metapb\Region[] $region_metas
      *           Keep for backword compatibability.
-     *     @type \Metapb\Peer[] $leaders
-     *     @type \Pdpb\Region[] $regions
+     *     @type \CrazyGoat\Proto\Metapb\Peer[] $leaders
+     *     @type \CrazyGoat\Proto\Pdpb\Region[] $regions
      *           Extended region info with down/pending peers.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -75,12 +75,12 @@ class ScanRegionsResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -90,7 +90,7 @@ class ScanRegionsResponse extends \Google\Protobuf\Internal\Message
      * Keep for backword compatibability.
      *
      * Generated from protobuf field <code>repeated .metapb.Region region_metas = 2;</code>
-     * @return RepeatedField<\Metapb\Region>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Region>
      */
     public function getRegionMetas()
     {
@@ -101,12 +101,12 @@ class ScanRegionsResponse extends \Google\Protobuf\Internal\Message
      * Keep for backword compatibability.
      *
      * Generated from protobuf field <code>repeated .metapb.Region region_metas = 2;</code>
-     * @param \Metapb\Region[] $var
+     * @param \CrazyGoat\Proto\Metapb\Region[] $var
      * @return $this
      */
     public function setRegionMetas($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Region::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Region::class);
         $this->region_metas = $arr;
 
         return $this;
@@ -114,7 +114,7 @@ class ScanRegionsResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.Peer leaders = 3;</code>
-     * @return RepeatedField<\Metapb\Peer>
+     * @return RepeatedField<\CrazyGoat\Proto\Metapb\Peer>
      */
     public function getLeaders()
     {
@@ -123,12 +123,12 @@ class ScanRegionsResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .metapb.Peer leaders = 3;</code>
-     * @param \Metapb\Peer[] $var
+     * @param \CrazyGoat\Proto\Metapb\Peer[] $var
      * @return $this
      */
     public function setLeaders($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Metapb\Peer::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->leaders = $arr;
 
         return $this;
@@ -138,7 +138,7 @@ class ScanRegionsResponse extends \Google\Protobuf\Internal\Message
      * Extended region info with down/pending peers.
      *
      * Generated from protobuf field <code>repeated .pdpb.Region regions = 4;</code>
-     * @return RepeatedField<\Pdpb\Region>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\Region>
      */
     public function getRegions()
     {
@@ -149,12 +149,12 @@ class ScanRegionsResponse extends \Google\Protobuf\Internal\Message
      * Extended region info with down/pending peers.
      *
      * Generated from protobuf field <code>repeated .pdpb.Region regions = 4;</code>
-     * @param \Pdpb\Region[] $var
+     * @param \CrazyGoat\Proto\Pdpb\Region[] $var
      * @return $this
      */
     public function setRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\Region::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\Region::class);
         $this->regions = $arr;
 
         return $this;

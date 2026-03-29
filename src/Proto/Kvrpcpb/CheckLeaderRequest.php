@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -29,18 +29,18 @@ class CheckLeaderRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\LeaderInfo[] $regions
+     *     @type \CrazyGoat\Proto\Kvrpcpb\LeaderInfo[] $regions
      *     @type int|string $ts
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.LeaderInfo regions = 1;</code>
-     * @return RepeatedField<\Kvrpcpb\LeaderInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\LeaderInfo>
      */
     public function getRegions()
     {
@@ -49,12 +49,12 @@ class CheckLeaderRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.LeaderInfo regions = 1;</code>
-     * @param \Kvrpcpb\LeaderInfo[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\LeaderInfo[] $var
      * @return $this
      */
     public function setRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\LeaderInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\LeaderInfo::class);
         $this->regions = $arr;
 
         return $this;

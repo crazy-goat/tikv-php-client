@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: tikvpb.proto
 
-namespace Tikvpb;
+namespace CrazyGoat\Proto\Tikvpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -29,18 +29,18 @@ class BatchCommandsRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Tikvpb\BatchCommandsRequest\Request[] $requests
+     *     @type \CrazyGoat\Proto\Tikvpb\BatchCommandsRequest\Request[] $requests
      *     @type int[]|string[] $request_ids
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Tikvpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Tikvpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .tikvpb.BatchCommandsRequest.Request requests = 1;</code>
-     * @return RepeatedField<\Tikvpb\BatchCommandsRequest\Request>
+     * @return RepeatedField<\CrazyGoat\Proto\Tikvpb\BatchCommandsRequest\Request>
      */
     public function getRequests()
     {
@@ -49,12 +49,12 @@ class BatchCommandsRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .tikvpb.BatchCommandsRequest.Request requests = 1;</code>
-     * @param \Tikvpb\BatchCommandsRequest\Request[] $var
+     * @param \CrazyGoat\Proto\Tikvpb\BatchCommandsRequest\Request[] $var
      * @return $this
      */
     public function setRequests($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Tikvpb\BatchCommandsRequest\Request::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Tikvpb\BatchCommandsRequest\Request::class);
         $this->requests = $arr;
 
         return $this;

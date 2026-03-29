@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -31,18 +31,18 @@ class ImportRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\Mutation[] $mutations
+     *     @type \CrazyGoat\Proto\Kvrpcpb\Mutation[] $mutations
      *     @type int|string $commit_version
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.Mutation mutations = 1;</code>
-     * @return RepeatedField<\Kvrpcpb\Mutation>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\Mutation>
      */
     public function getMutations()
     {
@@ -51,12 +51,12 @@ class ImportRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .kvrpcpb.Mutation mutations = 1;</code>
-     * @param \Kvrpcpb\Mutation[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\Mutation[] $var
      * @return $this
      */
     public function setMutations($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\Mutation::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\Mutation::class);
         $this->mutations = $arr;
 
         return $this;

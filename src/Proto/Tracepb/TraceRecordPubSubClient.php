@@ -1,7 +1,7 @@
 <?php
 // GENERATED CODE -- DO NOT EDIT!
 
-namespace Tracepb;
+namespace CrazyGoat\Proto\Tracepb;
 
 /**
  */
@@ -19,16 +19,16 @@ class TraceRecordPubSubClient extends \Grpc\BaseStub {
     /**
      * Subscribe the Trace records generated on this service. The service will periodically (e.g. per minute)
      * publishes Trace records to clients via gRPC stream.
-     * @param \Tracepb\TraceRecordRequest $argument input argument
+     * @param \CrazyGoat\Proto\Tracepb\TraceRecordRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
      * @return \Grpc\ServerStreamingCall
      */
-    public function Subscribe(\Tracepb\TraceRecordRequest $argument,
+    public function Subscribe(\CrazyGoat\Proto\Tracepb\TraceRecordRequest $argument,
       $metadata = [], $options = []) {
         return $this->_serverStreamRequest('/tracepb.TraceRecordPubSub/Subscribe',
         $argument,
-        ['\Tracepb\TraceRecord', 'decode'],
+        ['\CrazyGoat\Proto\Tracepb\TraceRecord', 'decode'],
         $metadata, $options);
     }
 

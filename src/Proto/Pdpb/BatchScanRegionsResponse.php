@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: pdpb.proto
 
-namespace Pdpb;
+namespace CrazyGoat\Proto\Pdpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -31,19 +31,19 @@ class BatchScanRegionsResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Pdpb\ResponseHeader $header
-     *     @type \Pdpb\Region[] $regions
+     *     @type \CrazyGoat\Proto\Pdpb\ResponseHeader $header
+     *     @type \CrazyGoat\Proto\Pdpb\Region[] $regions
      *           the returned regions are flattened into a list, because the given ranges can located in the same range, we do not return duplicated regions then.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Pdpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Pdpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @return \Pdpb\ResponseHeader|null
+     * @return \CrazyGoat\Proto\Pdpb\ResponseHeader|null
      */
     public function getHeader()
     {
@@ -62,12 +62,12 @@ class BatchScanRegionsResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.pdpb.ResponseHeader header = 1;</code>
-     * @param \Pdpb\ResponseHeader $var
+     * @param \CrazyGoat\Proto\Pdpb\ResponseHeader $var
      * @return $this
      */
     public function setHeader($var)
     {
-        GPBUtil::checkMessage($var, \Pdpb\ResponseHeader::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Pdpb\ResponseHeader::class);
         $this->header = $var;
 
         return $this;
@@ -77,7 +77,7 @@ class BatchScanRegionsResponse extends \Google\Protobuf\Internal\Message
      * the returned regions are flattened into a list, because the given ranges can located in the same range, we do not return duplicated regions then.
      *
      * Generated from protobuf field <code>repeated .pdpb.Region regions = 2;</code>
-     * @return RepeatedField<\Pdpb\Region>
+     * @return RepeatedField<\CrazyGoat\Proto\Pdpb\Region>
      */
     public function getRegions()
     {
@@ -88,12 +88,12 @@ class BatchScanRegionsResponse extends \Google\Protobuf\Internal\Message
      * the returned regions are flattened into a list, because the given ranges can located in the same range, we do not return duplicated regions then.
      *
      * Generated from protobuf field <code>repeated .pdpb.Region regions = 2;</code>
-     * @param \Pdpb\Region[] $var
+     * @param \CrazyGoat\Proto\Pdpb\Region[] $var
      * @return $this
      */
     public function setRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Pdpb\Region::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Pdpb\Region::class);
         $this->regions = $arr;
 
         return $this;

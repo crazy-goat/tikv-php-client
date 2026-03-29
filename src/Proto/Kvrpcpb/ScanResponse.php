@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -39,23 +39,23 @@ class ScanResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Errorpb\Error $region_error
-     *     @type \Kvrpcpb\KvPair[] $pairs
+     *     @type \CrazyGoat\Proto\Errorpb\Error $region_error
+     *     @type \CrazyGoat\Proto\Kvrpcpb\KvPair[] $pairs
      *           Each KvPair may contain a key error.
-     *     @type \Kvrpcpb\KeyError $error
+     *     @type \CrazyGoat\Proto\Kvrpcpb\KeyError $error
      *           This KeyError exists when some key is locked but we cannot check locks of all keys.
      *           In this case, `pairs` should be empty and the client should redo scanning all the keys
      *           after resolving the lock.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @return \Errorpb\Error|null
+     * @return \CrazyGoat\Proto\Errorpb\Error|null
      */
     public function getRegionError()
     {
@@ -74,12 +74,12 @@ class ScanResponse extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.errorpb.Error region_error = 1;</code>
-     * @param \Errorpb\Error $var
+     * @param \CrazyGoat\Proto\Errorpb\Error $var
      * @return $this
      */
     public function setRegionError($var)
     {
-        GPBUtil::checkMessage($var, \Errorpb\Error::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Errorpb\Error::class);
         $this->region_error = $var;
 
         return $this;
@@ -89,7 +89,7 @@ class ScanResponse extends \Google\Protobuf\Internal\Message
      * Each KvPair may contain a key error.
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.KvPair pairs = 2;</code>
-     * @return RepeatedField<\Kvrpcpb\KvPair>
+     * @return RepeatedField<\CrazyGoat\Proto\Kvrpcpb\KvPair>
      */
     public function getPairs()
     {
@@ -100,12 +100,12 @@ class ScanResponse extends \Google\Protobuf\Internal\Message
      * Each KvPair may contain a key error.
      *
      * Generated from protobuf field <code>repeated .kvrpcpb.KvPair pairs = 2;</code>
-     * @param \Kvrpcpb\KvPair[] $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\KvPair[] $var
      * @return $this
      */
     public function setPairs($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Kvrpcpb\KvPair::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Kvrpcpb\KvPair::class);
         $this->pairs = $arr;
 
         return $this;
@@ -117,7 +117,7 @@ class ScanResponse extends \Google\Protobuf\Internal\Message
      * after resolving the lock.
      *
      * Generated from protobuf field <code>.kvrpcpb.KeyError error = 3;</code>
-     * @return \Kvrpcpb\KeyError|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\KeyError|null
      */
     public function getError()
     {
@@ -140,12 +140,12 @@ class ScanResponse extends \Google\Protobuf\Internal\Message
      * after resolving the lock.
      *
      * Generated from protobuf field <code>.kvrpcpb.KeyError error = 3;</code>
-     * @param \Kvrpcpb\KeyError $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\KeyError $var
      * @return $this
      */
     public function setError($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\KeyError::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\KeyError::class);
         $this->error = $var;
 
         return $this;

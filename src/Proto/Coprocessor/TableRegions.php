@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -30,11 +30,11 @@ class TableRegions extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int|string $physical_table_id
-     *     @type \Coprocessor\RegionInfo[] $regions
+     *     @type \CrazyGoat\Proto\Coprocessor\RegionInfo[] $regions
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
@@ -62,7 +62,7 @@ class TableRegions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.RegionInfo regions = 2;</code>
-     * @return RepeatedField<\Coprocessor\RegionInfo>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\RegionInfo>
      */
     public function getRegions()
     {
@@ -71,12 +71,12 @@ class TableRegions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.RegionInfo regions = 2;</code>
-     * @param \Coprocessor\RegionInfo[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\RegionInfo[] $var
      * @return $this
      */
     public function setRegions($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\RegionInfo::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\RegionInfo::class);
         $this->regions = $arr;
 
         return $this;

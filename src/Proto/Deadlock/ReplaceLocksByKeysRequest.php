@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: deadlock.proto
 
-namespace Deadlock;
+namespace CrazyGoat\Proto\Deadlock;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -25,17 +25,17 @@ class ReplaceLocksByKeysRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Deadlock\ReplaceLockByKeyItem[] $items
+     *     @type \CrazyGoat\Proto\Deadlock\ReplaceLockByKeyItem[] $items
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Deadlock::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Deadlock::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>repeated .deadlock.ReplaceLockByKeyItem items = 1;</code>
-     * @return RepeatedField<\Deadlock\ReplaceLockByKeyItem>
+     * @return RepeatedField<\CrazyGoat\Proto\Deadlock\ReplaceLockByKeyItem>
      */
     public function getItems()
     {
@@ -44,12 +44,12 @@ class ReplaceLocksByKeysRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .deadlock.ReplaceLockByKeyItem items = 1;</code>
-     * @param \Deadlock\ReplaceLockByKeyItem[] $var
+     * @param \CrazyGoat\Proto\Deadlock\ReplaceLockByKeyItem[] $var
      * @return $this
      */
     public function setItems($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Deadlock\ReplaceLockByKeyItem::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Deadlock\ReplaceLockByKeyItem::class);
         $this->items = $arr;
 
         return $this;

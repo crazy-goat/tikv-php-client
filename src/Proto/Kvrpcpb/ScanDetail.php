@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: kvrpcpb.proto
 
-namespace Kvrpcpb;
+namespace CrazyGoat\Proto\Kvrpcpb;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -35,19 +35,19 @@ class ScanDetail extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Kvrpcpb\ScanInfo $write
-     *     @type \Kvrpcpb\ScanInfo $lock
-     *     @type \Kvrpcpb\ScanInfo $data
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ScanInfo $write
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ScanInfo $lock
+     *     @type \CrazyGoat\Proto\Kvrpcpb\ScanInfo $data
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Kvrpcpb::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Kvrpcpb::initOnce();
         parent::__construct($data);
     }
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ScanInfo write = 1;</code>
-     * @return \Kvrpcpb\ScanInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ScanInfo|null
      */
     public function getWrite()
     {
@@ -66,12 +66,12 @@ class ScanDetail extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ScanInfo write = 1;</code>
-     * @param \Kvrpcpb\ScanInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ScanInfo $var
      * @return $this
      */
     public function setWrite($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ScanInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ScanInfo::class);
         $this->write = $var;
 
         return $this;
@@ -79,7 +79,7 @@ class ScanDetail extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ScanInfo lock = 2;</code>
-     * @return \Kvrpcpb\ScanInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ScanInfo|null
      */
     public function getLock()
     {
@@ -98,12 +98,12 @@ class ScanDetail extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ScanInfo lock = 2;</code>
-     * @param \Kvrpcpb\ScanInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ScanInfo $var
      * @return $this
      */
     public function setLock($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ScanInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ScanInfo::class);
         $this->lock = $var;
 
         return $this;
@@ -111,7 +111,7 @@ class ScanDetail extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ScanInfo data = 3;</code>
-     * @return \Kvrpcpb\ScanInfo|null
+     * @return \CrazyGoat\Proto\Kvrpcpb\ScanInfo|null
      */
     public function getData()
     {
@@ -130,12 +130,12 @@ class ScanDetail extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.kvrpcpb.ScanInfo data = 3;</code>
-     * @param \Kvrpcpb\ScanInfo $var
+     * @param \CrazyGoat\Proto\Kvrpcpb\ScanInfo $var
      * @return $this
      */
     public function setData($var)
     {
-        GPBUtil::checkMessage($var, \Kvrpcpb\ScanInfo::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Kvrpcpb\ScanInfo::class);
         $this->data = $var;
 
         return $this;

@@ -3,7 +3,7 @@
 # NO CHECKED-IN PROTOBUF GENCODE
 # source: coprocessor.proto
 
-namespace Coprocessor;
+namespace CrazyGoat\Proto\Coprocessor;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
@@ -49,17 +49,17 @@ class StoreBatchTask extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int|string $region_id
-     *     @type \Metapb\RegionEpoch $region_epoch
-     *     @type \Metapb\Peer $peer
-     *     @type \Coprocessor\KeyRange[] $ranges
+     *     @type \CrazyGoat\Proto\Metapb\RegionEpoch $region_epoch
+     *     @type \CrazyGoat\Proto\Metapb\Peer $peer
+     *     @type \CrazyGoat\Proto\Coprocessor\KeyRange[] $ranges
      *     @type int|string $task_id
-     *     @type \Coprocessor\VersionedKeyRange[] $versioned_ranges
+     *     @type \CrazyGoat\Proto\Coprocessor\VersionedKeyRange[] $versioned_ranges
      *           Versioned point ranges for TiCI lookup.
      *           When `versioned_ranges` is non-empty, all `versioned_ranges[i].range` must be point range.
      * }
      */
     public function __construct($data = NULL) {
-        \GPBMetadata\Coprocessor::initOnce();
+        \CrazyGoat\Proto\GPBMetadata\Coprocessor::initOnce();
         parent::__construct($data);
     }
 
@@ -87,7 +87,7 @@ class StoreBatchTask extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
-     * @return \Metapb\RegionEpoch|null
+     * @return \CrazyGoat\Proto\Metapb\RegionEpoch|null
      */
     public function getRegionEpoch()
     {
@@ -106,12 +106,12 @@ class StoreBatchTask extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.RegionEpoch region_epoch = 2;</code>
-     * @param \Metapb\RegionEpoch $var
+     * @param \CrazyGoat\Proto\Metapb\RegionEpoch $var
      * @return $this
      */
     public function setRegionEpoch($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\RegionEpoch::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\RegionEpoch::class);
         $this->region_epoch = $var;
 
         return $this;
@@ -119,7 +119,7 @@ class StoreBatchTask extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Peer peer = 3;</code>
-     * @return \Metapb\Peer|null
+     * @return \CrazyGoat\Proto\Metapb\Peer|null
      */
     public function getPeer()
     {
@@ -138,12 +138,12 @@ class StoreBatchTask extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.metapb.Peer peer = 3;</code>
-     * @param \Metapb\Peer $var
+     * @param \CrazyGoat\Proto\Metapb\Peer $var
      * @return $this
      */
     public function setPeer($var)
     {
-        GPBUtil::checkMessage($var, \Metapb\Peer::class);
+        GPBUtil::checkMessage($var, \CrazyGoat\Proto\Metapb\Peer::class);
         $this->peer = $var;
 
         return $this;
@@ -151,7 +151,7 @@ class StoreBatchTask extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.KeyRange ranges = 4;</code>
-     * @return RepeatedField<\Coprocessor\KeyRange>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\KeyRange>
      */
     public function getRanges()
     {
@@ -160,12 +160,12 @@ class StoreBatchTask extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .coprocessor.KeyRange ranges = 4;</code>
-     * @param \Coprocessor\KeyRange[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\KeyRange[] $var
      * @return $this
      */
     public function setRanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\KeyRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\KeyRange::class);
         $this->ranges = $arr;
 
         return $this;
@@ -198,7 +198,7 @@ class StoreBatchTask extends \Google\Protobuf\Internal\Message
      * When `versioned_ranges` is non-empty, all `versioned_ranges[i].range` must be point range.
      *
      * Generated from protobuf field <code>repeated .coprocessor.VersionedKeyRange versioned_ranges = 6;</code>
-     * @return RepeatedField<\Coprocessor\VersionedKeyRange>
+     * @return RepeatedField<\CrazyGoat\Proto\Coprocessor\VersionedKeyRange>
      */
     public function getVersionedRanges()
     {
@@ -210,12 +210,12 @@ class StoreBatchTask extends \Google\Protobuf\Internal\Message
      * When `versioned_ranges` is non-empty, all `versioned_ranges[i].range` must be point range.
      *
      * Generated from protobuf field <code>repeated .coprocessor.VersionedKeyRange versioned_ranges = 6;</code>
-     * @param \Coprocessor\VersionedKeyRange[] $var
+     * @param \CrazyGoat\Proto\Coprocessor\VersionedKeyRange[] $var
      * @return $this
      */
     public function setVersionedRanges($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Coprocessor\VersionedKeyRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \CrazyGoat\Proto\Coprocessor\VersionedKeyRange::class);
         $this->versioned_ranges = $arr;
 
         return $this;
