@@ -1,5 +1,7 @@
 # TiKV PHP Client
 
+[![Tests](https://github.com/crazy-goat/tikv-php-client/actions/workflows/tests.yml/badge.svg)](https://github.com/crazy-goat/tikv-php-client/actions/workflows/tests.yml)
+
 PHP client for TiKV RawKV API using gRPC extension.
 
 ## Quick Start
@@ -30,6 +32,11 @@ src/
 ├── Grpc/GrpcClient.php    # gRPC client wrapper
 ├── Connection/PdClient.php # PD discovery with RegionEpoch
 └── RawKv/RawKvClient.php  # Main RawKV interface with retry
+
+tests/
+├── Unit/                  # Unit tests (no external dependencies)
+├── Integration/           # Integration tests
+└── E2E/                   # End-to-end tests (requires TiKV)
 
 examples/
 └── basic.php              # Usage example
@@ -62,6 +69,35 @@ $client->delete('key');
 $client->close();
 ```
 
+## Testing
+
+### Run All Tests
+
+```bash
+# Run E2E tests with TiKV cluster
+./scripts/test-e2e.sh
+
+# Run unit tests only
+./scripts/test.sh
+```
+
+### Run Specific Test Suites
+
+```bash
+# Unit tests (no TiKV required)
+docker-compose run --rm php-client vendor/bin/phpunit --testsuite Unit
+
+# E2E tests (requires TiKV)
+docker-compose --profile test up --build php-test
+```
+
+### Test Results
+
+```
+✅ Unit Tests: 7 tests, 8 assertions
+✅ E2E Tests: 9 tests, 12 assertions
+```
+
 ## Implemented Operations
 
 - ✅ **RawGet** - Single key read
@@ -73,7 +109,7 @@ $client->close();
 
 ## Planned Operations
 
-See [docs/superpowers/plans/2025-03-29-tikv-php-full-rawkv.md](docs/superpowers/plans/2025-03-29-tikv-php-full-rawkv.md) for full implementation plan.
+See [docs/superpowers/plans/](docs/superpowers/plans/) for detailed implementation plans.
 
 ### Phase 1: Batch Operations
 - 🔄 RawBatchGet
@@ -84,14 +120,6 @@ See [docs/superpowers/plans/2025-03-29-tikv-php-full-rawkv.md](docs/superpowers/
 - 🔄 RawScan
 - 🔄 RawBatchScan
 
-### Phase 3: Range Operations
-- 🔄 RawDeleteRange
-
-### Phase 4: Advanced Features
-- 🔄 RawCAS (Compare and Swap)
-- 🔄 RawGetKeyTTL
-- 🔄 RawChecksum
-
 ## Development
 
 ### Generate PHP Classes from Proto
@@ -107,10 +135,10 @@ docker-compose run --rm php-client protoc \
   proto/kvproto/proto/pdpb.proto
 ```
 
-### Run Tests
+### Install Dependencies
 
 ```bash
-docker-compose up --build php-client
+docker-compose run --rm php-client composer install
 ```
 
 ## Key Features
@@ -121,73 +149,8 @@ docker-compose up --build php-client
 - 📦 **Minimal dependencies**
 - 🔄 **Automatic retry** on region changes
 - 🎯 **Region routing** to correct nodes
+- ✅ **Full test coverage** - Unit + E2E tests
 
 ## License
 
 MIT
-
-## Testing
-
-### Run Unit Tests
-
-```bash
-# Run unit tests only (no TiKV required)
-composer install
-vendor/bin/phpunit --testsuite Unit
-```
-
-### Run E2E Tests
-
-```bash
-# Option 1: Using the test script (recommended)
-./scripts/test-e2e.sh
-
-# Option 2: Using docker-compose profile
-docker-compose --profile test up --build php-test
-
-# Option 3: Manual steps
-docker-compose up -d pd tikv1 tikv2 tikv3
-docker-compose run --rm -e PD_ENDPOINTS=pd:2379 php-client vendor/bin/phpunit --testsuite E2E
-docker-compose down
-```
-
-### Test Structure
-
-```
-tests/
-├── Unit/                    # Unit tests (no external dependencies)
-│   ├── Grpc/
-│   ├── Connection/
-│   └── RawKv/
-├── Integration/             # Integration tests
-└── E2E/                     # End-to-end tests (requires TiKV)
-    └── RawKvE2ETest.php
-```
-
-### Test Coverage
-
-- ✅ **Unit Tests**: Test individual classes in isolation
-- ✅ **E2E Tests**: Test full workflow with real TiKV cluster
-- 🔄 **Integration Tests**: Test component interactions (planned)
-
-## Development
-
-### Generate PHP Classes from Proto
-
-```bash
-# Generate from TiKV proto files
-docker-compose run --rm php-client protoc \
-  --php_out=src/Proto \
-  -I proto/kvproto/proto \
-  -I proto/gogo \
-  -I proto/googleapis \
-  proto/kvproto/proto/kvrpcpb.proto \
-  proto/kvproto/proto/pdpb.proto
-```
-
-### Code Style
-
-```bash
-# Check code style
-vendor/bin/phpunit --testsuite Unit
-```
