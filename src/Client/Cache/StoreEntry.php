@@ -6,10 +6,10 @@ namespace CrazyGoat\TiKV\Client\Cache;
 
 use CrazyGoat\Proto\Metapb\Store;
 
-final class StoreEntry
+final readonly class StoreEntry
 {
     public function __construct(
-        public readonly Store $store,
-        public readonly int $expiresAt,
+        public Store $store,
+        public int $expiresAt,
     ) {}
 }

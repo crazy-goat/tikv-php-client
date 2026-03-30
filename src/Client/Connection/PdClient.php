@@ -74,9 +74,9 @@ final class PdClient implements PdClientInterface
 
     public function getStore(int $storeId): ?Store
     {
-        if ($this->storeCache !== null) {
+        if ($this->storeCache instanceof StoreCacheInterface) {
             $cached = $this->storeCache->get($storeId);
-            if ($cached !== null) {
+            if ($cached instanceof Store) {
                 return $cached;
             }
         }
@@ -93,7 +93,7 @@ final class PdClient implements PdClientInterface
         );
 
         $store = $response->getStore();
-        if ($store !== null && $this->storeCache !== null) {
+        if ($store instanceof Store && $this->storeCache instanceof StoreCacheInterface) {
             $this->storeCache->put($store);
         }
 
