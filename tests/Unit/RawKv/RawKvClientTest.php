@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Tests\Unit\RawKv;
 
+use CrazyGoat\Proto\Errorpb\Error;
+use CrazyGoat\Proto\Errorpb\NotLeader;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
 use CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawCASResponse;
@@ -13,17 +15,20 @@ use CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawGetResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawPutResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawScanResponse;
+use CrazyGoat\Proto\Metapb\Peer;
 use CrazyGoat\Proto\Metapb\Store;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\ClientClosedException;
 use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
+use CrazyGoat\TiKV\Client\Exception\RegionException;
 use CrazyGoat\TiKV\Client\Exception\StoreNotFoundException;
 use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\RawKv\CasResult;
 use CrazyGoat\TiKV\Client\RawKv\ChecksumResult;
+use CrazyGoat\TiKV\Client\RawKv\Dto\PeerInfo;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
 use Google\Protobuf\Internal\Message;
@@ -744,5 +749,202 @@ class RawKvClientTest extends TestCase
             ->with('tikv1:20160');
 
         $client->get('key');
+    }
+
+    // ========================================================================
+    // NotLeader handling
+    // ========================================================================
+
+    private function regionWithPeers(): RegionInfo
+    {
+        return new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 10,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [
+                new PeerInfo(peerId: 10, storeId: 1),
+                new PeerInfo(peerId: 20, storeId: 2),
+                new PeerInfo(peerId: 30, storeId: 3),
+            ],
+        );
+    }
+
+    public function testNotLeaderWithHintSwitchesLeaderAndRetries(): void
+    {
+        $region = $this->regionWithPeers();
+        $this->regionCache->method('getByKey')->willReturn($region);
+
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $this->regionCache->expects($this->once())
+            ->method('switchLeader')
+            ->with(1, 3)
+            ->willReturn(true);
+
+        $leader = new Peer();
+        $leader->setId(30);
+        $leader->setStoreId(3);
+
+        $notLeader = new NotLeader();
+        $notLeader->setRegionId(1);
+        $notLeader->setLeader($leader);
+
+        $error = new Error();
+        $error->setMessage('not leader');
+        $error->setNotLeader($notLeader);
+
+        $errorResponse = new RawGetResponse();
+        $errorResponse->setRegionError($error);
+
+        $successResponse = new RawGetResponse();
+        $successResponse->setValue('found');
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls($errorResponse, $successResponse);
+
+        $result = $this->client->get('key');
+        $this->assertSame('found', $result);
+    }
+
+    public function testNotLeaderWithoutHintInvalidatesRegion(): void
+    {
+        $region = $this->regionWithPeers();
+        $this->regionCache->method('getByKey')->willReturn($region);
+
+        $this->pdClient->method('getRegion')->willReturn($region);
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $this->regionCache->expects($this->once())
+            ->method('invalidate')
+            ->with(1);
+
+        $this->regionCache->expects($this->never())
+            ->method('switchLeader');
+
+        $notLeader = new NotLeader();
+        $notLeader->setRegionId(1);
+
+        $error = new Error();
+        $error->setMessage('not leader');
+        $error->setNotLeader($notLeader);
+
+        $errorResponse = new RawGetResponse();
+        $errorResponse->setRegionError($error);
+
+        $successResponse = new RawGetResponse();
+        $successResponse->setValue('found');
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls($errorResponse, $successResponse);
+
+        $result = $this->client->get('key');
+        $this->assertSame('found', $result);
+    }
+
+    public function testNotLeaderWithUnknownPeerInvalidatesRegion(): void
+    {
+        $region = $this->regionWithPeers();
+        $this->regionCache->method('getByKey')->willReturn($region);
+
+        $this->pdClient->method('getRegion')->willReturn($region);
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $this->regionCache->expects($this->once())
+            ->method('switchLeader')
+            ->with(1, 99)
+            ->willReturn(false);
+
+        $this->regionCache->expects($this->once())
+            ->method('invalidate')
+            ->with(1);
+
+        $leader = new Peer();
+        $leader->setId(99);
+        $leader->setStoreId(99);
+
+        $notLeader = new NotLeader();
+        $notLeader->setRegionId(1);
+        $notLeader->setLeader($leader);
+
+        $error = new Error();
+        $error->setMessage('not leader');
+        $error->setNotLeader($notLeader);
+
+        $errorResponse = new RawGetResponse();
+        $errorResponse->setRegionError($error);
+
+        $successResponse = new RawGetResponse();
+        $successResponse->setValue('found');
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls($errorResponse, $successResponse);
+
+        $result = $this->client->get('key');
+        $this->assertSame('found', $result);
+    }
+
+    public function testRegionErrorSurfacesEpochNotMatch(): void
+    {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $error = new Error();
+        $error->setMessage('epoch not match');
+        $error->setEpochNotMatch(new \CrazyGoat\Proto\Errorpb\EpochNotMatch());
+
+        $errorResponse = new RawGetResponse();
+        $errorResponse->setRegionError($error);
+
+        $successResponse = new RawGetResponse();
+        $successResponse->setValue('ok');
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls($errorResponse, $successResponse);
+
+        $result = $this->client->get('key');
+        $this->assertSame('ok', $result);
+    }
+
+    public function testNotLeaderStringFallbackInClassifyError(): void
+    {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $response = new RawGetResponse();
+        $response->setValue('recovered');
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls(
+                $this->throwException(new RegionException('test', 'NotLeader')),
+                $response,
+            );
+
+        $result = $this->client->get('key');
+        $this->assertSame('recovered', $result);
+    }
+
+    public function testBackoffTypeNotLeaderSleepValues(): void
+    {
+        $this->assertSame(2, \CrazyGoat\TiKV\Client\Retry\BackoffType::NotLeader->baseMs());
+        $this->assertSame(500, \CrazyGoat\TiKV\Client\Retry\BackoffType::NotLeader->capMs());
+        $this->assertFalse(\CrazyGoat\TiKV\Client\Retry\BackoffType::NotLeader->equalJitter());
+        $this->assertSame(2, \CrazyGoat\TiKV\Client\Retry\BackoffType::NotLeader->sleepMs(0));
     }
 }
