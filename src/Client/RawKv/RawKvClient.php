@@ -304,7 +304,10 @@ final class RawKvClient
         // Execute all regions in parallel
         $regionCalls = [];
         foreach ($keysByRegion as $regionId => $regionData) {
-            $regionCalls[$regionId] = (fn(): \CrazyGoat\TiKV\Client\Batch\GrpcFuture => $this->executeBatchGetForRegionAsync($regionData['region'], $regionData['keys']));
+            $regionCalls[$regionId] = (fn(): GrpcFuture => $this->executeBatchGetForRegionAsync(
+                $regionData['region'],
+                $regionData['keys'],
+            ));
         }
 
         $executor = new BatchAsyncExecutor($this->logger);
@@ -359,7 +362,11 @@ final class RawKvClient
         // Execute all regions in parallel
         $regionCalls = [];
         foreach ($pairsByRegion as $regionId => $regionData) {
-            $regionCalls[$regionId] = (fn(): \CrazyGoat\TiKV\Client\Batch\GrpcFuture => $this->executeBatchPutForRegionAsync($regionData['region'], $regionData['pairs'], $ttl));
+            $regionCalls[$regionId] = (fn(): GrpcFuture => $this->executeBatchPutForRegionAsync(
+                $regionData['region'],
+                $regionData['pairs'],
+                $ttl,
+            ));
         }
 
         $executor = new BatchAsyncExecutor($this->logger);
@@ -384,7 +391,10 @@ final class RawKvClient
         // Execute all regions in parallel
         $regionCalls = [];
         foreach ($keysByRegion as $regionId => $regionData) {
-            $regionCalls[$regionId] = (fn(): \CrazyGoat\TiKV\Client\Batch\GrpcFuture => $this->executeBatchDeleteForRegionAsync($regionData['region'], $regionData['keys']));
+            $regionCalls[$regionId] = (fn(): GrpcFuture => $this->executeBatchDeleteForRegionAsync(
+                $regionData['region'],
+                $regionData['keys'],
+            ));
         }
 
         $executor = new BatchAsyncExecutor($this->logger);

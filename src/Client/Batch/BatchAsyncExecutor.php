@@ -20,7 +20,8 @@ final readonly class BatchAsyncExecutor
     /**
      * Execute multiple callables concurrently and return results.
      *
-     * @param array<int, callable(): mixed> $regionCalls Array of regionId => callable returning GrpcFuture or direct value
+     * @param array<int, callable(): mixed> $regionCalls Array of regionId => callable
+     *                                                   returning GrpcFuture or direct value
      * @return array<int, mixed> Array of regionId => result
      * @throws BatchPartialFailureException If any region fails
      */
