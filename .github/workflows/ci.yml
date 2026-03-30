@@ -93,10 +93,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: grpc
+          # Note: grpc extension not needed for unit tests (we mock gRPC calls)
           coverage: none
-        env:
-          COMPOSER_PROCESS_TIMEOUT: 0
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -126,10 +124,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.4"
-          extensions: grpc
+          # Note: grpc extension compilation takes too long, skip for now
+          # Integration tests require actual TiKV cluster anyway
           coverage: none
-        env:
-          COMPOSER_PROCESS_TIMEOUT: 0
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
