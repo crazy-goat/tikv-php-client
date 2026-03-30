@@ -139,7 +139,7 @@ class LoggingIntegrationTest extends TestCase
     public function testBudgetExhaustedLogsErrorWithMonolog(): void
     {
         $cache = new RegionCache(logger: $this->logger);
-        $client = new RawKvClient($this->pdClient, $this->grpc, $cache, 0, $this->logger);
+        $client = new RawKvClient($this->pdClient, $this->grpc, $cache, 0, $this->logger, 0);
 
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());

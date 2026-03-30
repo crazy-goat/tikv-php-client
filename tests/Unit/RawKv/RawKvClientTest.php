@@ -35,6 +35,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 class RawKvClientTest extends TestCase
 {
@@ -537,7 +538,7 @@ class RawKvClientTest extends TestCase
 
     public function testBudgetExceededThrowsLastException(): void
     {
-        $client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache, 0);
+        $client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache, 0, new NullLogger(), 0);
 
         $this->regionCache->method('getByKey')->willReturn(null);
         $this->regionCache->method('put');
@@ -641,7 +642,7 @@ class RawKvClientTest extends TestCase
     public function testBudgetExhaustedLogsError(): void
     {
         $logger = $this->createMock(LoggerInterface::class);
-        $client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache, 0, $logger);
+        $client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache, 0, $logger, 0);
 
         $this->regionCache->method('getByKey')->willReturn(null);
         $this->regionCache->method('put');
@@ -655,8 +656,8 @@ class RawKvClientTest extends TestCase
 
         $logger->expects($this->once())
             ->method('error')
-            ->with('Retry budget exhausted', $this->callback(fn(array $context): bool => $context['key'] === 'key'
-                && $context['maxBackoffMs'] === 0));
+            ->with('ServerBusy budget exhausted', $this->callback(fn(array $context): bool => $context['key'] === 'key'
+                && $context['serverBusyBudgetMs'] === 0));
 
         $this->expectException(TiKvException::class);
         $client->get('key');
