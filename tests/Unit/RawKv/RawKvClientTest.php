@@ -14,6 +14,7 @@ use CrazyGoat\Proto\Kvrpcpb\RawGetResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawPutResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawScanResponse;
 use CrazyGoat\Proto\Metapb\Store;
+use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\ClientClosedException;
 use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
@@ -31,6 +32,7 @@ class RawKvClientTest extends TestCase
 {
     private PdClientInterface&MockObject $pdClient;
     private GrpcClientInterface&MockObject $grpc;
+    private RegionCacheInterface&MockObject $regionCache;
     private RawKvClient $client;
 
     private function defaultRegion(): RegionInfo
@@ -56,7 +58,8 @@ class RawKvClientTest extends TestCase
     {
         $this->pdClient = $this->createMock(PdClientInterface::class);
         $this->grpc = $this->createMock(GrpcClientInterface::class);
-        $this->client = new RawKvClient($this->pdClient, $this->grpc);
+        $this->regionCache = $this->createMock(RegionCacheInterface::class);
+        $this->client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache);
     }
 
     // ========================================================================
@@ -120,6 +123,8 @@ class RawKvClientTest extends TestCase
 
     public function testGetReturnsValue(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -133,6 +138,8 @@ class RawKvClientTest extends TestCase
 
     public function testGetReturnsNullForMissingKey(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -146,6 +153,8 @@ class RawKvClientTest extends TestCase
 
     public function testGetThrowsStoreNotFoundWhenStoreIsNull(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn(null);
 
@@ -160,6 +169,8 @@ class RawKvClientTest extends TestCase
 
     public function testPutCallsGrpc(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -183,6 +194,8 @@ class RawKvClientTest extends TestCase
 
     public function testDeleteCallsGrpc(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -204,6 +217,8 @@ class RawKvClientTest extends TestCase
 
     public function testBatchGetReturnsOrderedResults(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -227,6 +242,8 @@ class RawKvClientTest extends TestCase
 
     public function testBatchGetReturnsNullForMissingKeys(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -271,6 +288,8 @@ class RawKvClientTest extends TestCase
 
     public function testScanReturnsResults(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()]);
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -330,6 +349,8 @@ class RawKvClientTest extends TestCase
 
     public function testCompareAndSwapSuccess(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -349,6 +370,8 @@ class RawKvClientTest extends TestCase
 
     public function testCompareAndSwapFailure(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -371,6 +394,8 @@ class RawKvClientTest extends TestCase
 
     public function testPutIfAbsentReturnsNullOnSuccess(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -385,6 +410,8 @@ class RawKvClientTest extends TestCase
 
     public function testPutIfAbsentReturnsExistingValue(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -404,6 +431,8 @@ class RawKvClientTest extends TestCase
 
     public function testChecksumReturnsResult(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $region = new RegionInfo(1, 1, 1, 1, 1, 'a', 'z');
         $this->pdClient->method('scanRegions')->willReturn([$region]);
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
@@ -429,6 +458,8 @@ class RawKvClientTest extends TestCase
 
     public function testGetKeyTTLReturnsValue(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -443,6 +474,8 @@ class RawKvClientTest extends TestCase
 
     public function testGetKeyTTLReturnsNullWhenNotFound(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
@@ -456,6 +489,8 @@ class RawKvClientTest extends TestCase
 
     public function testGetKeyTTLReturnsNullWhenZero(): void
     {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
