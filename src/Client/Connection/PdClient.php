@@ -53,6 +53,8 @@ final class PdClient implements PdClientInterface
             leaderStoreId: $leader ? (int) $leader->getStoreId() : 1,
             epochConfVer: $regionEpoch ? (int) $regionEpoch->getConfVer() : 0,
             epochVersion: $regionEpoch ? (int) $regionEpoch->getVersion() : 0,
+            startKey: $region ? $region->getStartKey() : '',
+            endKey: $region ? $region->getEndKey() : '',
         );
     }
 

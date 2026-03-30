@@ -75,8 +75,8 @@ final class RawKvClient
     {
         $this->ensureOpen();
 
-        $region = $this->getRegionInfo($key);
-        return $this->executeWithRetry($region->regionId, function () use ($key, $region): ?string {
+        return $this->executeWithRetry($key, function () use ($key): ?string {
+            $region = $this->getRegionInfo($key);
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawGetRequest();
@@ -100,8 +100,8 @@ final class RawKvClient
     {
         $this->ensureOpen();
 
-        $region = $this->getRegionInfo($key);
-        $this->executeWithRetry($region->regionId, function () use ($key, $value, $ttl, $region): null {
+        $this->executeWithRetry($key, function () use ($key, $value, $ttl): null {
+            $region = $this->getRegionInfo($key);
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawPutRequest();
@@ -121,8 +121,8 @@ final class RawKvClient
     {
         $this->ensureOpen();
 
-        $region = $this->getRegionInfo($key);
-        $this->executeWithRetry($region->regionId, function () use ($key, $region): null {
+        $this->executeWithRetry($key, function () use ($key): null {
+            $region = $this->getRegionInfo($key);
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawDeleteRequest();
@@ -143,8 +143,8 @@ final class RawKvClient
     {
         $this->ensureOpen();
 
-        $region = $this->getRegionInfo($key);
-        return $this->executeWithRetry($region->regionId, function () use ($key, $region): ?int {
+        return $this->executeWithRetry($key, function () use ($key): ?int {
+            $region = $this->getRegionInfo($key);
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawGetKeyTTLRequest();
@@ -187,10 +187,10 @@ final class RawKvClient
     {
         $this->ensureOpen();
 
-        $region = $this->getRegionInfo($key);
         return $this->executeWithRetry(
-            $region->regionId,
-            function () use ($key, $expectedValue, $newValue, $ttl, $region): CasResult {
+            $key,
+            function () use ($key, $expectedValue, $newValue, $ttl): CasResult {
+                $region = $this->getRegionInfo($key);
                 $address = $this->resolveStoreAddress($region->leaderStoreId);
 
                 $request = new RawCASRequest();
@@ -600,7 +600,7 @@ final class RawKvClient
      * @param callable(): T $operation
      * @return T
      */
-    private function executeWithRetry(int $regionId, callable $operation): mixed
+    private function executeWithRetry(string $key, callable $operation): mixed
     {
         $lastException = null;
 
@@ -611,7 +611,10 @@ final class RawKvClient
                 $lastException = $e;
 
                 if (str_contains($e->getMessage(), 'EpochNotMatch')) {
-                    $this->regionCache->invalidate($regionId);
+                    $cached = $this->regionCache->getByKey($key);
+                    if ($cached instanceof \CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo) {
+                        $this->regionCache->invalidate($cached->regionId);
+                    }
                     continue;
                 }
 
@@ -671,7 +674,7 @@ final class RawKvClient
      */
     private function executeBatchGetForRegion(RegionInfo $region, array $keys): array
     {
-        return $this->executeWithRetry($region->regionId, function () use ($region, $keys): array {
+        return $this->executeWithRetry($keys[0], function () use ($region, $keys): array {
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawBatchGetRequest();
@@ -696,7 +699,7 @@ final class RawKvClient
      */
     private function executeBatchPutForRegion(RegionInfo $region, array $pairs, int $ttl): void
     {
-        $this->executeWithRetry($region->regionId, function () use ($region, $pairs, $ttl): null {
+        $this->executeWithRetry($pairs[0]->getKey(), function () use ($region, $pairs, $ttl): null {
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawBatchPutRequest();
@@ -716,7 +719,7 @@ final class RawKvClient
      */
     private function executeBatchDeleteForRegion(RegionInfo $region, array $keys): void
     {
-        $this->executeWithRetry($region->regionId, function () use ($region, $keys): null {
+        $this->executeWithRetry($keys[0], function () use ($region, $keys): null {
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawBatchDeleteRequest();
@@ -769,12 +772,12 @@ final class RawKvClient
             return $results;
         };
 
-        return $this->executeWithRetry($region->regionId, $callback);
+        return $this->executeWithRetry($startKey, $callback);
     }
 
     private function executeDeleteRangeForRegion(RegionInfo $region, string $startKey, string $endKey): void
     {
-        $this->executeWithRetry($region->regionId, function () use ($region, $startKey, $endKey): null {
+        $this->executeWithRetry($startKey, function () use ($region, $startKey, $endKey): null {
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawDeleteRangeRequest();
@@ -831,6 +834,6 @@ final class RawKvClient
             );
         };
 
-        return $this->executeWithRetry($region->regionId, $callback);
+        return $this->executeWithRetry($startKey, $callback);
     }
 }
