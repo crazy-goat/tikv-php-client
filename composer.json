@@ -2,6 +2,7 @@
     "name": "crazy-goat/tikv-client",
     "description": "PHP client for TiKV RawKV API using gRPC extension",
     "type": "library",
+    "license": "MIT",
     "require": {
         "php": ">=8.2",
         "grpc/grpc": "^1.57",
