@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Tests\Unit\RawKv;
 
+use CrazyGoat\Proto\Kvrpcpb\Context;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\RawKv\RegionContext;
-use CrazyGoat\Proto\Kvrpcpb\Context;
 use PHPUnit\Framework\TestCase;
 
 class RegionContextTest extends TestCase
@@ -24,8 +25,10 @@ class RegionContextTest extends TestCase
 
         $this->assertInstanceOf(Context::class, $ctx);
         $this->assertSame(42, $ctx->getRegionId());
+        $this->assertNotNull($ctx->getRegionEpoch());
         $this->assertSame(1, $ctx->getRegionEpoch()->getConfVer());
         $this->assertSame(10, $ctx->getRegionEpoch()->getVersion());
+        $this->assertNotNull($ctx->getPeer());
         $this->assertSame(7, $ctx->getPeer()->getId());
         $this->assertSame(3, $ctx->getPeer()->getStoreId());
     }

@@ -1,18 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\RawKv;
 
-use CrazyGoat\TiKV\Client\Connection\PdClient;
-use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
-use CrazyGoat\TiKV\Client\Exception\ClientClosedException;
-use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
-use CrazyGoat\TiKV\Client\Exception\RegionException;
-use CrazyGoat\TiKV\Client\Exception\StoreNotFoundException;
-use CrazyGoat\TiKV\Client\Exception\TiKvException;
-use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
-use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
-use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\Proto\Kvrpcpb\ChecksumAlgorithm;
 use CrazyGoat\Proto\Kvrpcpb\KeyRange;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
@@ -38,6 +29,16 @@ use CrazyGoat\Proto\Kvrpcpb\RawPutRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawPutResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawScanRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawScanResponse;
+use CrazyGoat\TiKV\Client\Connection\PdClient;
+use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
+use CrazyGoat\TiKV\Client\Exception\ClientClosedException;
+use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
+use CrazyGoat\TiKV\Client\Exception\RegionException;
+use CrazyGoat\TiKV\Client\Exception\StoreNotFoundException;
+use CrazyGoat\TiKV\Client\Exception\TiKvException;
+use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
+use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
+use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 
 final class RawKvClient
 {
@@ -151,7 +152,13 @@ final class RawKvClient
             $request->setKey($key);
 
             /** @var RawGetKeyTTLResponse $response */
-            $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawGetKeyTTL', $request, RawGetKeyTTLResponse::class);
+            $response = $this->grpc->call(
+                $address,
+                'tikvpb.Tikv',
+                'RawGetKeyTTL',
+                $request,
+                RawGetKeyTTLResponse::class,
+            );
 
             $error = $response->getError();
             if ($error !== '') {
@@ -201,7 +208,13 @@ final class RawKvClient
             }
 
             /** @var RawCASResponse $response */
-            $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawCompareAndSwap', $request, RawCASResponse::class);
+            $response = $this->grpc->call(
+                $address,
+                'tikvpb.Tikv',
+                'RawCompareAndSwap',
+                $request,
+                RawCASResponse::class,
+            );
 
             $error = $response->getError();
             if ($error !== '') {
@@ -394,7 +407,14 @@ final class RawKvClient
             }
 
             $regionLimit = $remaining === 0 ? PHP_INT_MAX : $remaining;
-            $regionResults = $this->executeScanForRegion($region, $scanStartKey, $scanEndKey, $regionLimit, $keyOnly, true);
+            $regionResults = $this->executeScanForRegion(
+                $region,
+                $scanStartKey,
+                $scanEndKey,
+                $regionLimit,
+                $keyOnly,
+                true,
+            );
             $results = array_merge($results, $regionResults);
 
             if ($remaining > 0) {
@@ -428,6 +448,7 @@ final class RawKvClient
 
         $results = [];
         foreach ($ranges as $range) {
+            /** @phpstan-ignore function.alreadyNarrowedType, booleanOr.alwaysFalse, notIdentical.alwaysFalse */
             if (!is_array($range) || count($range) !== 2) {
                 throw new InvalidArgumentException('Each range must be an array of [startKey, endKey]');
             }
@@ -560,12 +581,12 @@ final class RawKvClient
     private function resolveStoreAddress(int $storeId): string
     {
         $store = $this->pdClient->getStore($storeId);
-        if ($store === null) {
+        if (!$store instanceof \CrazyGoat\Proto\Metapb\Store) {
             throw new StoreNotFoundException($storeId);
         }
 
         $address = $store->getAddress();
-        if ($address === '' || $address === null) {
+        if ($address === '') {
             throw new StoreNotFoundException($storeId);
         }
 
@@ -643,6 +664,7 @@ final class RawKvClient
     // ========================================================================
 
     /**
+     * @param array<string> $keys
      * @return array<string, ?string>
      */
     private function executeBatchGetForRegion(RegionInfo $region, array $keys): array
@@ -658,6 +680,7 @@ final class RawKvClient
             $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawBatchGet', $request, RawBatchGetResponse::class);
 
             $results = [];
+            /** @phpstan-ignore class.notFound */
             foreach ($response->getPairs() as $pair) {
                 $results[$pair->getKey()] = $pair->getValue() !== '' ? $pair->getValue() : null;
             }
@@ -714,7 +737,7 @@ final class RawKvClient
         bool $keyOnly,
         bool $reverse,
     ): array {
-        return $this->executeWithRetry($startKey, function () use ($region, $startKey, $endKey, $limit, $keyOnly, $reverse): array {
+        $callback = function () use ($region, $startKey, $endKey, $limit, $keyOnly, $reverse): array {
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawScanRequest();
@@ -733,6 +756,7 @@ final class RawKvClient
             $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawScan', $request, RawScanResponse::class);
 
             $results = [];
+            /** @phpstan-ignore class.notFound */
             foreach ($response->getKvs() as $pair) {
                 $results[] = [
                     'key' => $pair->getKey(),
@@ -741,7 +765,9 @@ final class RawKvClient
             }
 
             return $results;
-        });
+        };
+
+        return $this->executeWithRetry($startKey, $callback);
     }
 
     private function executeDeleteRangeForRegion(RegionInfo $region, string $startKey, string $endKey): void
@@ -755,7 +781,13 @@ final class RawKvClient
             $request->setEndKey($endKey);
 
             /** @var RawDeleteRangeResponse $response */
-            $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawDeleteRange', $request, RawDeleteRangeResponse::class);
+            $response = $this->grpc->call(
+                $address,
+                'tikvpb.Tikv',
+                'RawDeleteRange',
+                $request,
+                RawDeleteRangeResponse::class,
+            );
 
             $error = $response->getError();
             if ($error !== '') {

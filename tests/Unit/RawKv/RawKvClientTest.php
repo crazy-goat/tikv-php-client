@@ -1,8 +1,19 @@
 <?php
+
 declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Tests\Unit\RawKv;
 
+use CrazyGoat\Proto\Kvrpcpb\KvPair;
+use CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawCASResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawChecksumResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawGetResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawPutResponse;
+use CrazyGoat\Proto\Kvrpcpb\RawScanResponse;
+use CrazyGoat\Proto\Metapb\Store;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\ClientClosedException;
 use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
@@ -12,19 +23,6 @@ use CrazyGoat\TiKV\Client\RawKv\CasResult;
 use CrazyGoat\TiKV\Client\RawKv\ChecksumResult;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
-use CrazyGoat\Proto\Kvrpcpb\RawGetResponse;
-use CrazyGoat\Proto\Kvrpcpb\RawPutResponse;
-use CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse;
-use CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse;
-use CrazyGoat\Proto\Kvrpcpb\RawBatchPutResponse;
-use CrazyGoat\Proto\Kvrpcpb\RawBatchDeleteResponse;
-use CrazyGoat\Proto\Kvrpcpb\RawScanResponse;
-use CrazyGoat\Proto\Kvrpcpb\RawDeleteRangeResponse;
-use CrazyGoat\Proto\Kvrpcpb\RawGetKeyTTLResponse;
-use CrazyGoat\Proto\Kvrpcpb\RawCASResponse;
-use CrazyGoat\Proto\Kvrpcpb\RawChecksumResponse;
-use CrazyGoat\Proto\Kvrpcpb\KvPair;
-use CrazyGoat\Proto\Metapb\Store;
 use Google\Protobuf\Internal\Message;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -67,7 +65,7 @@ class RawKvClientTest extends TestCase
 
     public function testCreateFactoryMethodExists(): void
     {
-        $this->assertTrue(method_exists(RawKvClient::class, 'create'));
+        $this->assertTrue(method_exists(RawKvClient::class, 'create')); // @phpstan-ignore function.alreadyNarrowedType
     }
 
     public function testCloseIsIdempotent(): void
@@ -83,6 +81,7 @@ class RawKvClientTest extends TestCase
 
     /**
      * @dataProvider closedOperationsProvider
+     * @param array<mixed> $args
      */
     public function testThrowsClientClosedExceptionWhenClosed(string $method, array $args): void
     {
@@ -94,6 +93,7 @@ class RawKvClientTest extends TestCase
         $this->client->$method(...$args);
     }
 
+    /** @return iterable<string, array{string, array<mixed>}> */
     public static function closedOperationsProvider(): iterable
     {
         yield 'get' => ['get', ['key']];
@@ -316,7 +316,7 @@ class RawKvClientTest extends TestCase
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
 
         $this->expectException(InvalidArgumentException::class);
-        $this->client->batchScan([['only-one']], 10);
+        $this->client->batchScan([['only-one']], 10); // @phpstan-ignore argument.type
     }
 
     public function testBatchScanEmptyReturnsEmpty(): void

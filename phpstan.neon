@@ -1,0 +1,10 @@
+parameters:
+    level: 9
+    paths:
+        - src/Client
+        - tests
+    excludePaths:
+        - src/Proto
+    ignoreErrors:
+        - identifier: class.notFound
+          message: '#Google\\Protobuf\\RepeatedField#'

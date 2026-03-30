@@ -1,11 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\Connection;
 
-use CrazyGoat\TiKV\Client\Exception\GrpcException;
-use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
-use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\Proto\Metapb\Store;
 use CrazyGoat\Proto\Pdpb\GetRegionRequest;
 use CrazyGoat\Proto\Pdpb\GetRegionResponse;
@@ -14,6 +12,9 @@ use CrazyGoat\Proto\Pdpb\GetStoreResponse;
 use CrazyGoat\Proto\Pdpb\RequestHeader;
 use CrazyGoat\Proto\Pdpb\ScanRegionsRequest;
 use CrazyGoat\Proto\Pdpb\ScanRegionsResponse;
+use CrazyGoat\TiKV\Client\Exception\GrpcException;
+use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
+use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use Google\Protobuf\Internal\Message;
 
 final class PdClient implements PdClientInterface
@@ -47,11 +48,11 @@ final class PdClient implements PdClientInterface
         $regionEpoch = $region?->getRegionEpoch();
 
         return new RegionInfo(
-            regionId: $region ? $region->getId() : 0,
-            leaderPeerId: $leader ? $leader->getId() : 0,
-            leaderStoreId: $leader ? $leader->getStoreId() : 1,
-            epochConfVer: $regionEpoch ? $regionEpoch->getConfVer() : 0,
-            epochVersion: $regionEpoch ? $regionEpoch->getVersion() : 0,
+            regionId: $region ? (int) $region->getId() : 0,
+            leaderPeerId: $leader ? (int) $leader->getId() : 0,
+            leaderStoreId: $leader ? (int) $leader->getStoreId() : 1,
+            epochConfVer: $regionEpoch ? (int) $regionEpoch->getConfVer() : 0,
+            epochVersion: $regionEpoch ? (int) $regionEpoch->getVersion() : 0,
         );
     }
 
@@ -102,16 +103,17 @@ final class PdClient implements PdClientInterface
         $regionMetas = $response->getRegionMetas();
         $leaders = $response->getLeaders();
 
+        /** @phpstan-ignore class.notFound */
         foreach ($regionMetas as $index => $region) {
             $leader = $leaders[$index] ?? null;
             $regionEpoch = $region?->getRegionEpoch();
 
             $regions[] = new RegionInfo(
-                regionId: $region ? $region->getId() : 0,
-                leaderPeerId: $leader ? $leader->getId() : 0,
-                leaderStoreId: $leader ? $leader->getStoreId() : 1,
-                epochConfVer: $regionEpoch ? $regionEpoch->getConfVer() : 0,
-                epochVersion: $regionEpoch ? $regionEpoch->getVersion() : 0,
+                regionId: $region ? (int) $region->getId() : 0,
+                leaderPeerId: $leader ? (int) $leader->getId() : 0,
+                leaderStoreId: $leader ? (int) $leader->getStoreId() : 1,
+                epochConfVer: $regionEpoch ? (int) $regionEpoch->getConfVer() : 0,
+                epochVersion: $regionEpoch ? (int) $regionEpoch->getVersion() : 0,
                 startKey: $region ? $region->getStartKey() : '',
                 endKey: $region ? $region->getEndKey() : '',
             );
@@ -164,6 +166,7 @@ final class PdClient implements PdClientInterface
             $extractedId = $this->extractClusterIdFromError($e->getMessage());
             if ($extractedId !== null) {
                 $this->clusterId = $extractedId;
+                /** @phpstan-ignore method.notFound */
                 $request->setHeader($this->createHeader());
 
                 $response = $this->grpc->call(
@@ -194,18 +197,21 @@ final class PdClient implements PdClientInterface
 
         if (method_exists($response, 'getHeader')) {
             $header = $response->getHeader();
-            if ($header !== null && method_exists($header, 'getClusterId')) {
-                $this->clusterId = $header->getClusterId();
+            if (is_object($header) && method_exists($header, 'getClusterId')) {
+                /** @var int $clusterId */
+                $clusterId = $header->getClusterId();
+                $this->clusterId = $clusterId;
             }
         }
     }
 
     private function extractClusterIdFromError(string $message): ?int
     {
-        if (str_contains($message, 'mismatch cluster id')) {
-            if (preg_match('/need (\d+) but got/', $message, $matches)) {
-                return (int) $matches[1];
-            }
+        if (!str_contains($message, 'mismatch cluster id')) {
+            return null;
+        }
+        if (preg_match('/need (\d+) but got/', $message, $matches)) {
+            return (int) $matches[1];
         }
 
         return null;

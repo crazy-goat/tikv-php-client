@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\RawKv;
 
-use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\Proto\Kvrpcpb\Context;
 use CrazyGoat\Proto\Metapb\Peer;
 use CrazyGoat\Proto\Metapb\RegionEpoch;
+use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 
 final class RegionContext
 {

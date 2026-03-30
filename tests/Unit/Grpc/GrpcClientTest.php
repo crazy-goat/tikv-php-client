@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Tests\Unit\Grpc;
@@ -10,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 class GrpcClientTest extends TestCase
 {
-    private ?GrpcClient $client = null;
+    private GrpcClient $client;
 
     protected function setUp(): void
     {
@@ -22,7 +23,9 @@ class GrpcClientTest extends TestCase
 
     protected function tearDown(): void
     {
-        $this->client?->close();
+        if (isset($this->client)) {
+            $this->client->close();
+        }
     }
 
     public function testImplementsInterface(): void

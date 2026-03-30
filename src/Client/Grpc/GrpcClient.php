@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\Grpc;
@@ -82,14 +83,22 @@ final class GrpcClient implements GrpcClientInterface
             $event = (array) $event;
         }
 
-        $status = $event['status'] ?? null;
+        /** @var array<string, mixed> $eventArray */
+        $eventArray = $event;
+        $status = $eventArray['status'] ?? null;
         if (is_object($status)) {
             $status = (array) $status;
         }
 
+        /** @var array<string, mixed> $statusArray */
+        $statusArray = is_array($status) ? $status : [];
+
+        $code = $statusArray['code'] ?? 0;
+        $details = $statusArray['details'] ?? '';
+
         return [
-            'code' => (int) ($status['code'] ?? 0),
-            'details' => (string) ($status['details'] ?? ''),
+            'code' => is_int($code) ? $code : (is_string($code) ? (int) $code : 0),
+            'details' => is_string($details) ? $details : (is_scalar($details) ? (string) $details : ''),
         ];
     }
 
@@ -104,12 +113,14 @@ final class GrpcClient implements GrpcClientInterface
             $event = (array) $event;
         }
 
-        $message = $event['message'] ?? null;
+        /** @var array<string, mixed> $eventArray */
+        $eventArray = $event;
+        $message = $eventArray['message'] ?? null;
 
         /** @var T $response */
         $response = new $responseClass();
 
-        if ($message !== null && $message !== '') {
+        if ($message !== null && $message !== '' && is_string($message)) {
             $response->mergeFromString($message);
         }
 
