@@ -44,6 +44,7 @@ use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Retry\BackoffType;
+use CrazyGoat\TiKV\Client\Tls\TlsConfigBuilder;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -55,11 +56,30 @@ final class RawKvClient
      * Create a client connected to a PD cluster.
      *
      * @param string[] $pdEndpoints PD addresses (currently only the first is used)
+     * @param array<string, mixed> $options Client options, including 'tls' for TLS configuration
      */
-    public static function create(array $pdEndpoints, ?LoggerInterface $logger = null): self
+    public static function create(array $pdEndpoints, ?LoggerInterface $logger = null, array $options = []): self
     {
         $resolvedLogger = $logger ?? new NullLogger();
-        $grpc = new GrpcClient($resolvedLogger);
+
+        $tlsConfig = null;
+        if (isset($options['tls']) && is_array($options['tls'])) {
+            $tlsOptions = $options['tls'];
+            $builder = new TlsConfigBuilder();
+
+            if (isset($tlsOptions['caCert']) && is_string($tlsOptions['caCert'])) {
+                $builder->withCaCert($tlsOptions['caCert']);
+            }
+
+            if (isset($tlsOptions['clientCert']) && is_string($tlsOptions['clientCert']) &&
+                isset($tlsOptions['clientKey']) && is_string($tlsOptions['clientKey'])) {
+                $builder->withClientCert($tlsOptions['clientCert'], $tlsOptions['clientKey']);
+            }
+
+            $tlsConfig = $builder->build();
+        }
+
+        $grpc = new GrpcClient($resolvedLogger, $tlsConfig);
         $pdClient = new PdClient($grpc, $pdEndpoints[0], $resolvedLogger);
 
         return new self($pdClient, $grpc, new RegionCache(logger: $resolvedLogger), logger: $resolvedLogger);
