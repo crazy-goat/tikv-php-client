@@ -797,6 +797,37 @@ final class RawKvClient
             return BackoffType::NotLeader;
         }
 
+        // Additional region error types
+        if (str_contains($message, 'DiskFull')) {
+            return BackoffType::DiskFull;
+        }
+        if (str_contains($message, 'RegionNotInitialized')) {
+            return BackoffType::RegionNotInitialized;
+        }
+        if (str_contains($message, 'ReadIndexNotReady')) {
+            return BackoffType::ReadIndexNotReady;
+        }
+        if (str_contains($message, 'ProposalInMergingMode')) {
+            return BackoffType::ProposalInMergingMode;
+        }
+        if (str_contains($message, 'RecoveryInProgress')) {
+            return BackoffType::RecoveryInProgress;
+        }
+        if (str_contains($message, 'IsWitness')) {
+            return BackoffType::IsWitness;
+        }
+        if (str_contains($message, 'MaxTimestampNotSynced')) {
+            return BackoffType::MaxTimestampNotSynced;
+        }
+
+        // Fatal errors (non-retryable)
+        if (str_contains($message, 'FlashbackInProgress')) {
+            return null;
+        }
+        if (str_contains($message, 'FlashbackNotPrepared')) {
+            return null;
+        }
+
         if ($e instanceof GrpcException) {
             return BackoffType::TiKvRpc;
         }

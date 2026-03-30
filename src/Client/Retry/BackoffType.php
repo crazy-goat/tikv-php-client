@@ -13,6 +13,15 @@ enum BackoffType
     case TiKvRpc;
     case NotLeader;
 
+    // Additional region error types
+    case DiskFull;
+    case RegionNotInitialized;
+    case ReadIndexNotReady;
+    case ProposalInMergingMode;
+    case RecoveryInProgress;
+    case IsWitness;
+    case MaxTimestampNotSynced;
+
     public function baseMs(): int
     {
         return match ($this) {
@@ -22,6 +31,14 @@ enum BackoffType
             self::RegionMiss => 2,
             self::TiKvRpc => 100,
             self::NotLeader => 2,
+            // Additional error types
+            self::DiskFull => 500,
+            self::RegionNotInitialized => 2,
+            self::ReadIndexNotReady => 2,
+            self::ProposalInMergingMode => 2,
+            self::RecoveryInProgress => 100,
+            self::IsWitness => 1000,
+            self::MaxTimestampNotSynced => 2,
         };
     }
 
@@ -34,13 +51,21 @@ enum BackoffType
             self::RegionMiss => 500,
             self::TiKvRpc => 2000,
             self::NotLeader => 500,
+            // Additional error types
+            self::DiskFull => 5000,
+            self::RegionNotInitialized => 1000,
+            self::ReadIndexNotReady => 500,
+            self::ProposalInMergingMode => 500,
+            self::RecoveryInProgress => 10000,
+            self::IsWitness => 10000,
+            self::MaxTimestampNotSynced => 500,
         };
     }
 
     public function equalJitter(): bool
     {
         return match ($this) {
-            self::ServerBusy, self::TiKvRpc => true,
+            self::ServerBusy, self::TiKvRpc, self::RecoveryInProgress, self::IsWitness => true,
             default => false,
         };
     }
