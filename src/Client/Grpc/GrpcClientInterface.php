@@ -6,9 +6,8 @@ namespace CrazyGoat\TiKV\Client\Grpc;
 
 use CrazyGoat\TiKV\Client\Tls\TlsConfig;
 use Google\Protobuf\Internal\Message;
-use Psr\Log\LoggerInterface;
-
 use Grpc\Channel;
+use Psr\Log\LoggerInterface;
 
 interface GrpcClientInterface
 {

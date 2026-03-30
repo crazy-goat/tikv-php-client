@@ -23,10 +23,10 @@ final class GrpcFuture
     public function wait(): Message
     {
         if ($this->completed) {
-            if ($this->error !== null) {
+            if ($this->error instanceof \CrazyGoat\TiKV\Client\Exception\GrpcException) {
                 throw $this->error;
             }
-            if ($this->result === null) {
+            if (!$this->result instanceof \Google\Protobuf\Internal\Message) {
                 throw new GrpcException('Unexpected null result', \Grpc\STATUS_INTERNAL);
             }
             return $this->result;
@@ -80,9 +80,6 @@ final class GrpcFuture
         ];
     }
 
-    /**
-     * @return Message
-     */
     private function deserializeResponse(mixed $event): Message
     {
         if (is_object($event)) {

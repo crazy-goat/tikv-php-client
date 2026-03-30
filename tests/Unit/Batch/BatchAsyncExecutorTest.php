@@ -17,8 +17,8 @@ class BatchAsyncExecutorTest extends TestCase
         $executor = new BatchAsyncExecutor(new NullLogger());
 
         $calls = [
-            1 => fn() => 'result1',
-            2 => fn() => 'result2',
+            1 => fn(): string => 'result1',
+            2 => fn(): string => 'result2',
         ];
 
         $results = $executor->executeParallel($calls);
@@ -31,7 +31,7 @@ class BatchAsyncExecutorTest extends TestCase
         $executor = new BatchAsyncExecutor(new NullLogger());
 
         $calls = [
-            1 => fn() => 'result1',
+            1 => fn(): string => 'result1',
             2 => fn() => throw new TiKvException('Region 2 failed'),
         ];
 

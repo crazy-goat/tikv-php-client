@@ -4,23 +4,24 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\Batch;
 
+use CrazyGoat\TiKV\Client\Batch\GrpcFuture;
 use CrazyGoat\TiKV\Client\Exception\BatchPartialFailureException;
 use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-final class BatchAsyncExecutor
+final readonly class BatchAsyncExecutor
 {
     public function __construct(
-        private readonly LoggerInterface $logger = new NullLogger(),
-    ) {}
+        private LoggerInterface $logger = new NullLogger(),
+    ) {
+    }
 
     /**
      * Execute multiple callables concurrently and return results.
      *
-     * @template T
-     * @param array<int, callable(): T> $regionCalls Array of regionId => callable returning GrpcFuture
-     * @return array<int, T> Array of regionId => result
+     * @param array<int, callable(): mixed> $regionCalls Array of regionId => callable returning GrpcFuture or direct value
+     * @return array<int, mixed> Array of regionId => result
      * @throws BatchPartialFailureException If any region fails
      */
     public function executeParallel(array $regionCalls): array
@@ -52,11 +53,7 @@ final class BatchAsyncExecutor
         foreach ($futures as $regionId => $future) {
             try {
                 // Handle both GrpcFuture objects and direct values
-                if (is_object($future) && method_exists($future, 'wait')) {
-                    $results[$regionId] = $future->wait();
-                } else {
-                    $results[$regionId] = $future;
-                }
+                $results[$regionId] = $future instanceof GrpcFuture ? $future->wait() : $future;
                 $this->logger->debug('Region completed successfully', ['regionId' => $regionId]);
             } catch (TiKvException $e) {
                 $errors[$regionId] = $e;
@@ -67,7 +64,7 @@ final class BatchAsyncExecutor
             }
         }
 
-        if (!empty($errors)) {
+        if ($errors !== []) {
             throw new BatchPartialFailureException($errors, $totalRegions);
         }
 
