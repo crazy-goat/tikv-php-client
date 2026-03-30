@@ -13,8 +13,12 @@ final class Transaction
     /** @var array<string, ?string> */
     private array $readSet = [];
 
-    public function __construct(private readonly string $txnId, private readonly int $startTs, private readonly bool $pessimistic, private readonly int $priority)
-    {
+    public function __construct(
+        private readonly string $txnId,
+        private readonly int $startTs,
+        private readonly bool $pessimistic,
+        private readonly int $priority,
+    ) {
     }
 
     public function getTxnId(): string
@@ -104,6 +108,23 @@ final class Transaction
 
         $this->writeSet = [];
         $this->readSet = [];
+        $this->commitTs = null;
         $this->status = TransactionStatus::RolledBack;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getWriteSet(): array
+    {
+        return $this->writeSet;
+    }
+
+    /**
+     * @return array<string, ?string>
+     */
+    public function getReadSet(): array
+    {
+        return $this->readSet;
     }
 }

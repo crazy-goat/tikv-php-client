@@ -20,10 +20,10 @@ class TxnKvClientTest extends TestCase
         $regionCache = $this->createMock(RegionCacheInterface::class);
 
         $client = new TxnKvClient(
+            logger: new NullLogger(),
             pdClient: $pdClient,
             grpc: $grpc,
             regionCache: $regionCache,
-            logger: new NullLogger(),
         );
 
         $this->assertInstanceOf(TxnKvClient::class, $client);

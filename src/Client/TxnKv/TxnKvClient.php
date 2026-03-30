@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\TxnKv;
 
-use CrazyGoat\TiKV\Client\Cache\RegionCache;
-use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
-use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
-use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 

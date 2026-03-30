@@ -11,6 +11,7 @@ use Psr\Log\NullLogger;
 final readonly class LockResolver
 {
     public function __construct(
+        private GrpcClientInterface $grpc,
         private LoggerInterface $logger = new NullLogger(),
     ) {
     }
@@ -34,5 +35,10 @@ final readonly class LockResolver
         $this->logger->debug('Checking for deadlock', ['txnId' => $txnId]);
         // TODO: Implement deadlock detection
         return false;
+    }
+
+    public function getGrpc(): GrpcClientInterface
+    {
+        return $this->grpc;
     }
 }
