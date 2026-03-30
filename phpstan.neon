@@ -5,3 +5,5 @@ parameters:
         - tests
     excludePaths:
         - src/Proto
+    bootstrapFiles:
+        - tests/phpstan/bootstrap.php
