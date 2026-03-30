@@ -8,12 +8,14 @@ use CrazyGoat\TiKV\Client\Cache\RegionCache;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 class TestableRegionCache extends RegionCache
 {
-    public function __construct(private int $fakeTime, int $ttlSeconds = 600)
+    public function __construct(private int $fakeTime, int $ttlSeconds = 600, ?LoggerInterface $logger = null)
     {
-        parent::__construct($ttlSeconds, 0);
+        parent::__construct($ttlSeconds, 0, $logger ?? new NullLogger());
     }
 
     public function setTime(int $time): void
@@ -241,5 +243,70 @@ class RegionCacheTest extends TestCase
         $this->assertSame($region2, $cache->getByKey('f'));
         $this->assertSame($region3, $cache->getByKey('h'));
         $this->assertSame($region3, $cache->getByKey('z'));
+    }
+
+    public function testPutLogsDebugMessage(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $cache = new RegionCache(logger: $logger);
+        $region = $this->makeRegion(1, 'a', 'z');
+
+        $logger->expects($this->once())
+            ->method('debug')
+            ->with(
+                'Region cached',
+                $this->callback(function ($context) use ($region) {
+                    return $context['regionId'] === $region->regionId
+                        && $context['startKey'] === $region->startKey
+                        && $context['endKey'] === $region->endKey
+                        && isset($context['ttl'])
+                        && is_int($context['ttl']);
+                })
+            );
+
+        $cache->put($region);
+    }
+
+    public function testGetByKeyLogsCacheHit(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $cache = new RegionCache(logger: $logger);
+        $region = $this->makeRegion(1, 'a', 'z');
+        $cache->put($region);
+
+        $logger->expects($this->once())
+            ->method('debug')
+            ->with(
+                'Region cache hit',
+                ['key' => 'm', 'regionId' => $region->regionId]
+            );
+
+        $cache->getByKey('m');
+    }
+
+    public function testGetByKeyLogsCacheMiss(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $cache = new RegionCache(logger: $logger);
+
+        $logger->expects($this->once())
+            ->method('debug')
+            ->with('Region cache miss', ['key' => 'any_key']);
+
+        $cache->getByKey('any_key');
+    }
+
+    public function testInvalidateLogsInfo(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $cache = new RegionCache(logger: $logger);
+        $region = $this->makeRegion(1, 'a', 'z');
+        $cache->put($region);
+
+        $logger->expects($this->once())
+            ->method('info')
+            ->with('Region invalidated', ['regionId' => 1]);
+
+        $cache->invalidate(1);
     }
 }

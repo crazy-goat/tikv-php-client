@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CrazyGoat\TiKV\Client\Cache;
 
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 class RegionCache implements RegionCacheInterface
 {
@@ -17,6 +19,7 @@ class RegionCache implements RegionCacheInterface
     public function __construct(
         private readonly int $ttlSeconds = 600,
         private readonly int $jitterSeconds = 60,
+        private readonly LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
@@ -24,6 +27,7 @@ class RegionCache implements RegionCacheInterface
     {
         $index = $this->binarySearch($key);
         if ($index === null) {
+            $this->logger->debug('Region cache miss', ['key' => $key]);
             return null;
         }
 
@@ -31,12 +35,16 @@ class RegionCache implements RegionCacheInterface
 
         if ($this->isExpired($region->regionId)) {
             $this->removeByIndex($index);
+            $this->logger->debug('Region cache miss', ['key' => $key]);
             return null;
         }
 
         if ($region->endKey !== '' && $key >= $region->endKey) {
+            $this->logger->debug('Region cache miss', ['key' => $key]);
             return null;
         }
+
+        $this->logger->debug('Region cache hit', ['key' => $key, 'regionId' => $region->regionId]);
 
         return $region;
     }
@@ -49,10 +57,12 @@ class RegionCache implements RegionCacheInterface
         array_splice($this->regions, $position, 0, [$region]);
 
         $this->ttls[$region->regionId] = $this->now() + $this->ttlSeconds + $this->jitter();
+        $this->logger->debug('Region cached', ['regionId' => $region->regionId, 'startKey' => $region->startKey, 'endKey' => $region->endKey, 'ttl' => $this->ttls[$region->regionId] - $this->now()]);
     }
 
     public function invalidate(int $regionId): void
     {
+        $this->logger->info('Region invalidated', ['regionId' => $regionId]);
         $this->removeById($regionId);
     }
 
