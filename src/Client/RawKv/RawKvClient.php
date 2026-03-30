@@ -71,8 +71,10 @@ final class RawKvClient
                 $builder->withCaCert($tlsOptions['caCert']);
             }
 
-            if (isset($tlsOptions['clientCert']) && is_string($tlsOptions['clientCert']) &&
-                isset($tlsOptions['clientKey']) && is_string($tlsOptions['clientKey'])) {
+            if (
+                isset($tlsOptions['clientCert']) && is_string($tlsOptions['clientCert']) &&
+                isset($tlsOptions['clientKey']) && is_string($tlsOptions['clientKey'])
+            ) {
                 $builder->withClientCert($tlsOptions['clientCert'], $tlsOptions['clientKey']);
             }
 

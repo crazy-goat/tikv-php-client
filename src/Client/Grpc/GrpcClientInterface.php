@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\Grpc;
 
-use Google\Protobuf\Internal\Message;
 use CrazyGoat\TiKV\Client\Tls\TlsConfig;
+use Google\Protobuf\Internal\Message;
 use Psr\Log\LoggerInterface;
 
 interface GrpcClientInterface

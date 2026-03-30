@@ -97,7 +97,7 @@ final class GrpcClient implements GrpcClientInterface
                 'tls' => $this->tlsConfig?->isEnabled() ?? false,
             ]);
 
-            $credentials = $this->tlsConfig !== null && $this->tlsConfig->isEnabled()
+            $credentials = $this->tlsConfig instanceof \CrazyGoat\TiKV\Client\Tls\TlsConfig && $this->tlsConfig->isEnabled()
                 ? $this->createTlsCredentials()
                 : ChannelCredentials::createInsecure();
 
@@ -164,7 +164,7 @@ final class GrpcClient implements GrpcClientInterface
 
     private function createTlsCredentials(): ChannelCredentials
     {
-        if ($this->tlsConfig === null) {
+        if (!$this->tlsConfig instanceof \CrazyGoat\TiKV\Client\Tls\TlsConfig) {
             throw new \RuntimeException('TLS config is required for TLS credentials');
         }
 

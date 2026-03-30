@@ -10,7 +10,8 @@ final readonly class TlsConfig
         public ?string $caCert = null,
         public ?string $clientCert = null,
         public ?string $clientKey = null,
-    ) {}
+    ) {
+    }
 
     public function isEnabled(): bool
     {

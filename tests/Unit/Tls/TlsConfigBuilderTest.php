@@ -20,7 +20,12 @@ class TlsConfigBuilderTest extends TestCase
     protected function tearDown(): void
     {
         if (is_dir($this->tempDir)) {
-            array_map('unlink', glob($this->tempDir . '/*'));
+            $files = glob($this->tempDir . '/*');
+            if ($files !== false) {
+                foreach ($files as $file) {
+                    unlink($file);
+                }
+            }
             rmdir($this->tempDir);
         }
     }
