@@ -14,6 +14,7 @@ use CrazyGoat\Proto\Pdpb\ScanRegionsRequest;
 use CrazyGoat\Proto\Pdpb\ScanRegionsResponse;
 use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
+use CrazyGoat\TiKV\Client\RawKv\Dto\PeerInfo;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use Google\Protobuf\Internal\Message;
 use Psr\Log\LoggerInterface;
@@ -50,6 +51,16 @@ final class PdClient implements PdClientInterface
         $leader = $response->getLeader();
         $regionEpoch = $region?->getRegionEpoch();
 
+        $peers = [];
+        if ($region !== null) {
+            foreach ($region->getPeers() as $peer) {
+                $peers[] = new PeerInfo(
+                    peerId: (int) $peer->getId(),
+                    storeId: (int) $peer->getStoreId(),
+                );
+            }
+        }
+
         return new RegionInfo(
             regionId: $region ? (int) $region->getId() : 0,
             leaderPeerId: $leader ? (int) $leader->getId() : 0,
@@ -58,6 +69,7 @@ final class PdClient implements PdClientInterface
             epochVersion: $regionEpoch ? (int) $regionEpoch->getVersion() : 0,
             startKey: $region ? $region->getStartKey() : '',
             endKey: $region ? $region->getEndKey() : '',
+            peers: $peers,
         );
     }
 
@@ -113,6 +125,14 @@ final class PdClient implements PdClientInterface
             $leader = $leaders[$index] ?? null;
             $regionEpoch = $region->getRegionEpoch();
 
+            $peers = [];
+            foreach ($region->getPeers() as $peer) {
+                $peers[] = new PeerInfo(
+                    peerId: (int) $peer->getId(),
+                    storeId: (int) $peer->getStoreId(),
+                );
+            }
+
             $regions[] = new RegionInfo(
                 regionId: (int) $region->getId(),
                 leaderPeerId: $leader instanceof \CrazyGoat\Proto\Metapb\Peer ? (int) $leader->getId() : 0,
@@ -121,6 +141,7 @@ final class PdClient implements PdClientInterface
                 epochVersion: $regionEpoch ? (int) $regionEpoch->getVersion() : 0,
                 startKey: $region->getStartKey(),
                 endKey: $region->getEndKey(),
+                peers: $peers,
             );
         }
 

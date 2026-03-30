@@ -13,6 +13,7 @@ use CrazyGoat\TiKV\Client\Connection\PdClient;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
+use CrazyGoat\TiKV\Client\RawKv\Dto\PeerInfo;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use Google\Protobuf\Internal\Message;
 use PHPUnit\Framework\TestCase;
@@ -173,6 +174,70 @@ class PdClientTest extends TestCase
 
         $client = new PdClient($grpc, 'pd:2379', $logger);
         $client->getRegion('key');
+    }
+
+    public function testGetRegionPopulatesPeers(): void
+    {
+        $epoch = new RegionEpoch();
+        $epoch->setConfVer(1);
+        $epoch->setVersion(1);
+
+        $peer1 = new Peer();
+        $peer1->setId(10);
+        $peer1->setStoreId(1);
+
+        $peer2 = new Peer();
+        $peer2->setId(20);
+        $peer2->setStoreId(2);
+
+        $peer3 = new Peer();
+        $peer3->setId(30);
+        $peer3->setStoreId(3);
+
+        $region = new Region();
+        $region->setId(42);
+        $region->setRegionEpoch($epoch);
+        $region->setPeers([$peer1, $peer2, $peer3]);
+
+        $leader = new Peer();
+        $leader->setId(10);
+        $leader->setStoreId(1);
+
+        $header = new ResponseHeader();
+        $header->setClusterId(100);
+
+        $response = new GetRegionResponse();
+        $response->setHeader($header);
+        $response->setRegion($region);
+        $response->setLeader($leader);
+
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->method('call')->willReturn($response);
+
+        $client = new PdClient($grpc, 'pd:2379');
+        $result = $client->getRegion('key');
+
+        $this->assertCount(3, $result->peers);
+        $this->assertInstanceOf(PeerInfo::class, $result->peers[0]);
+        $this->assertSame(10, $result->peers[0]->peerId);
+        $this->assertSame(1, $result->peers[0]->storeId);
+        $this->assertSame(20, $result->peers[1]->peerId);
+        $this->assertSame(2, $result->peers[1]->storeId);
+        $this->assertSame(30, $result->peers[2]->peerId);
+        $this->assertSame(3, $result->peers[2]->storeId);
+    }
+
+    public function testGetRegionReturnsEmptyPeersWhenNoPeersInResponse(): void
+    {
+        $response = $this->makeGetRegionResponse();
+
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->method('call')->willReturn($response);
+
+        $client = new PdClient($grpc, 'pd:2379');
+        $result = $client->getRegion('key');
+
+        $this->assertSame([], $result->peers);
     }
 
     private function makeGetRegionResponse(): GetRegionResponse
