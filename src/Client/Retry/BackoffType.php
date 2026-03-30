@@ -11,6 +11,7 @@ enum BackoffType
     case StaleCmd;
     case RegionMiss;
     case TiKvRpc;
+    case NotLeader;
 
     public function baseMs(): int
     {
@@ -20,6 +21,7 @@ enum BackoffType
             self::StaleCmd => 2,
             self::RegionMiss => 2,
             self::TiKvRpc => 100,
+            self::NotLeader => 2,
         };
     }
 
@@ -31,6 +33,7 @@ enum BackoffType
             self::StaleCmd => 1000,
             self::RegionMiss => 500,
             self::TiKvRpc => 2000,
+            self::NotLeader => 500,
         };
     }
 
