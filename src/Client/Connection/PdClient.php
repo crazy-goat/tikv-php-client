@@ -108,19 +108,19 @@ final class PdClient implements PdClientInterface
         $regionMetas = $response->getRegionMetas();
         $leaders = $response->getLeaders();
 
-        /** @phpstan-ignore class.notFound */
         foreach ($regionMetas as $index => $region) {
+            /** @var \CrazyGoat\Proto\Metapb\Peer|null $leader */
             $leader = $leaders[$index] ?? null;
-            $regionEpoch = $region?->getRegionEpoch();
+            $regionEpoch = $region->getRegionEpoch();
 
             $regions[] = new RegionInfo(
-                regionId: $region ? (int) $region->getId() : 0,
-                leaderPeerId: $leader ? (int) $leader->getId() : 0,
-                leaderStoreId: $leader ? (int) $leader->getStoreId() : 1,
+                regionId: (int) $region->getId(),
+                leaderPeerId: $leader instanceof \CrazyGoat\Proto\Metapb\Peer ? (int) $leader->getId() : 0,
+                leaderStoreId: $leader instanceof \CrazyGoat\Proto\Metapb\Peer ? (int) $leader->getStoreId() : 1,
                 epochConfVer: $regionEpoch ? (int) $regionEpoch->getConfVer() : 0,
                 epochVersion: $regionEpoch ? (int) $regionEpoch->getVersion() : 0,
-                startKey: $region ? $region->getStartKey() : '',
-                endKey: $region ? $region->getEndKey() : '',
+                startKey: $region->getStartKey(),
+                endKey: $region->getEndKey(),
             );
         }
 

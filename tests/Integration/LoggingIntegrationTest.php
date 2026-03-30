@@ -183,6 +183,7 @@ class LoggingIntegrationTest extends TestCase
 
         $this->assertNotEmpty($warningRecords);
         $record = reset($warningRecords);
+        $this->assertInstanceOf(\Monolog\LogRecord::class, $record);
         $this->assertSame('contextkey', $record->context['key']);
         $this->assertSame(0, $record->context['attempt']);
         $this->assertSame('None', $record->context['backoffType']);
@@ -221,6 +222,7 @@ class LoggingIntegrationTest extends TestCase
 
         $this->assertNotEmpty($infoRecords);
         $record = reset($infoRecords);
+        $this->assertInstanceOf(\Monolog\LogRecord::class, $record);
         $this->assertSame(1, $record->context['regionId']);
     }
 }

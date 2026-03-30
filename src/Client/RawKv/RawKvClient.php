@@ -752,7 +752,6 @@ final class RawKvClient
             $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawBatchGet', $request, RawBatchGetResponse::class);
 
             $results = [];
-            /** @phpstan-ignore class.notFound */
             foreach ($response->getPairs() as $pair) {
                 $results[$pair->getKey()] = $pair->getValue() !== '' ? $pair->getValue() : null;
             }
@@ -828,7 +827,6 @@ final class RawKvClient
             $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawScan', $request, RawScanResponse::class);
 
             $results = [];
-            /** @phpstan-ignore class.notFound */
             foreach ($response->getKvs() as $pair) {
                 $results[] = [
                     'key' => $pair->getKey(),

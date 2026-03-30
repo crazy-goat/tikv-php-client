@@ -255,13 +255,11 @@ class RegionCacheTest extends TestCase
             ->method('debug')
             ->with(
                 'Region cached',
-                $this->callback(function ($context) use ($region) {
-                    return $context['regionId'] === $region->regionId
-                        && $context['startKey'] === $region->startKey
-                        && $context['endKey'] === $region->endKey
-                        && isset($context['ttl'])
-                        && is_int($context['ttl']);
-                })
+                $this->callback(fn($context): bool => $context['regionId'] === $region->regionId
+                    && $context['startKey'] === $region->startKey
+                    && $context['endKey'] === $region->endKey
+                    && isset($context['ttl'])
+                    && is_int($context['ttl']))
             );
 
         $cache->put($region);
