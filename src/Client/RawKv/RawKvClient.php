@@ -58,10 +58,10 @@ final class RawKvClient
     public static function create(array $pdEndpoints, ?LoggerInterface $logger = null): self
     {
         $resolvedLogger = $logger ?? new NullLogger();
-        $grpc = new GrpcClient();
+        $grpc = new GrpcClient($resolvedLogger);
         $pdClient = new PdClient($grpc, $pdEndpoints[0], $resolvedLogger);
 
-        return new self($pdClient, new GrpcClient(), new RegionCache(logger: $resolvedLogger), logger: $resolvedLogger);
+        return new self($pdClient, $grpc, new RegionCache(logger: $resolvedLogger), logger: $resolvedLogger);
     }
 
     public function __construct(
@@ -629,6 +629,14 @@ final class RawKvClient
                         'key' => $key,
                         'regionId' => $cached->regionId,
                     ]);
+
+                    if ($e instanceof GrpcException) {
+                        try {
+                            $address = $this->resolveStoreAddress($cached->leaderStoreId);
+                            $this->grpc->closeChannel($address);
+                        } catch (StoreNotFoundException) {
+                        }
+                    }
                 }
 
                 $sleepMs = $backoffType->sleepMs($attempt);

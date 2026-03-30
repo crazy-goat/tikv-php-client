@@ -716,4 +716,33 @@ class RawKvClientTest extends TestCase
         $this->expectException(TiKvException::class);
         $client->get('key');
     }
+
+    public function testGrpcExceptionClosesChannel(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache, 20000, $logger);
+
+        $region = $this->defaultRegion();
+        $this->regionCache->method('getByKey')->willReturn($region);
+        $this->regionCache->method('invalidate');
+
+        $this->pdClient->method('getRegion')->willReturn($region);
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $response = new RawGetResponse();
+        $response->setValue('recovered');
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls(
+                $this->throwException(new GrpcException('connection reset', 14)),
+                $response,
+            );
+
+        $this->grpc->expects($this->once())
+            ->method('closeChannel')
+            ->with('tikv1:20160');
+
+        $client->get('key');
+    }
 }
