@@ -11,15 +11,12 @@ use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-final class TxnKvClient
+final readonly class TxnKvClient
 {
     public function __construct(
-        private readonly PdClientInterface $pdClient,
-        private readonly GrpcClientInterface $grpc,
-        private readonly RegionCacheInterface $regionCache = new RegionCache(),
-        private readonly int $maxBackoffMs = 20000,
-        private readonly LoggerInterface $logger = new NullLogger(),
-    ) {}
+        private LoggerInterface $logger = new NullLogger(),
+    ) {
+    }
 
     /**
      * Begin a new transaction.

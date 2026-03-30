@@ -4,26 +4,17 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\TxnKv;
 
-use CrazyGoat\TiKV\Client\TxnKv\Exception\TransactionConflictException;
-
 final class Transaction
 {
     private ?int $commitTs = null;
-    private TransactionStatus $status;
+    private TransactionStatus $status = TransactionStatus::Active;
     /** @var array<string, string> */
     private array $writeSet = [];
     /** @var array<string, ?string> */
     private array $readSet = [];
-    /** @var array<string, int> */
-    private array $locks = [];
 
-    public function __construct(
-        private readonly string $txnId,
-        private readonly int $startTs,
-        private readonly bool $pessimistic,
-        private readonly int $priority,
-    ) {
-        $this->status = TransactionStatus::Active;
+    public function __construct(private readonly string $txnId, private readonly int $startTs, private readonly bool $pessimistic, private readonly int $priority)
+    {
     }
 
     public function getTxnId(): string
@@ -89,7 +80,7 @@ final class Transaction
     /**
      * @return array<array{key: string, value: ?string}>
      */
-    public function scan(string $startKey, string $endKey): array
+    public function scan(): array
     {
         // TODO: Implement scan
         return [];
@@ -113,7 +104,6 @@ final class Transaction
 
         $this->writeSet = [];
         $this->readSet = [];
-        $this->locks = [];
         $this->status = TransactionStatus::RolledBack;
     }
 }

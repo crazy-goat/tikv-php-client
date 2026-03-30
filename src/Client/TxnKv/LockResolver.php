@@ -8,12 +8,12 @@ use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-final class LockResolver
+final readonly class LockResolver
 {
     public function __construct(
-        private readonly GrpcClientInterface $grpc,
-        private readonly LoggerInterface $logger = new NullLogger(),
-    ) {}
+        private LoggerInterface $logger = new NullLogger(),
+    ) {
+    }
 
     /**
      * Resolve lock for a key.
