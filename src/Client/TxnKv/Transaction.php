@@ -96,7 +96,8 @@ final class Transaction
             throw new \RuntimeException('Transaction is not active');
         }
 
-        // TODO: Implement commit
+        // TODO: Get commit timestamp from PD
+        $this->commitTs = time() * 1000; // Placeholder
         $this->status = TransactionStatus::Committed;
     }
 
