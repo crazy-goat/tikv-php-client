@@ -81,7 +81,7 @@ final class GrpcClient implements GrpcClientInterface
         }
     }
 
-    private function getChannel(string $address): Channel
+    public function getChannel(string $address): Channel
     {
         if (isset($this->channels[$address])) {
             $state = $this->channels[$address]->getConnectivityState();

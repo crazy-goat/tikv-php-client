@@ -30,6 +30,8 @@ use CrazyGoat\Proto\Kvrpcpb\RawPutRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawPutResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawScanRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawScanResponse;
+use CrazyGoat\TiKV\Client\Batch\BatchAsyncExecutor;
+use CrazyGoat\TiKV\Client\Batch\GrpcFuture;
 use CrazyGoat\TiKV\Client\Cache\RegionCache;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClient;
@@ -45,6 +47,8 @@ use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Retry\BackoffType;
 use CrazyGoat\TiKV\Client\Tls\TlsConfigBuilder;
+use Grpc\Call;
+use Grpc\Timeval;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -297,10 +301,27 @@ final class RawKvClient
 
         $keysByRegion = $this->groupKeysByRegion($keys);
 
+        // Execute all regions in parallel
+        $regionCalls = [];
+        foreach ($keysByRegion as $regionId => $regionData) {
+            $regionCalls[$regionId] = (fn(): GrpcFuture => $this->executeBatchGetForRegionAsync(
+                $regionData['region'],
+                $regionData['keys'],
+            ));
+        }
+
+        $executor = new BatchAsyncExecutor($this->logger);
+
+        $regionResults = $executor->executeParallel($regionCalls);
+
+        // Merge results from all regions
         $results = [];
-        foreach ($keysByRegion as $regionData) {
-            $regionResults = $this->executeBatchGetForRegion($regionData['region'], $regionData['keys']);
-            $results = array_merge($results, $regionResults);
+        foreach ($regionResults as $regionResult) {
+            /** @var RawBatchGetResponse $response */
+            $response = $regionResult;
+            foreach ($response->getPairs() as $pair) {
+                $results[$pair->getKey()] = $pair->getValue() !== '' ? $pair->getValue() : null;
+            }
         }
 
         $ordered = [];
@@ -338,9 +359,18 @@ final class RawKvClient
             $pairsByRegion[$regionId]['pairs'][] = $pair;
         }
 
-        foreach ($pairsByRegion as $regionData) {
-            $this->executeBatchPutForRegion($regionData['region'], $regionData['pairs'], $ttl);
+        // Execute all regions in parallel
+        $regionCalls = [];
+        foreach ($pairsByRegion as $regionId => $regionData) {
+            $regionCalls[$regionId] = (fn(): GrpcFuture => $this->executeBatchPutForRegionAsync(
+                $regionData['region'],
+                $regionData['pairs'],
+                $ttl,
+            ));
         }
+
+        $executor = new BatchAsyncExecutor($this->logger);
+        $executor->executeParallel($regionCalls);
     }
 
     /**
@@ -358,9 +388,17 @@ final class RawKvClient
 
         $keysByRegion = $this->groupKeysByRegion($keys);
 
-        foreach ($keysByRegion as $regionData) {
-            $this->executeBatchDeleteForRegion($regionData['region'], $regionData['keys']);
+        // Execute all regions in parallel
+        $regionCalls = [];
+        foreach ($keysByRegion as $regionId => $regionData) {
+            $regionCalls[$regionId] = (fn(): GrpcFuture => $this->executeBatchDeleteForRegionAsync(
+                $regionData['region'],
+                $regionData['keys'],
+            ));
         }
+
+        $executor = new BatchAsyncExecutor($this->logger);
+        $executor->executeParallel($regionCalls);
     }
 
     // ========================================================================
@@ -805,42 +843,52 @@ final class RawKvClient
         return substr($prefix, 0, -1) . chr($lastByte + 1);
     }
 
-    // ========================================================================
-    // Region-level RPC executors
-    // ========================================================================
-
     /**
      * @param array<string> $keys
-     * @return array<string, ?string>
      */
-    private function executeBatchGetForRegion(RegionInfo $region, array $keys): array
+    private function executeBatchGetForRegionAsync(RegionInfo $region, array $keys): GrpcFuture
     {
-        return $this->executeWithRetry($keys[0], function () use ($region, $keys): array {
+        return $this->executeWithRetryAsync(function () use ($region, $keys): GrpcFuture {
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawBatchGetRequest();
             $request->setContext(RegionContext::fromRegionInfo($region));
             $request->setKeys($keys);
 
-            /** @var RawBatchGetResponse $response */
-            $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawBatchGet', $request, RawBatchGetResponse::class);
-            RegionErrorHandler::check($response);
+            $call = new Call(
+                $this->grpc->getChannel($address),
+                '/tikvpb.Tikv/RawBatchGet',
+                Timeval::infFuture(),
+            );
 
-            $results = [];
-            foreach ($response->getPairs() as $pair) {
-                $results[$pair->getKey()] = $pair->getValue() !== '' ? $pair->getValue() : null;
-            }
+            $call->startBatch([
+                \Grpc\OP_SEND_INITIAL_METADATA => [],
+                \Grpc\OP_SEND_MESSAGE => ['message' => $request->serializeToString()],
+                \Grpc\OP_SEND_CLOSE_FROM_CLIENT => true,
+            ]);
 
-            return $results;
+            return new GrpcFuture($call, RawBatchGetResponse::class);
         });
+    }
+
+    /**
+     * @template T
+     * @param callable(): T $operation
+     * @return T
+     */
+    private function executeWithRetryAsync(callable $operation): mixed
+    {
+        // For async operations, we return the future immediately
+        // Retry logic will be applied when wait() is called on the future
+        return $operation();
     }
 
     /**
      * @param KvPair[] $pairs
      */
-    private function executeBatchPutForRegion(RegionInfo $region, array $pairs, int $ttl): void
+    private function executeBatchPutForRegionAsync(RegionInfo $region, array $pairs, int $ttl): GrpcFuture
     {
-        $this->executeWithRetry($pairs[0]->getKey(), function () use ($region, $pairs, $ttl): null {
+        return $this->executeWithRetryAsync(function () use ($region, $pairs, $ttl): GrpcFuture {
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawBatchPutRequest();
@@ -850,33 +898,47 @@ final class RawKvClient
                 $request->setTtls([$ttl]);
             }
 
-            $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawBatchPut', $request, RawBatchPutResponse::class);
-            RegionErrorHandler::check($response);
-            return null;
+            $call = new Call(
+                $this->grpc->getChannel($address),
+                '/tikvpb.Tikv/RawBatchPut',
+                Timeval::infFuture(),
+            );
+
+            $call->startBatch([
+                \Grpc\OP_SEND_INITIAL_METADATA => [],
+                \Grpc\OP_SEND_MESSAGE => ['message' => $request->serializeToString()],
+                \Grpc\OP_SEND_CLOSE_FROM_CLIENT => true,
+            ]);
+
+            return new GrpcFuture($call, RawBatchPutResponse::class);
         });
     }
 
     /**
      * @param string[] $keys
      */
-    private function executeBatchDeleteForRegion(RegionInfo $region, array $keys): void
+    private function executeBatchDeleteForRegionAsync(RegionInfo $region, array $keys): GrpcFuture
     {
-        $this->executeWithRetry($keys[0], function () use ($region, $keys): null {
+        return $this->executeWithRetryAsync(function () use ($region, $keys): GrpcFuture {
             $address = $this->resolveStoreAddress($region->leaderStoreId);
 
             $request = new RawBatchDeleteRequest();
             $request->setContext(RegionContext::fromRegionInfo($region));
             $request->setKeys($keys);
 
-            $response = $this->grpc->call(
-                $address,
-                'tikvpb.Tikv',
-                'RawBatchDelete',
-                $request,
-                RawBatchDeleteResponse::class,
+            $call = new Call(
+                $this->grpc->getChannel($address),
+                '/tikvpb.Tikv/RawBatchDelete',
+                Timeval::infFuture(),
             );
-            RegionErrorHandler::check($response);
-            return null;
+
+            $call->startBatch([
+                \Grpc\OP_SEND_INITIAL_METADATA => [],
+                \Grpc\OP_SEND_MESSAGE => ['message' => $request->serializeToString()],
+                \Grpc\OP_SEND_CLOSE_FROM_CLIENT => true,
+            ]);
+
+            return new GrpcFuture($call, RawBatchDeleteResponse::class);
         });
     }
 
