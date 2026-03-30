@@ -31,6 +31,7 @@ use CrazyGoat\TiKV\Client\RawKv\Dto\PeerInfo;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
 use Google\Protobuf\Internal\Message;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -90,9 +91,9 @@ class RawKvClientTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider closedOperationsProvider
      * @param array<mixed> $args
      */
+    #[DataProvider('closedOperationsProvider')]
     public function testThrowsClientClosedExceptionWhenClosed(string $method, array $args): void
     {
         $this->client->close();
