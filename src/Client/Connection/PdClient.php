@@ -12,6 +12,7 @@ use CrazyGoat\Proto\Pdpb\GetStoreResponse;
 use CrazyGoat\Proto\Pdpb\RequestHeader;
 use CrazyGoat\Proto\Pdpb\ScanRegionsRequest;
 use CrazyGoat\Proto\Pdpb\ScanRegionsResponse;
+use CrazyGoat\TiKV\Client\Cache\StoreCacheInterface;
 use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\RawKv\Dto\PeerInfo;
@@ -24,13 +25,11 @@ final class PdClient implements PdClientInterface
 {
     private ?int $clusterId = null;
 
-    /** @var array<int, Store> */
-    private array $storeCache = [];
-
     public function __construct(
         private readonly GrpcClientInterface $grpc,
         private readonly string $pdAddress,
         private readonly LoggerInterface $logger = new NullLogger(),
+        private readonly ?StoreCacheInterface $storeCache = null,
     ) {
     }
 
@@ -75,8 +74,11 @@ final class PdClient implements PdClientInterface
 
     public function getStore(int $storeId): ?Store
     {
-        if (isset($this->storeCache[$storeId])) {
-            return $this->storeCache[$storeId];
+        if ($this->storeCache !== null) {
+            $cached = $this->storeCache->get($storeId);
+            if ($cached !== null) {
+                return $cached;
+            }
         }
 
         $request = new GetStoreRequest();
@@ -91,8 +93,8 @@ final class PdClient implements PdClientInterface
         );
 
         $store = $response->getStore();
-        if ($store !== null) {
-            $this->storeCache[$storeId] = $store;
+        if ($store !== null && $this->storeCache !== null) {
+            $this->storeCache->put($store);
         }
 
         return $store;
