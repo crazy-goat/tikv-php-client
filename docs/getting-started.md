@@ -70,8 +70,8 @@ The repository includes a Docker Compose setup for easy local development:
 
 ```bash
 # Clone the repository
-git clone https://github.com/crazy-goat/tikv-php-client.git
-cd tikv-php-client
+git clone https://github.com/crazy-goat/tikv-php.git
+cd tikv-php
 
 # Start TiKV cluster
 make up
@@ -320,7 +320,7 @@ php examples/logging.php
 ## Getting Help
 
 - **Documentation**: Browse the [docs/](.) directory
-- **Issues**: [GitHub Issues](https://github.com/crazy-goat/tikv-php-client/issues)
+- **Issues**: [GitHub Issues](https://github.com/crazy-goat/tikv-php/issues)
 - **Examples**: Check the `examples/` directory
 
 ## Summary

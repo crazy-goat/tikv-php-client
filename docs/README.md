@@ -75,7 +75,7 @@ composer require crazy-goat/tikv-client
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/crazy-goat/tikv-php-client/issues)
+- **Issues**: [GitHub Issues](https://github.com/crazy-goat/tikv-php/issues)
 - **Documentation**: Browse this documentation
 - **Examples**: See `examples/` directory in the repository
 

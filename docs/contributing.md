@@ -32,13 +32,13 @@ Before you start developing, ensure you have:
 
 2. **Clone your fork**:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/tikv-php-client.git
-   cd tikv-php-client
+   git clone https://github.com/YOUR_USERNAME/tikv-php.git
+   cd tikv-php
    ```
 
 3. **Add upstream remote**:
    ```bash
-   git remote add upstream https://github.com/crazy-goat/tikv-php-client.git
+   git remote add upstream https://github.com/crazy-goat/tikv-php.git
    ```
 
 4. **Install dependencies**:
