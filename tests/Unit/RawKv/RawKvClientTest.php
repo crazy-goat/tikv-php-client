@@ -17,8 +17,10 @@ use CrazyGoat\Proto\Metapb\Store;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\ClientClosedException;
+use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
 use CrazyGoat\TiKV\Client\Exception\StoreNotFoundException;
+use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\RawKv\CasResult;
 use CrazyGoat\TiKV\Client\RawKv\ChecksumResult;
@@ -501,5 +503,108 @@ class RawKvClientTest extends TestCase
         $this->grpc->method('call')->willReturn($response);
 
         $this->assertNull($this->client->getKeyTTL('no-ttl'));
+    }
+
+    // ========================================================================
+    // Retry / backoff
+    // ========================================================================
+
+    public function testRaftEntryTooLargeThrowsImmediately(): void
+    {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $this->grpc->expects($this->once())
+            ->method('call')
+            ->willThrowException(new TiKvException('RaftEntryTooLarge'));
+
+        $this->expectException(TiKvException::class);
+        $this->expectExceptionMessage('RaftEntryTooLarge');
+        $this->client->get('key');
+    }
+
+    public function testKeyNotInRegionThrowsImmediately(): void
+    {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $this->grpc->expects($this->once())
+            ->method('call')
+            ->willThrowException(new TiKvException('KeyNotInRegion'));
+
+        $this->expectException(TiKvException::class);
+        $this->expectExceptionMessage('KeyNotInRegion');
+        $this->client->get('key');
+    }
+
+    public function testEpochNotMatchRetriesImmediately(): void
+    {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $response = new RawGetResponse();
+        $response->setValue('found');
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls(
+                $this->throwException(new TiKvException('EpochNotMatch')),
+                $response,
+            );
+
+        $result = $this->client->get('key');
+        $this->assertSame('found', $result);
+    }
+
+    public function testBudgetExceededThrowsLastException(): void
+    {
+        $client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache, 0);
+
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $this->grpc->method('call')
+            ->willThrowException(new TiKvException('ServerIsBusy'));
+
+        $this->expectException(TiKvException::class);
+        $this->expectExceptionMessage('ServerIsBusy');
+        $client->get('key');
+    }
+
+    public function testGrpcExceptionTriggersRetry(): void
+    {
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $response = new RawGetResponse();
+        $response->setValue('recovered');
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls(
+                $this->throwException(new GrpcException('connection reset', 14)),
+                $response,
+            );
+
+        $result = $this->client->get('key');
+        $this->assertSame('recovered', $result);
     }
 }

@@ -34,6 +34,7 @@ use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClient;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\ClientClosedException;
+use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
 use CrazyGoat\TiKV\Client\Exception\RegionException;
 use CrazyGoat\TiKV\Client\Exception\StoreNotFoundException;
@@ -41,6 +42,7 @@ use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
+use CrazyGoat\TiKV\Client\Retry\BackoffType;
 
 final class RawKvClient
 {
@@ -63,7 +65,7 @@ final class RawKvClient
         private readonly PdClientInterface $pdClient,
         private readonly GrpcClientInterface $grpc,
         private readonly RegionCacheInterface $regionCache = new RegionCache(),
-        private readonly int $maxRetries = 3,
+        private readonly int $maxBackoffMs = 20000,
     ) {
     }
 
@@ -602,27 +604,69 @@ final class RawKvClient
      */
     private function executeWithRetry(string $key, callable $operation): mixed
     {
-        $lastException = null;
+        $totalBackoffMs = 0;
+        $attempt = 0;
 
-        for ($attempt = 0; $attempt < $this->maxRetries; $attempt++) {
+        while (true) {
             try {
                 return $operation();
             } catch (TiKvException $e) {
-                $lastException = $e;
+                $backoffType = $this->classifyError($e);
 
-                if (str_contains($e->getMessage(), 'EpochNotMatch')) {
-                    $cached = $this->regionCache->getByKey($key);
-                    if ($cached instanceof \CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo) {
-                        $this->regionCache->invalidate($cached->regionId);
-                    }
-                    continue;
+                if (!$backoffType instanceof BackoffType) {
+                    throw $e;
                 }
 
-                throw $e;
+                $cached = $this->regionCache->getByKey($key);
+                if ($cached instanceof RegionInfo) {
+                    $this->regionCache->invalidate($cached->regionId);
+                }
+
+                $sleepMs = $backoffType->sleepMs($attempt);
+                $totalBackoffMs += $sleepMs;
+
+                if ($totalBackoffMs > $this->maxBackoffMs) {
+                    throw $e;
+                }
+
+                if ($sleepMs > 0) {
+                    usleep($sleepMs * 1000);
+                }
+
+                $attempt++;
             }
         }
+    }
 
-        throw $lastException ?? new TiKvException('Max retries exceeded');
+    private function classifyError(TiKvException $e): ?BackoffType
+    {
+        $message = $e->getMessage();
+
+        if (str_contains($message, 'RaftEntryTooLarge')) {
+            return null;
+        }
+        if (str_contains($message, 'KeyNotInRegion')) {
+            return null;
+        }
+
+        if (str_contains($message, 'EpochNotMatch')) {
+            return BackoffType::None;
+        }
+        if (str_contains($message, 'ServerIsBusy')) {
+            return BackoffType::ServerBusy;
+        }
+        if (str_contains($message, 'StaleCommand')) {
+            return BackoffType::StaleCmd;
+        }
+        if (str_contains($message, 'RegionNotFound')) {
+            return BackoffType::RegionMiss;
+        }
+
+        if ($e instanceof GrpcException) {
+            return BackoffType::TiKvRpc;
+        }
+
+        return null;
     }
 
     /**
