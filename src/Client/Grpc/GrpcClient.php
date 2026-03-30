@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CrazyGoat\TiKV\Client\Grpc;
 
 use CrazyGoat\TiKV\Client\Exception\GrpcException;
+use CrazyGoat\TiKV\Client\Tls\TlsConfig;
 use Google\Protobuf\Internal\Message;
 use Grpc\Call;
 use Grpc\Channel;
@@ -20,6 +21,7 @@ final class GrpcClient implements GrpcClientInterface
 
     public function __construct(
         private readonly LoggerInterface $logger = new NullLogger(),
+        private readonly ?TlsConfig $tlsConfig = null,
     ) {
     }
 
@@ -90,9 +92,18 @@ final class GrpcClient implements GrpcClientInterface
         }
 
         if (!isset($this->channels[$address])) {
-            $this->logger->debug('Opening gRPC channel', ['address' => $address]);
+            $this->logger->debug('Opening gRPC channel', [
+                'address' => $address,
+                'tls' => $this->tlsConfig?->isEnabled() ?? false,
+            ]);
+
+            $tlsEnabled = $this->tlsConfig instanceof TlsConfig && $this->tlsConfig->isEnabled();
+            $credentials = $tlsEnabled
+                ? $this->createTlsCredentials()
+                : ChannelCredentials::createInsecure();
+
             $this->channels[$address] = new Channel($address, [
-                'credentials' => ChannelCredentials::createInsecure(),
+                'credentials' => $credentials,
             ]);
         }
 
@@ -150,5 +161,21 @@ final class GrpcClient implements GrpcClientInterface
         }
 
         return $response;
+    }
+
+    private function createTlsCredentials(): ChannelCredentials
+    {
+        if (!$this->tlsConfig instanceof \CrazyGoat\TiKV\Client\Tls\TlsConfig) {
+            throw new \RuntimeException('TLS config is required for TLS credentials');
+        }
+
+        $certChain = $this->tlsConfig->clientCert;
+        $privateKey = $this->tlsConfig->clientKey;
+
+        return ChannelCredentials::createSsl(
+            $this->tlsConfig->caCert,
+            $certChain,
+            $privateKey,
+        );
     }
 }
