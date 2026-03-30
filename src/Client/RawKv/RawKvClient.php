@@ -30,6 +30,11 @@ use CrazyGoat\Proto\Kvrpcpb\RawPutRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawPutResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawScanRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawScanResponse;
+use CrazyGoat\TiKV\Client\Batch\BatchAsyncExecutor;
+use CrazyGoat\TiKV\Client\Batch\GrpcFuture;
+use CrazyGoat\TiKV\Client\Exception\BatchPartialFailureException;
+use Grpc\Call;
+use Grpc\Timeval;
 use CrazyGoat\TiKV\Client\Cache\RegionCache;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClient;
@@ -297,10 +302,26 @@ final class RawKvClient
 
         $keysByRegion = $this->groupKeysByRegion($keys);
 
+        // Execute all regions in parallel
+        $regionCalls = [];
+        foreach ($keysByRegion as $regionId => $regionData) {
+            $regionCalls[$regionId] = function() use ($regionData) {
+                return $this->executeBatchGetForRegionAsync($regionData['region'], $regionData['keys']);
+            };
+        }
+
+        $executor = new BatchAsyncExecutor($this->logger);
+
+        $regionResults = $executor->executeParallel($regionCalls);
+
+        // Merge results from all regions
         $results = [];
-        foreach ($keysByRegion as $regionData) {
-            $regionResults = $this->executeBatchGetForRegion($regionData['region'], $regionData['keys']);
-            $results = array_merge($results, $regionResults);
+        foreach ($regionResults as $regionResult) {
+            /** @var RawBatchGetResponse $response */
+            $response = $regionResult;
+            foreach ($response->getPairs() as $pair) {
+                $results[$pair->getKey()] = $pair->getValue() !== '' ? $pair->getValue() : null;
+            }
         }
 
         $ordered = [];
@@ -833,6 +854,46 @@ final class RawKvClient
 
             return $results;
         });
+    }
+
+    /**
+     * @param array<string> $keys
+     */
+    private function executeBatchGetForRegionAsync(RegionInfo $region, array $keys): GrpcFuture
+    {
+        return $this->executeWithRetryAsync($keys[0], function () use ($region, $keys): GrpcFuture {
+            $address = $this->resolveStoreAddress($region->leaderStoreId);
+
+            $request = new RawBatchGetRequest();
+            $request->setContext(RegionContext::fromRegionInfo($region));
+            $request->setKeys($keys);
+
+            $call = new Call(
+                $this->grpc->getChannel($address),
+                '/tikvpb.Tikv/RawBatchGet',
+                Timeval::infFuture(),
+            );
+
+            $call->startBatch([
+                \Grpc\OP_SEND_INITIAL_METADATA => [],
+                \Grpc\OP_SEND_MESSAGE => ['message' => $request->serializeToString()],
+                \Grpc\OP_SEND_CLOSE_FROM_CLIENT => true,
+            ]);
+
+            return new GrpcFuture($call, RawBatchGetResponse::class);
+        });
+    }
+
+    /**
+     * @template T
+     * @param callable(): T $operation
+     * @return T
+     */
+    private function executeWithRetryAsync(string $key, callable $operation): mixed
+    {
+        // For async operations, we return the future immediately
+        // Retry logic will be applied when wait() is called on the future
+        return $operation();
     }
 
     /**

@@ -8,6 +8,8 @@ use CrazyGoat\TiKV\Client\Tls\TlsConfig;
 use Google\Protobuf\Internal\Message;
 use Psr\Log\LoggerInterface;
 
+use Grpc\Channel;
+
 interface GrpcClientInterface
 {
     /**
@@ -52,4 +54,12 @@ interface GrpcClientInterface
      * @param string $address Channel address to close
      */
     public function closeChannel(string $address): void;
+
+    /**
+     * Get or create a gRPC channel for the given address.
+     *
+     * @param string $address Target address (e.g., "127.0.0.1:2379")
+     * @return Channel The gRPC channel
+     */
+    public function getChannel(string $address): Channel;
 }
