@@ -16,6 +16,8 @@ use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use Google\Protobuf\Internal\Message;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 final class PdClient implements PdClientInterface
 {
@@ -27,6 +29,7 @@ final class PdClient implements PdClientInterface
     public function __construct(
         private readonly GrpcClientInterface $grpc,
         private readonly string $pdAddress,
+        private readonly LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
@@ -152,6 +155,7 @@ final class PdClient implements PdClientInterface
         Message $request,
         string $responseClass,
     ): Message {
+        $this->logger->debug('PD gRPC call', ['method' => $method, 'address' => $this->pdAddress]);
         try {
             $response = $this->grpc->call(
                 $this->pdAddress,
@@ -167,6 +171,10 @@ final class PdClient implements PdClientInterface
         } catch (GrpcException $e) {
             $extractedId = $this->extractClusterIdFromError($e->getMessage());
             if ($extractedId !== null) {
+                $this->logger->warning(
+                    'Cluster ID mismatch, retrying',
+                    ['method' => $method, 'clusterId' => $extractedId],
+                );
                 $this->clusterId = $extractedId;
                 /** @phpstan-ignore method.notFound */
                 $request->setHeader($this->createHeader());
@@ -203,6 +211,7 @@ final class PdClient implements PdClientInterface
                 /** @var int $clusterId */
                 $clusterId = $header->getClusterId();
                 $this->clusterId = $clusterId;
+                $this->logger->info('Learned cluster ID', ['clusterId' => $clusterId]);
             }
         }
     }

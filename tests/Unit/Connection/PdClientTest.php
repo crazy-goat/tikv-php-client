@@ -16,6 +16,7 @@ use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use Google\Protobuf\Internal\Message;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class PdClientTest extends TestCase
 {
@@ -111,5 +112,93 @@ class PdClientTest extends TestCase
 
         $client = new PdClient($grpc, 'pd:2379');
         $client->close();
+    }
+
+    public function testGetRegionLogsGrpcCall(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('debug')
+            ->with('PD gRPC call', ['method' => 'GetRegion', 'address' => 'pd1:2379']);
+
+        $response = $this->makeGetRegionResponse();
+
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->expects($this->once())
+            ->method('call')
+            ->willReturn($response);
+
+        $client = new PdClient($grpc, 'pd1:2379', $logger);
+        $client->getRegion('key');
+    }
+
+    public function testGetRegionLogsClusterIdLearned(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('info')
+            ->with('Learned cluster ID', ['clusterId' => 12345]);
+
+        $response = $this->makeGetRegionResponse();
+
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->expects($this->once())
+            ->method('call')
+            ->willReturn($response);
+
+        $client = new PdClient($grpc, 'pd:2379', $logger);
+        $client->getRegion('key');
+    }
+
+    public function testClusterIdMismatchLogsWarning(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with('Cluster ID mismatch, retrying', ['method' => 'GetRegion', 'clusterId' => 99]);
+
+        $response = $this->makeGetRegionResponse();
+
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnCallback(function () use ($response): Message {
+                static $callCount = 0;
+                $callCount++;
+                if ($callCount === 1) {
+                    throw new GrpcException('mismatch cluster id, need 99 but got 0', 2);
+                }
+                return $response;
+            });
+
+        $client = new PdClient($grpc, 'pd:2379', $logger);
+        $client->getRegion('key');
+    }
+
+    private function makeGetRegionResponse(): GetRegionResponse
+    {
+        $epoch = new RegionEpoch();
+        $epoch->setConfVer(1);
+        $epoch->setVersion(1);
+
+        $region = new Region();
+        $region->setId(1);
+        $region->setStartKey('');
+        $region->setEndKey('');
+        $region->setRegionEpoch($epoch);
+
+        $leader = new Peer();
+        $leader->setId(1);
+        $leader->setStoreId(1);
+
+        $header = new ResponseHeader();
+        $header->setClusterId(12345);
+
+        $response = new GetRegionResponse();
+        $response->setHeader($header);
+        $response->setRegion($region);
+        $response->setLeader($leader);
+
+        return $response;
     }
 }
