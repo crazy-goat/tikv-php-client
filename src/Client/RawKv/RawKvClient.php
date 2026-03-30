@@ -359,9 +359,16 @@ final class RawKvClient
             $pairsByRegion[$regionId]['pairs'][] = $pair;
         }
 
-        foreach ($pairsByRegion as $regionData) {
-            $this->executeBatchPutForRegion($regionData['region'], $regionData['pairs'], $ttl);
+        // Execute all regions in parallel
+        $regionCalls = [];
+        foreach ($pairsByRegion as $regionId => $regionData) {
+            $regionCalls[$regionId] = function() use ($regionData, $ttl) {
+                return $this->executeBatchPutForRegionAsync($regionData['region'], $regionData['pairs'], $ttl);
+            };
         }
+
+        $executor = new BatchAsyncExecutor($this->logger);
+        $executor->executeParallel($regionCalls);
     }
 
     /**
@@ -379,9 +386,16 @@ final class RawKvClient
 
         $keysByRegion = $this->groupKeysByRegion($keys);
 
-        foreach ($keysByRegion as $regionData) {
-            $this->executeBatchDeleteForRegion($regionData['region'], $regionData['keys']);
+        // Execute all regions in parallel
+        $regionCalls = [];
+        foreach ($keysByRegion as $regionId => $regionData) {
+            $regionCalls[$regionId] = function() use ($regionData) {
+                return $this->executeBatchDeleteForRegionAsync($regionData['region'], $regionData['keys']);
+            };
         }
+
+        $executor = new BatchAsyncExecutor($this->logger);
+        $executor->executeParallel($regionCalls);
     }
 
     // ========================================================================
@@ -938,6 +952,65 @@ final class RawKvClient
             );
             RegionErrorHandler::check($response);
             return null;
+        });
+    }
+
+    /**
+     * @param KvPair[] $pairs
+     */
+    private function executeBatchPutForRegionAsync(RegionInfo $region, array $pairs, int $ttl): GrpcFuture
+    {
+        return $this->executeWithRetryAsync($pairs[0]->getKey(), function () use ($region, $pairs, $ttl): GrpcFuture {
+            $address = $this->resolveStoreAddress($region->leaderStoreId);
+
+            $request = new RawBatchPutRequest();
+            $request->setContext(RegionContext::fromRegionInfo($region));
+            $request->setPairs($pairs);
+            if ($ttl > 0) {
+                $request->setTtls([$ttl]);
+            }
+
+            $call = new Call(
+                $this->grpc->getChannel($address),
+                '/tikvpb.Tikv/RawBatchPut',
+                Timeval::infFuture(),
+            );
+
+            $call->startBatch([
+                \Grpc\OP_SEND_INITIAL_METADATA => [],
+                \Grpc\OP_SEND_MESSAGE => ['message' => $request->serializeToString()],
+                \Grpc\OP_SEND_CLOSE_FROM_CLIENT => true,
+            ]);
+
+            return new GrpcFuture($call, RawBatchPutResponse::class);
+        });
+    }
+
+    /**
+     * @param string[] $keys
+     */
+    private function executeBatchDeleteForRegionAsync(RegionInfo $region, array $keys): GrpcFuture
+    {
+        return $this->executeWithRetryAsync($keys[0], function () use ($region, $keys): GrpcFuture {
+            $address = $this->resolveStoreAddress($region->leaderStoreId);
+
+            $request = new RawBatchDeleteRequest();
+            $request->setContext(RegionContext::fromRegionInfo($region));
+            $request->setKeys($keys);
+
+            $call = new Call(
+                $this->grpc->getChannel($address),
+                '/tikvpb.Tikv/RawBatchDelete',
+                Timeval::infFuture(),
+            );
+
+            $call->startBatch([
+                \Grpc\OP_SEND_INITIAL_METADATA => [],
+                \Grpc\OP_SEND_MESSAGE => ['message' => $request->serializeToString()],
+                \Grpc\OP_SEND_CLOSE_FROM_CLIENT => true,
+            ]);
+
+            return new GrpcFuture($call, RawBatchDeleteResponse::class);
         });
     }
 
