@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\RawKv;
 
+use CrazyGoat\Proto\Errorpb\NotLeader;
 use CrazyGoat\Proto\Kvrpcpb\ChecksumAlgorithm;
 use CrazyGoat\Proto\Kvrpcpb\KeyRange;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
@@ -43,6 +44,8 @@ use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Retry\BackoffType;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 final class RawKvClient
 {
@@ -53,12 +56,13 @@ final class RawKvClient
      *
      * @param string[] $pdEndpoints PD addresses (currently only the first is used)
      */
-    public static function create(array $pdEndpoints): self
+    public static function create(array $pdEndpoints, ?LoggerInterface $logger = null): self
     {
-        $grpc = new GrpcClient();
-        $pdClient = new PdClient($grpc, $pdEndpoints[0]);
+        $resolvedLogger = $logger ?? new NullLogger();
+        $grpc = new GrpcClient($resolvedLogger);
+        $pdClient = new PdClient($grpc, $pdEndpoints[0], $resolvedLogger);
 
-        return new self($pdClient, new GrpcClient(), new RegionCache());
+        return new self($pdClient, $grpc, new RegionCache(logger: $resolvedLogger), logger: $resolvedLogger);
     }
 
     public function __construct(
@@ -66,6 +70,7 @@ final class RawKvClient
         private readonly GrpcClientInterface $grpc,
         private readonly RegionCacheInterface $regionCache = new RegionCache(),
         private readonly int $maxBackoffMs = 20000,
+        private readonly LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
@@ -87,6 +92,7 @@ final class RawKvClient
 
             /** @var RawGetResponse $response */
             $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawGet', $request, RawGetResponse::class);
+            RegionErrorHandler::check($response);
 
             $value = $response->getValue();
             return $value !== '' ? $value : null;
@@ -114,7 +120,8 @@ final class RawKvClient
                 $request->setTtl($ttl);
             }
 
-            $this->grpc->call($address, 'tikvpb.Tikv', 'RawPut', $request, RawPutResponse::class);
+            $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawPut', $request, RawPutResponse::class);
+            RegionErrorHandler::check($response);
             return null;
         });
     }
@@ -131,7 +138,8 @@ final class RawKvClient
             $request->setContext(RegionContext::fromRegionInfo($region));
             $request->setKey($key);
 
-            $this->grpc->call($address, 'tikvpb.Tikv', 'RawDelete', $request, RawDeleteResponse::class);
+            $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawDelete', $request, RawDeleteResponse::class);
+            RegionErrorHandler::check($response);
             return null;
         });
     }
@@ -161,6 +169,7 @@ final class RawKvClient
                 $request,
                 RawGetKeyTTLResponse::class,
             );
+            RegionErrorHandler::check($response);
 
             $error = $response->getError();
             if ($error !== '') {
@@ -219,6 +228,7 @@ final class RawKvClient
                     $request,
                     RawCASResponse::class,
                 );
+                RegionErrorHandler::check($response);
 
                 $error = $response->getError();
                 if ($error !== '') {
@@ -611,23 +621,54 @@ final class RawKvClient
             try {
                 return $operation();
             } catch (TiKvException $e) {
-                $backoffType = $this->classifyError($e);
+                $backoffType = $this->handleNotLeader($e, $key);
 
                 if (!$backoffType instanceof BackoffType) {
-                    throw $e;
-                }
+                    $backoffType = $this->classifyError($e);
 
-                $cached = $this->regionCache->getByKey($key);
-                if ($cached instanceof RegionInfo) {
-                    $this->regionCache->invalidate($cached->regionId);
+                    if (!$backoffType instanceof BackoffType) {
+                        $this->logger->error('Fatal error, not retrying', ['key' => $key, 'error' => $e->getMessage()]);
+                        throw $e;
+                    }
+
+                    $cached = $this->regionCache->getByKey($key);
+                    if ($cached instanceof RegionInfo) {
+                        $this->regionCache->invalidate($cached->regionId);
+                        $this->logger->info('Invalidated region on retry', [
+                            'key' => $key,
+                            'regionId' => $cached->regionId,
+                        ]);
+
+                        if ($e instanceof GrpcException) {
+                            try {
+                                $address = $this->resolveStoreAddress($cached->leaderStoreId);
+                                $this->grpc->closeChannel($address);
+                            } catch (StoreNotFoundException) {
+                            }
+                        }
+                    }
                 }
 
                 $sleepMs = $backoffType->sleepMs($attempt);
                 $totalBackoffMs += $sleepMs;
 
                 if ($totalBackoffMs > $this->maxBackoffMs) {
+                    $this->logger->error('Retry budget exhausted', [
+                        'key' => $key,
+                        'attempt' => $attempt,
+                        'totalBackoffMs' => $totalBackoffMs,
+                        'maxBackoffMs' => $this->maxBackoffMs,
+                    ]);
                     throw $e;
                 }
+
+                $this->logger->warning('Retrying operation', [
+                    'key' => $key,
+                    'attempt' => $attempt,
+                    'backoffType' => $backoffType->name,
+                    'sleepMs' => $sleepMs,
+                    'totalBackoffMs' => $totalBackoffMs,
+                ]);
 
                 if ($sleepMs > 0) {
                     usleep($sleepMs * 1000);
@@ -636,6 +677,37 @@ final class RawKvClient
                 $attempt++;
             }
         }
+    }
+
+    private function handleNotLeader(TiKvException $e, string $key): ?BackoffType
+    {
+        if (!$e instanceof RegionException || !$e->notLeader instanceof NotLeader) {
+            return null;
+        }
+
+        $regionId = (int) $e->notLeader->getRegionId();
+        $leader = $e->notLeader->getLeader();
+
+        if ($leader !== null) {
+            $leaderStoreId = (int) $leader->getStoreId();
+            $switched = $this->regionCache->switchLeader($regionId, $leaderStoreId);
+            if (!$switched) {
+                $this->regionCache->invalidate($regionId);
+                $this->logger->info('NotLeader hint peer unknown, invalidated region', [
+                    'key' => $key,
+                    'regionId' => $regionId,
+                    'hintStoreId' => $leaderStoreId,
+                ]);
+            }
+        } else {
+            $this->regionCache->invalidate($regionId);
+            $this->logger->info('NotLeader without hint, invalidated region', [
+                'key' => $key,
+                'regionId' => $regionId,
+            ]);
+        }
+
+        return BackoffType::NotLeader;
     }
 
     private function classifyError(TiKvException $e): ?BackoffType
@@ -649,7 +721,7 @@ final class RawKvClient
             return null;
         }
 
-        if (str_contains($message, 'EpochNotMatch')) {
+        if (str_contains($message, 'EpochNotMatch') || str_contains($message, 'epoch not match')) {
             return BackoffType::None;
         }
         if (str_contains($message, 'ServerIsBusy')) {
@@ -660,6 +732,9 @@ final class RawKvClient
         }
         if (str_contains($message, 'RegionNotFound')) {
             return BackoffType::RegionMiss;
+        }
+        if (str_contains($message, 'NotLeader')) {
+            return BackoffType::NotLeader;
         }
 
         if ($e instanceof GrpcException) {
@@ -727,9 +802,9 @@ final class RawKvClient
 
             /** @var RawBatchGetResponse $response */
             $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawBatchGet', $request, RawBatchGetResponse::class);
+            RegionErrorHandler::check($response);
 
             $results = [];
-            /** @phpstan-ignore class.notFound */
             foreach ($response->getPairs() as $pair) {
                 $results[$pair->getKey()] = $pair->getValue() !== '' ? $pair->getValue() : null;
             }
@@ -753,7 +828,8 @@ final class RawKvClient
                 $request->setTtls([$ttl]);
             }
 
-            $this->grpc->call($address, 'tikvpb.Tikv', 'RawBatchPut', $request, RawBatchPutResponse::class);
+            $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawBatchPut', $request, RawBatchPutResponse::class);
+            RegionErrorHandler::check($response);
             return null;
         });
     }
@@ -770,7 +846,14 @@ final class RawKvClient
             $request->setContext(RegionContext::fromRegionInfo($region));
             $request->setKeys($keys);
 
-            $this->grpc->call($address, 'tikvpb.Tikv', 'RawBatchDelete', $request, RawBatchDeleteResponse::class);
+            $response = $this->grpc->call(
+                $address,
+                'tikvpb.Tikv',
+                'RawBatchDelete',
+                $request,
+                RawBatchDeleteResponse::class,
+            );
+            RegionErrorHandler::check($response);
             return null;
         });
     }
@@ -803,9 +886,9 @@ final class RawKvClient
 
             /** @var RawScanResponse $response */
             $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawScan', $request, RawScanResponse::class);
+            RegionErrorHandler::check($response);
 
             $results = [];
-            /** @phpstan-ignore class.notFound */
             foreach ($response->getKvs() as $pair) {
                 $results[] = [
                     'key' => $pair->getKey(),
@@ -837,6 +920,7 @@ final class RawKvClient
                 $request,
                 RawDeleteRangeResponse::class,
             );
+            RegionErrorHandler::check($response);
 
             $error = $response->getError();
             if ($error !== '') {
@@ -865,6 +949,7 @@ final class RawKvClient
 
             /** @var RawChecksumResponse $response */
             $response = $this->grpc->call($address, 'tikvpb.Tikv', 'RawChecksum', $request, RawChecksumResponse::class);
+            RegionErrorHandler::check($response);
 
             $error = $response->getError();
             if ($error !== '') {

@@ -6,6 +6,9 @@ namespace CrazyGoat\TiKV\Client\RawKv\Dto;
 
 final readonly class RegionInfo
 {
+    /**
+     * @param list<PeerInfo> $peers
+     */
     public function __construct(
         public int $regionId,
         public int $leaderPeerId,
@@ -14,6 +17,7 @@ final readonly class RegionInfo
         public int $epochVersion,
         public string $startKey = '',
         public string $endKey = '',
+        public array $peers = [],
     ) {
     }
 }

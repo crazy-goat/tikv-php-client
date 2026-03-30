@@ -36,4 +36,9 @@ interface GrpcClientInterface
      * Close all open channels and release resources.
      */
     public function close(): void;
+
+    /**
+     * Close a single channel by address, forcing reconnect on next call.
+     */
+    public function closeChannel(string $address): void;
 }

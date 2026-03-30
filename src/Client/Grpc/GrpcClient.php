@@ -10,11 +10,18 @@ use Grpc\Call;
 use Grpc\Channel;
 use Grpc\ChannelCredentials;
 use Grpc\Timeval;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 final class GrpcClient implements GrpcClientInterface
 {
     /** @var array<string, Channel> */
     private array $channels = [];
+
+    public function __construct(
+        private readonly LoggerInterface $logger = new NullLogger(),
+    ) {
+    }
 
     public function call(
         string $address,
@@ -63,9 +70,27 @@ final class GrpcClient implements GrpcClientInterface
         $this->channels = [];
     }
 
+    public function closeChannel(string $address): void
+    {
+        if (isset($this->channels[$address])) {
+            $this->logger->debug('Channel closed', ['address' => $address]);
+            $this->channels[$address]->close();
+            unset($this->channels[$address]);
+        }
+    }
+
     private function getChannel(string $address): Channel
     {
+        if (isset($this->channels[$address])) {
+            $state = $this->channels[$address]->getConnectivityState();
+            if ($state === \Grpc\CHANNEL_FATAL_FAILURE) {
+                $this->logger->warning('Channel in fatal failure, reconnecting', ['address' => $address]);
+                $this->closeChannel($address);
+            }
+        }
+
         if (!isset($this->channels[$address])) {
+            $this->logger->debug('Opening gRPC channel', ['address' => $address]);
             $this->channels[$address] = new Channel($address, [
                 'credentials' => ChannelCredentials::createInsecure(),
             ]);

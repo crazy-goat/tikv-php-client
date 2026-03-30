@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  check-actor:
+    name: Check actor permissions
+    runs-on: ubuntu-latest
+    outputs:
+      allowed: ${{ steps.check.outputs.allowed }}
+    steps:
+      - name: Check if actor is owner or collaborator
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const actor = context.actor;
+            const owner = context.repo.owner;
+
+            if (actor === owner) {
+              core.setOutput('allowed', 'true');
+              return;
+            }
+
+            try {
+              const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: actor,
+              });
+              const level = data.permission;
+              const allowed = ['admin', 'maintain', 'write'].includes(level);
+              core.setOutput('allowed', allowed ? 'true' : 'false');
+              if (!allowed) {
+                core.warning(`Actor "${actor}" has permission "${level}" — skipping CI.`);
+              }
+            } catch (e) {
+              core.setOutput('allowed', 'false');
+              core.warning(`Could not determine permissions for "${actor}": ${e.message}`);
+            }
+
+  lint:
+    name: Lint (PHPCS + Rector + PHPStan)
+    needs: check-actor
+    if: needs.check-actor.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: grpc
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run PHPCS
+        run: composer cs
+
+      - name: Run Rector (dry-run)
+        run: composer rector
+
+      - name: Run PHPStan
+        run: composer phpstan
+
+  unit-tests:
+    name: Unit Tests (PHP ${{ matrix.php }})
+    needs: [check-actor, lint]
+    if: needs.check-actor.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ["8.2", "8.3", "8.4"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: grpc
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run unit tests
+        run: ./vendor/bin/phpunit --testsuite Unit --testdox
+
+  integration-tests:
+    name: Integration Tests
+    needs: [check-actor, lint]
+    if: needs.check-actor.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: grpc
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run integration tests
+        run: ./vendor/bin/phpunit --testsuite Integration --testdox

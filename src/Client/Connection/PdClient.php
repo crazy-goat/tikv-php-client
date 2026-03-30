@@ -12,21 +12,24 @@ use CrazyGoat\Proto\Pdpb\GetStoreResponse;
 use CrazyGoat\Proto\Pdpb\RequestHeader;
 use CrazyGoat\Proto\Pdpb\ScanRegionsRequest;
 use CrazyGoat\Proto\Pdpb\ScanRegionsResponse;
+use CrazyGoat\TiKV\Client\Cache\StoreCacheInterface;
 use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
+use CrazyGoat\TiKV\Client\RawKv\Dto\PeerInfo;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use Google\Protobuf\Internal\Message;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 final class PdClient implements PdClientInterface
 {
     private ?int $clusterId = null;
 
-    /** @var array<int, Store> */
-    private array $storeCache = [];
-
     public function __construct(
         private readonly GrpcClientInterface $grpc,
         private readonly string $pdAddress,
+        private readonly LoggerInterface $logger = new NullLogger(),
+        private readonly ?StoreCacheInterface $storeCache = null,
     ) {
     }
 
@@ -47,6 +50,16 @@ final class PdClient implements PdClientInterface
         $leader = $response->getLeader();
         $regionEpoch = $region?->getRegionEpoch();
 
+        $peers = [];
+        if ($region !== null) {
+            foreach ($region->getPeers() as $peer) {
+                $peers[] = new PeerInfo(
+                    peerId: (int) $peer->getId(),
+                    storeId: (int) $peer->getStoreId(),
+                );
+            }
+        }
+
         return new RegionInfo(
             regionId: $region ? (int) $region->getId() : 0,
             leaderPeerId: $leader ? (int) $leader->getId() : 0,
@@ -55,13 +68,17 @@ final class PdClient implements PdClientInterface
             epochVersion: $regionEpoch ? (int) $regionEpoch->getVersion() : 0,
             startKey: $region ? $region->getStartKey() : '',
             endKey: $region ? $region->getEndKey() : '',
+            peers: $peers,
         );
     }
 
     public function getStore(int $storeId): ?Store
     {
-        if (isset($this->storeCache[$storeId])) {
-            return $this->storeCache[$storeId];
+        if ($this->storeCache instanceof StoreCacheInterface) {
+            $cached = $this->storeCache->get($storeId);
+            if ($cached instanceof Store) {
+                return $cached;
+            }
         }
 
         $request = new GetStoreRequest();
@@ -76,8 +93,8 @@ final class PdClient implements PdClientInterface
         );
 
         $store = $response->getStore();
-        if ($store !== null) {
-            $this->storeCache[$storeId] = $store;
+        if ($store instanceof Store && $this->storeCache instanceof StoreCacheInterface) {
+            $this->storeCache->put($store);
         }
 
         return $store;
@@ -105,19 +122,28 @@ final class PdClient implements PdClientInterface
         $regionMetas = $response->getRegionMetas();
         $leaders = $response->getLeaders();
 
-        /** @phpstan-ignore class.notFound */
         foreach ($regionMetas as $index => $region) {
+            /** @var \CrazyGoat\Proto\Metapb\Peer|null $leader */
             $leader = $leaders[$index] ?? null;
-            $regionEpoch = $region?->getRegionEpoch();
+            $regionEpoch = $region->getRegionEpoch();
+
+            $peers = [];
+            foreach ($region->getPeers() as $peer) {
+                $peers[] = new PeerInfo(
+                    peerId: (int) $peer->getId(),
+                    storeId: (int) $peer->getStoreId(),
+                );
+            }
 
             $regions[] = new RegionInfo(
-                regionId: $region ? (int) $region->getId() : 0,
-                leaderPeerId: $leader ? (int) $leader->getId() : 0,
-                leaderStoreId: $leader ? (int) $leader->getStoreId() : 1,
+                regionId: (int) $region->getId(),
+                leaderPeerId: $leader instanceof \CrazyGoat\Proto\Metapb\Peer ? (int) $leader->getId() : 0,
+                leaderStoreId: $leader instanceof \CrazyGoat\Proto\Metapb\Peer ? (int) $leader->getStoreId() : 1,
                 epochConfVer: $regionEpoch ? (int) $regionEpoch->getConfVer() : 0,
                 epochVersion: $regionEpoch ? (int) $regionEpoch->getVersion() : 0,
-                startKey: $region ? $region->getStartKey() : '',
-                endKey: $region ? $region->getEndKey() : '',
+                startKey: $region->getStartKey(),
+                endKey: $region->getEndKey(),
+                peers: $peers,
             );
         }
 
@@ -152,6 +178,7 @@ final class PdClient implements PdClientInterface
         Message $request,
         string $responseClass,
     ): Message {
+        $this->logger->debug('PD gRPC call', ['method' => $method, 'address' => $this->pdAddress]);
         try {
             $response = $this->grpc->call(
                 $this->pdAddress,
@@ -167,6 +194,10 @@ final class PdClient implements PdClientInterface
         } catch (GrpcException $e) {
             $extractedId = $this->extractClusterIdFromError($e->getMessage());
             if ($extractedId !== null) {
+                $this->logger->warning(
+                    'Cluster ID mismatch, retrying',
+                    ['method' => $method, 'clusterId' => $extractedId],
+                );
                 $this->clusterId = $extractedId;
                 /** @phpstan-ignore method.notFound */
                 $request->setHeader($this->createHeader());
@@ -203,6 +234,7 @@ final class PdClient implements PdClientInterface
                 /** @var int $clusterId */
                 $clusterId = $header->getClusterId();
                 $this->clusterId = $clusterId;
+                $this->logger->info('Learned cluster ID', ['clusterId' => $clusterId]);
             }
         }
     }
