@@ -22,6 +22,11 @@ enum BackoffType
     case IsWitness;
     case MaxTimestampNotSynced;
 
+    // Transactional backoff types
+    case TxnLock;
+    case TxnLockFast;
+    case TxnNotFound;
+
     public function baseMs(): int
     {
         return match ($this) {
@@ -39,6 +44,10 @@ enum BackoffType
             self::RecoveryInProgress => 100,
             self::IsWitness => 1000,
             self::MaxTimestampNotSynced => 2,
+            // Transactional backoff types
+            self::TxnLock => 200,
+            self::TxnLockFast => 100,
+            self::TxnNotFound => 2,
         };
     }
 
@@ -59,13 +68,18 @@ enum BackoffType
             self::RecoveryInProgress => 10000,
             self::IsWitness => 10000,
             self::MaxTimestampNotSynced => 500,
+            // Transactional backoff types
+            self::TxnLock => 3000,
+            self::TxnLockFast => 3000,
+            self::TxnNotFound => 500,
         };
     }
 
     public function equalJitter(): bool
     {
         return match ($this) {
-            self::ServerBusy, self::TiKvRpc, self::RecoveryInProgress, self::IsWitness => true,
+            self::ServerBusy, self::TiKvRpc, self::RecoveryInProgress, self::IsWitness,
+            self::TxnLock, self::TxnLockFast => true,
             default => false,
         };
     }
