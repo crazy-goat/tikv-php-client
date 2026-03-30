@@ -10,11 +10,8 @@ use Psr\Log\NullLogger;
 
 class RegionCache implements RegionCacheInterface
 {
-    /** @var RegionInfo[] */
-    private array $regions = [];
-
-    /** @var array<int, int> */
-    private array $ttls = [];
+    /** @var RegionEntry[] */
+    private array $entries = [];
 
     public function __construct(
         private readonly int $ttlSeconds = 600,
@@ -31,22 +28,22 @@ class RegionCache implements RegionCacheInterface
             return null;
         }
 
-        $region = $this->regions[$index];
+        $entry = $this->entries[$index];
 
-        if ($this->isExpired($region->regionId)) {
+        if ($this->isExpired($entry)) {
             $this->removeByIndex($index);
             $this->logger->debug('Region cache miss', ['key' => $key]);
             return null;
         }
 
-        if ($region->endKey !== '' && $key >= $region->endKey) {
+        if ($entry->region->endKey !== '' && $key >= $entry->region->endKey) {
             $this->logger->debug('Region cache miss', ['key' => $key]);
             return null;
         }
 
-        $this->logger->debug('Region cache hit', ['key' => $key, 'regionId' => $region->regionId]);
+        $this->logger->debug('Region cache hit', ['key' => $key, 'regionId' => $entry->region->regionId]);
 
-        return $region;
+        return $this->resolveRegionInfo($entry);
     }
 
     public function put(RegionInfo $region): void
@@ -54,10 +51,15 @@ class RegionCache implements RegionCacheInterface
         $this->removeById($region->regionId);
 
         $position = $this->findInsertPosition($region->startKey);
-        array_splice($this->regions, $position, 0, [$region]);
+        $entry = new RegionEntry($region, $this->now() + $this->ttlSeconds + $this->jitter());
+        array_splice($this->entries, $position, 0, [$entry]);
 
-        $this->ttls[$region->regionId] = $this->now() + $this->ttlSeconds + $this->jitter();
-        $this->logger->debug('Region cached', ['regionId' => $region->regionId, 'startKey' => $region->startKey, 'endKey' => $region->endKey, 'ttl' => $this->ttls[$region->regionId] - $this->now()]);
+        $this->logger->debug('Region cached', [
+            'regionId' => $region->regionId,
+            'startKey' => $region->startKey,
+            'endKey' => $region->endKey,
+            'ttl' => $entry->expiresAt - $this->now(),
+        ]);
     }
 
     public function invalidate(int $regionId): void
@@ -66,10 +68,27 @@ class RegionCache implements RegionCacheInterface
         $this->removeById($regionId);
     }
 
+    public function switchLeader(int $regionId, int $leaderStoreId): bool
+    {
+        foreach ($this->entries as $entry) {
+            if ($entry->region->regionId === $regionId) {
+                $result = $entry->switchLeader($leaderStoreId);
+                if ($result) {
+                    $this->logger->info('Region leader switched', [
+                        'regionId' => $regionId,
+                        'newLeaderStoreId' => $leaderStoreId,
+                    ]);
+                }
+                return $result;
+            }
+        }
+
+        return false;
+    }
+
     public function clear(): void
     {
-        $this->regions = [];
-        $this->ttls = [];
+        $this->entries = [];
     }
 
     protected function now(): int
@@ -80,14 +99,14 @@ class RegionCache implements RegionCacheInterface
     private function binarySearch(string $key): ?int
     {
         $left = 0;
-        $right = count($this->regions) - 1;
+        $right = count($this->entries) - 1;
         $result = null;
 
         while ($left <= $right) {
             $mid = (int) (($left + $right) / 2);
-            $region = $this->regions[$mid];
+            $entry = $this->entries[$mid];
 
-            if ($region->startKey <= $key) {
+            if ($entry->region->startKey <= $key) {
                 $result = $mid;
                 $left = $mid + 1;
             } else {
@@ -101,11 +120,11 @@ class RegionCache implements RegionCacheInterface
     private function findInsertPosition(string $startKey): int
     {
         $left = 0;
-        $right = count($this->regions);
+        $right = count($this->entries);
 
         while ($left < $right) {
             $mid = (int) (($left + $right) / 2);
-            if ($this->regions[$mid]->startKey < $startKey) {
+            if ($this->entries[$mid]->region->startKey < $startKey) {
                 $left = $mid + 1;
             } else {
                 $right = $mid;
@@ -117,8 +136,8 @@ class RegionCache implements RegionCacheInterface
 
     private function removeById(int $regionId): void
     {
-        foreach ($this->regions as $index => $region) {
-            if ($region->regionId === $regionId) {
+        foreach ($this->entries as $index => $entry) {
+            if ($entry->region->regionId === $regionId) {
                 $this->removeByIndex($index);
                 return;
             }
@@ -127,20 +146,14 @@ class RegionCache implements RegionCacheInterface
 
     private function removeByIndex(int $index): void
     {
-        if (isset($this->regions[$index])) {
-            $regionId = $this->regions[$index]->regionId;
-            unset($this->ttls[$regionId]);
-            array_splice($this->regions, $index, 1);
+        if (isset($this->entries[$index])) {
+            array_splice($this->entries, $index, 1);
         }
     }
 
-    private function isExpired(int $regionId): bool
+    private function isExpired(RegionEntry $entry): bool
     {
-        if (!isset($this->ttls[$regionId])) {
-            return true;
-        }
-
-        return $this->now() >= $this->ttls[$regionId];
+        return $this->now() >= $entry->expiresAt;
     }
 
     private function jitter(): int
@@ -150,5 +163,24 @@ class RegionCache implements RegionCacheInterface
         }
 
         return random_int(0, $this->jitterSeconds);
+    }
+
+    private function resolveRegionInfo(RegionEntry $entry): RegionInfo
+    {
+        if ($entry->getLeaderStoreId() === $entry->region->leaderStoreId
+            && $entry->getLeaderPeerId() === $entry->region->leaderPeerId) {
+            return $entry->region;
+        }
+
+        return new RegionInfo(
+            regionId: $entry->region->regionId,
+            leaderPeerId: $entry->getLeaderPeerId(),
+            leaderStoreId: $entry->getLeaderStoreId(),
+            epochConfVer: $entry->region->epochConfVer,
+            epochVersion: $entry->region->epochVersion,
+            startKey: $entry->region->startKey,
+            endKey: $entry->region->endKey,
+            peers: $entry->region->peers,
+        );
     }
 }

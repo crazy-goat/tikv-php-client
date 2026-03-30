@@ -6,6 +6,7 @@ namespace CrazyGoat\TiKV\Tests\Unit\Cache;
 
 use CrazyGoat\TiKV\Client\Cache\RegionCache;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
+use CrazyGoat\TiKV\Client\RawKv\Dto\PeerInfo;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -41,6 +42,24 @@ class RegionCacheTest extends TestCase
             epochVersion: 1,
             startKey: $startKey,
             endKey: $endKey,
+        );
+    }
+
+    private function makeRegionWithPeers(int $id, string $startKey, string $endKey = ''): RegionInfo
+    {
+        return new RegionInfo(
+            regionId: $id,
+            leaderPeerId: 10,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: $startKey,
+            endKey: $endKey,
+            peers: [
+                new PeerInfo(peerId: 10, storeId: 1),
+                new PeerInfo(peerId: 20, storeId: 2),
+                new PeerInfo(peerId: 30, storeId: 3),
+            ],
         );
     }
 
@@ -306,5 +325,111 @@ class RegionCacheTest extends TestCase
             ->with('Region invalidated', ['regionId' => 1]);
 
         $cache->invalidate(1);
+    }
+
+    public function testSwitchLeaderSucceedsAndGetByKeyReflectsNewLeader(): void
+    {
+        $cache = new RegionCache();
+        $region = $this->makeRegionWithPeers(1, 'a', 'z');
+        $cache->put($region);
+
+        $result = $cache->switchLeader(1, 3);
+
+        $this->assertTrue($result);
+
+        $resolved = $cache->getByKey('m');
+        $this->assertNotNull($resolved);
+        $this->assertSame(3, $resolved->leaderStoreId);
+        $this->assertSame(30, $resolved->leaderPeerId);
+        $this->assertSame(1, $resolved->regionId);
+    }
+
+    public function testSwitchLeaderWithUnknownStoreIdReturnsFalse(): void
+    {
+        $cache = new RegionCache();
+        $region = $this->makeRegionWithPeers(1, 'a', 'z');
+        $cache->put($region);
+
+        $result = $cache->switchLeader(1, 99);
+
+        $this->assertFalse($result);
+
+        $resolved = $cache->getByKey('m');
+        $this->assertNotNull($resolved);
+        $this->assertSame(1, $resolved->leaderStoreId);
+    }
+
+    public function testSwitchLeaderWithUnknownRegionIdReturnsFalse(): void
+    {
+        $cache = new RegionCache();
+        $region = $this->makeRegionWithPeers(1, 'a', 'z');
+        $cache->put($region);
+
+        $result = $cache->switchLeader(999, 2);
+
+        $this->assertFalse($result);
+    }
+
+    public function testSwitchLeaderPreservesAllRegionFields(): void
+    {
+        $cache = new RegionCache();
+        $region = $this->makeRegionWithPeers(1, 'a', 'z');
+        $cache->put($region);
+
+        $cache->switchLeader(1, 2);
+
+        $resolved = $cache->getByKey('m');
+        $this->assertNotNull($resolved);
+        $this->assertSame(1, $resolved->regionId);
+        $this->assertSame(1, $resolved->epochConfVer);
+        $this->assertSame(1, $resolved->epochVersion);
+        $this->assertSame('a', $resolved->startKey);
+        $this->assertSame('z', $resolved->endKey);
+        $this->assertCount(3, $resolved->peers);
+    }
+
+    public function testGetByKeyReturnsOriginalRegionWhenLeaderNotSwitched(): void
+    {
+        $cache = new RegionCache();
+        $region = $this->makeRegionWithPeers(1, 'a', 'z');
+        $cache->put($region);
+
+        $resolved = $cache->getByKey('m');
+        $this->assertSame($region, $resolved);
+    }
+
+    public function testSwitchLeaderLogsInfo(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $cache = new RegionCache(logger: $logger);
+        $region = $this->makeRegionWithPeers(1, 'a', 'z');
+        $cache->put($region);
+
+        $logger->expects($this->once())
+            ->method('info')
+            ->with('Region leader switched', ['regionId' => 1, 'newLeaderStoreId' => 2]);
+
+        $cache->switchLeader(1, 2);
+    }
+
+    public function testSwitchLeaderFailureDoesNotLog(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $cache = new RegionCache(logger: $logger);
+        $region = $this->makeRegionWithPeers(1, 'a', 'z');
+        $cache->put($region);
+
+        $logger->expects($this->never())
+            ->method('info')
+            ->with('Region leader switched', $this->anything());
+
+        $cache->switchLeader(1, 99);
+    }
+
+    public function testSwitchLeaderOnEmptyCacheReturnsFalse(): void
+    {
+        $cache = new RegionCache();
+
+        $this->assertFalse($cache->switchLeader(1, 2));
     }
 }
