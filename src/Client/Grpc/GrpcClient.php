@@ -97,7 +97,8 @@ final class GrpcClient implements GrpcClientInterface
                 'tls' => $this->tlsConfig?->isEnabled() ?? false,
             ]);
 
-            $credentials = $this->tlsConfig instanceof \CrazyGoat\TiKV\Client\Tls\TlsConfig && $this->tlsConfig->isEnabled()
+            $tlsEnabled = $this->tlsConfig instanceof TlsConfig && $this->tlsConfig->isEnabled();
+            $credentials = $tlsEnabled
                 ? $this->createTlsCredentials()
                 : ChannelCredentials::createInsecure();
 
