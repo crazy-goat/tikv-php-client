@@ -97,6 +97,7 @@ final class RawKvClient
         private readonly RegionCacheInterface $regionCache = new RegionCache(),
         private readonly int $maxBackoffMs = 20000,
         private readonly LoggerInterface $logger = new NullLogger(),
+        private readonly int $serverBusyBudgetMs = 600000, // 10 minutes separate budget
     ) {
     }
 
@@ -675,6 +676,7 @@ final class RawKvClient
     private function executeWithRetry(string $key, callable $operation): mixed
     {
         $totalBackoffMs = 0;
+        $serverBusyBackoffMs = 0;
         $attempt = 0;
 
         while (true) {
@@ -710,16 +712,30 @@ final class RawKvClient
                 }
 
                 $sleepMs = $backoffType->sleepMs($attempt);
-                $totalBackoffMs += $sleepMs;
 
-                if ($totalBackoffMs > $this->maxBackoffMs) {
-                    $this->logger->error('Retry budget exhausted', [
-                        'key' => $key,
-                        'attempt' => $attempt,
-                        'totalBackoffMs' => $totalBackoffMs,
-                        'maxBackoffMs' => $this->maxBackoffMs,
-                    ]);
-                    throw $e;
+                // ServerBusy uses separate budget
+                if ($backoffType === BackoffType::ServerBusy) {
+                    $serverBusyBackoffMs += $sleepMs;
+                    if ($serverBusyBackoffMs > $this->serverBusyBudgetMs) {
+                        $this->logger->error('ServerBusy budget exhausted', [
+                            'key' => $key,
+                            'attempt' => $attempt,
+                            'serverBusyBackoffMs' => $serverBusyBackoffMs,
+                            'serverBusyBudgetMs' => $this->serverBusyBudgetMs,
+                        ]);
+                        throw $e;
+                    }
+                } else {
+                    $totalBackoffMs += $sleepMs;
+                    if ($totalBackoffMs > $this->maxBackoffMs) {
+                        $this->logger->error('Retry budget exhausted', [
+                            'key' => $key,
+                            'attempt' => $attempt,
+                            'totalBackoffMs' => $totalBackoffMs,
+                            'maxBackoffMs' => $this->maxBackoffMs,
+                        ]);
+                        throw $e;
+                    }
                 }
 
                 $this->logger->warning('Retrying operation', [
