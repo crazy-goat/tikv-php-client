@@ -43,6 +43,8 @@ use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\RawKv\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Retry\BackoffType;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 final class RawKvClient
 {
@@ -53,12 +55,13 @@ final class RawKvClient
      *
      * @param string[] $pdEndpoints PD addresses (currently only the first is used)
      */
-    public static function create(array $pdEndpoints): self
+    public static function create(array $pdEndpoints, ?LoggerInterface $logger = null): self
     {
+        $resolvedLogger = $logger ?? new NullLogger();
         $grpc = new GrpcClient();
-        $pdClient = new PdClient($grpc, $pdEndpoints[0]);
+        $pdClient = new PdClient($grpc, $pdEndpoints[0], $resolvedLogger);
 
-        return new self($pdClient, new GrpcClient(), new RegionCache());
+        return new self($pdClient, new GrpcClient(), new RegionCache(logger: $resolvedLogger), logger: $resolvedLogger);
     }
 
     public function __construct(
@@ -66,6 +69,7 @@ final class RawKvClient
         private readonly GrpcClientInterface $grpc,
         private readonly RegionCacheInterface $regionCache = new RegionCache(),
         private readonly int $maxBackoffMs = 20000,
+        private readonly LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
@@ -614,20 +618,39 @@ final class RawKvClient
                 $backoffType = $this->classifyError($e);
 
                 if (!$backoffType instanceof BackoffType) {
+                    $this->logger->error('Fatal error, not retrying', ['key' => $key, 'error' => $e->getMessage()]);
                     throw $e;
                 }
 
                 $cached = $this->regionCache->getByKey($key);
                 if ($cached instanceof RegionInfo) {
                     $this->regionCache->invalidate($cached->regionId);
+                    $this->logger->info('Invalidated region on retry', [
+                        'key' => $key,
+                        'regionId' => $cached->regionId,
+                    ]);
                 }
 
                 $sleepMs = $backoffType->sleepMs($attempt);
                 $totalBackoffMs += $sleepMs;
 
                 if ($totalBackoffMs > $this->maxBackoffMs) {
+                    $this->logger->error('Retry budget exhausted', [
+                        'key' => $key,
+                        'attempt' => $attempt,
+                        'totalBackoffMs' => $totalBackoffMs,
+                        'maxBackoffMs' => $this->maxBackoffMs,
+                    ]);
                     throw $e;
                 }
+
+                $this->logger->warning('Retrying operation', [
+                    'key' => $key,
+                    'attempt' => $attempt,
+                    'backoffType' => $backoffType->name,
+                    'sleepMs' => $sleepMs,
+                    'totalBackoffMs' => $totalBackoffMs,
+                ]);
 
                 if ($sleepMs > 0) {
                     usleep($sleepMs * 1000);

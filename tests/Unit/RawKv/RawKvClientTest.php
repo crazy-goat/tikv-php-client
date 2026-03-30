@@ -29,6 +29,7 @@ use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
 use Google\Protobuf\Internal\Message;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class RawKvClientTest extends TestCase
 {
@@ -606,5 +607,113 @@ class RawKvClientTest extends TestCase
 
         $result = $this->client->get('key');
         $this->assertSame('recovered', $result);
+    }
+
+    public function testRetryLogsWarningOnRetriableError(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache, 20000, $logger);
+
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $response = new RawGetResponse();
+        $response->setValue('ok');
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls(
+                $this->throwException(new TiKvException('EpochNotMatch')),
+                $response,
+            );
+
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with('Retrying operation', $this->callback(fn(array $context): bool => $context['key'] === 'key'
+                && $context['attempt'] === 0
+                && $context['backoffType'] === 'None'
+                && $context['sleepMs'] === 0));
+
+        $client->get('key');
+    }
+
+    public function testRetryLogsCacheInvalidation(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache, 20000, $logger);
+
+        $region = $this->defaultRegion();
+        $this->regionCache->method('getByKey')->willReturn($region);
+        $this->regionCache->method('invalidate');
+
+        $this->pdClient->method('getRegion')->willReturn($region);
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $response = new RawGetResponse();
+        $response->setValue('ok');
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls(
+                $this->throwException(new TiKvException('EpochNotMatch')),
+                $response,
+            );
+
+        $logger->expects($this->once())
+            ->method('info')
+            ->with('Invalidated region on retry', ['key' => 'key', 'regionId' => 1]);
+
+        $client->get('key');
+    }
+
+    public function testBudgetExhaustedLogsError(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache, 0, $logger);
+
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $this->grpc->method('call')
+            ->willThrowException(new TiKvException('ServerIsBusy'));
+
+        $logger->expects($this->once())
+            ->method('error')
+            ->with('Retry budget exhausted', $this->callback(fn(array $context): bool => $context['key'] === 'key'
+                && $context['maxBackoffMs'] === 0));
+
+        $this->expectException(TiKvException::class);
+        $client->get('key');
+    }
+
+    public function testFatalErrorLogsError(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $client = new RawKvClient($this->pdClient, $this->grpc, $this->regionCache, 20000, $logger);
+
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $this->grpc->method('call')
+            ->willThrowException(new TiKvException('RaftEntryTooLarge'));
+
+        $logger->expects($this->once())
+            ->method('error')
+            ->with('Fatal error, not retrying', $this->callback(fn(array $context): bool => $context['key'] === 'key'
+                && $context['error'] === 'RaftEntryTooLarge'));
+
+        $this->expectException(TiKvException::class);
+        $client->get('key');
     }
 }
