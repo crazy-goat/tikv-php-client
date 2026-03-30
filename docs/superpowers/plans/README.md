@@ -25,6 +25,13 @@ This directory contains detailed implementation plans for all RawKV features.
 18. **PutIfAbsent** - Conditional insert (built on CAS) ✅
 19. **Checksum** - CRC64-XOR data integrity verification ✅
 20. **BatchScan** - Multiple non-contiguous range scanning ✅
+21. **TLS/SSL Support** - Server verification and mTLS ✅
+22. **PSR-3 Logging** - Structured logging with any PSR-3 logger ✅
+23. **Region Cache** - In-memory region metadata caching ✅
+24. **Store Cache** - In-memory store address caching ✅
+25. **Exponential Backoff** - Smart retry with backoff strategies ✅
+26. **NotLeader Handling** - Automatic leader redirection ✅
+27. **Batch Async Execution** - Parallel execution across regions ✅
 
 ### 🚧 Planned (in priority order)
 
@@ -61,15 +68,15 @@ This directory contains detailed implementation plans for all RawKV features.
 #### Phase 7: Client Configuration (Medium Priority)
 - [20-column-family.md](20-column-family.md) - Column family support
 - [21-atomic-for-cas.md](21-atomic-for-cas.md) - Atomic mode (ForCas flag) for linearizable CAS
-- [22-tls-security.md](22-tls-security.md) - TLS/mTLS for production deployments
-- [23-exponential-backoff.md](23-exponential-backoff.md) - Exponential backoff retry with more error types
+- ~~[22-tls-security.md](22-tls-security.md) - TLS/mTLS for production deployments~~ ✅
+- ~~[23-exponential-backoff.md](23-exponential-backoff.md) - Exponential backoff retry with more error types~~ ✅
 - [24-cluster-id.md](24-cluster-id.md) - Expose cluster ID from PD
 
 #### Phase 8: Advanced Infrastructure (Low Priority)
 - [25-api-v2-keyspace.md](25-api-v2-keyspace.md) - API V2 with keyspace multi-tenancy
 - [26-sst-ingest.md](26-sst-ingest.md) - SST bulk import
 - [27-configurable-timeouts.md](27-configurable-timeouts.md) - Per-operation timeouts
-- [28-slow-query-logging.md](28-slow-query-logging.md) - Slow operation logging (PSR-3)
+- ~~[28-slow-query-logging.md](28-slow-query-logging.md) - Slow operation logging (PSR-3)~~ ✅
 
 #### Phase 9: Future (Not Planned)
 - [15-transaction-support.md](15-transaction-support.md) - Full ACID transactions
@@ -94,13 +101,13 @@ This directory contains detailed implementation plans for all RawKV features.
 | **Scan iterator (lazy)** | — | ✅ | ❌ | #19 |
 | **Column family** | ✅ | — | ❌ | #20 |
 | **Atomic mode (ForCas)** | ✅ | ✅ | ❌ | #21 |
-| **TLS/Security** | ✅ | ✅ | ❌ | #22 |
-| **Exponential backoff** | ✅ | ✅ | ❌ | #23 |
+| **TLS/Security** | ✅ | ✅ | ✅ | ✅ |
+| **Exponential backoff** | ✅ | ✅ | ✅ | ✅ |
 | **Cluster ID** | ✅ | ✅ | ❌ | #24 |
 | **API V2 / Keyspace** | ✅ | — | ❌ | #25 |
 | **SST Ingest** | — | ✅ | ❌ | #26 |
 | **Configurable timeouts** | ✅ | ✅ | ❌ | #27 |
-| **Slow query logging** | — | ✅ | ❌ | #28 |
+| **Slow query logging** | — | ✅ | ✅ | ✅ |
 
 ## Implementation Guidelines
 

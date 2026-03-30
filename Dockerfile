@@ -15,6 +15,7 @@ RUN apk add --no-cache \
     php84-ctype \
     php84-dom \
     php84-xml \
+    php84-simplexml \
     php84-xmlwriter \
     php84-tokenizer \
     php84-iconv \
