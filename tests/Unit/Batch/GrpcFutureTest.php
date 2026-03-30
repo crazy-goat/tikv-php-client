@@ -10,6 +10,13 @@ use PHPUnit\Framework\TestCase;
 
 class GrpcFutureTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        if (!extension_loaded('grpc')) {
+            $this->markTestSkipped('grpc extension is not loaded');
+        }
+    }
+
     public function testConstruction(): void
     {
         $call = $this->createMock(Call::class);
