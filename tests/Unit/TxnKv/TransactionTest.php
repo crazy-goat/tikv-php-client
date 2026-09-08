@@ -2865,4 +2865,178 @@ class TransactionTest extends TestCase
             $this->assertStringContainsString('EpochNotMatch', $e->getMessage());
         }
     }
+
+    public function testBatchRollbackRetriesEpochNotMatchWithReResolvedRegion(): void
+    {
+        // Issue #502: a RegionException (EpochNotMatch) from KvBatchRollback
+        // must not burn the whole attempt cap against the stale region
+        // captured by groupStringsByRegion() — the retry closure has to
+        // re-resolve (the #267/#500 stale-capture class).
+        $staleRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+        $freshRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+
+        // Consecutive getByKey calls: (1) closure attempt 1 region
+        // resolution, (2) RetryExecutor invalidation lookup, (3) closure
+        // attempt 2 resolution — null on the third models the cache
+        // invalidation, so PD serves the fresh region.
+        $this->regionCache->method('getByKey')
+            ->willReturnOnConsecutiveCalls($staleRegion, $staleRegion, null, $freshRegion, $freshRegion);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($freshRegion);
+        $this->pdClient->method('scanRegions')->willReturn([$staleRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $regionError = new \CrazyGoat\Proto\Errorpb\Error();
+        $regionError->setMessage('EpochNotMatch');
+        $regionError->setEpochNotMatch(new \CrazyGoat\Proto\Errorpb\EpochNotMatch());
+
+        $staleResponse = new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse();
+        $staleResponse->setRegionError($regionError);
+        $okResponse = new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse();
+
+        $rollbackRequests = [];
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+                object $request,
+            ) use (
+                &$rollbackRequests,
+                $staleResponse,
+                $okResponse,
+            ): object {
+                if ($method === 'KvBatchRollback') {
+                    $rollbackRequests[] = $request;
+                    return count($rollbackRequests) === 1 ? $staleResponse : $okResponse;
+                }
+                throw new \RuntimeException("Unexpected method: $method");
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('k1', 'v1');
+        $txn->rollback();
+
+        // The rollback must succeed — the region error was retried, not fatal.
+        $this->assertSame(TransactionStatus::RolledBack, $txn->getStatus());
+        $this->assertCount(2, $rollbackRequests);
+
+        // The retried request must carry the FRESH epoch (version 5), not the
+        // stale one captured before the retry loop.
+        $retriedRequest = $rollbackRequests[1];
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\BatchRollbackRequest::class, $retriedRequest);
+        $retriedContext = $retriedRequest->getContext();
+        $this->assertNotNull($retriedContext);
+        $this->assertSame(1, $retriedContext->getRegionId());
+        $this->assertNotNull($retriedContext->getRegionEpoch());
+        $this->assertSame(5, $retriedContext->getRegionEpoch()->getVersion());
+    }
+
+    public function testPessimisticRollbackRetriesEpochNotMatchWithReResolvedRegion(): void
+    {
+        // Issue #502: a RegionException (EpochNotMatch) from
+        // KVPessimisticRollback must not burn the whole attempt cap against
+        // the stale region captured by groupStringsByRegion() — the retry
+        // closure has to re-resolve (the #267/#500 stale-capture class).
+        $staleRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+        $freshRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+
+        // Consecutive getByKey calls: pessimisticRollbackAll (1) attempt-1
+        // resolution, (2) RetryExecutor invalidation lookup, (3) attempt-2
+        // resolution (null → PD), then batchRollback resolutions.
+        $this->regionCache->method('getByKey')
+            ->willReturnOnConsecutiveCalls($staleRegion, $staleRegion, null, $freshRegion, $freshRegion);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($freshRegion);
+        $this->pdClient->method('scanRegions')->willReturn([$staleRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $regionError = new \CrazyGoat\Proto\Errorpb\Error();
+        $regionError->setMessage('EpochNotMatch');
+        $regionError->setEpochNotMatch(new \CrazyGoat\Proto\Errorpb\EpochNotMatch());
+
+        $staleResponse = new \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse();
+        $staleResponse->setRegionError($regionError);
+        $okResponse = new \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse();
+
+        $rollbackRequests = [];
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+                object $request,
+            ) use (
+                &$rollbackRequests,
+                $staleResponse,
+                $okResponse,
+            ): object {
+                if ($method === 'KVPessimisticRollback') {
+                    $rollbackRequests[] = $request;
+                    return count($rollbackRequests) === 1 ? $staleResponse : $okResponse;
+                }
+                return match ($method) {
+                    'KvBatchRollback' => new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse(),
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => true]);
+        $txn->set('k1', 'v1');
+        $txn->rollback();
+
+        // The rollback must succeed — the region error was retried, not fatal.
+        $this->assertSame(TransactionStatus::RolledBack, $txn->getStatus());
+        $this->assertCount(2, $rollbackRequests);
+
+        // The retried request must carry the FRESH epoch (version 5), not the
+        // stale one captured before the retry loop.
+        $retriedRequest = $rollbackRequests[1];
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackRequest::class, $retriedRequest);
+        $retriedContext = $retriedRequest->getContext();
+        $this->assertNotNull($retriedContext);
+        $this->assertSame(1, $retriedContext->getRegionId());
+        $this->assertNotNull($retriedContext->getRegionEpoch());
+        $this->assertSame(5, $retriedContext->getRegionEpoch()->getVersion());
+    }
 }
