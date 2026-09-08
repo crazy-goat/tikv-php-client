@@ -2656,8 +2656,11 @@ class TransactionTest extends TestCase
             peers: [],
         );
 
+        // First attempt uses the region from groupStringsByRegion(); the
+        // retry re-resolves with a cache miss (null) and PD returns the
+        // fresh region.
         $this->regionCache->method('getByKey')
-            ->willReturnOnConsecutiveCalls($staleRegion, null, null, null, null);
+            ->willReturnOnConsecutiveCalls(null, null, null, null);
         $this->regionCache->method('put');
         $this->regionCache->method('invalidate');
         $this->pdClient->method('getStore')->willReturn($this->makeStore());
@@ -2741,8 +2744,11 @@ class TransactionTest extends TestCase
             peers: [],
         );
 
+        // First attempt uses the region from groupStringsByRegion(); the
+        // retry re-resolves with a cache miss (null) and PD returns the
+        // fresh region.
         $this->regionCache->method('getByKey')
-            ->willReturnOnConsecutiveCalls($staleRegion, null, null, null, null);
+            ->willReturnOnConsecutiveCalls(null, null, null, null);
         $this->regionCache->method('put');
         $this->regionCache->method('invalidate');
         $this->pdClient->method('getStore')->willReturn($this->makeStore());

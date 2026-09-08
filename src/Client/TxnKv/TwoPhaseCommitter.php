@@ -595,6 +595,7 @@ final readonly class TwoPhaseCommitter
         $isFirstLock = true;
 
         foreach ($keysByRegion as $regionData) {
+            $region = $regionData['region'];
             $regionKeys = $regionData['keys'];
 
             $mutations = [];
@@ -616,15 +617,24 @@ final readonly class TwoPhaseCommitter
             $lastRegionError = null;
             do {
                 $attempt++;
-                // Re-resolve the region on EVERY attempt (issue #500): a
-                // region captured before the loop can be stale by the time
-                // it is retried (EpochNotMatch / NotLeader) — the same
-                // stale-capture class as the scan retry fix (#267, GRPC-08).
-                // On a region error RegionErrorHandler::check() has already
-                // invalidated the cache entry, so this re-resolve reaches PD
-                // and picks up the new epoch / leader instead of replaying
-                // the stale one until the budget runs out.
-                $region = $this->regionResolver->getRegionInfo($regionKeys[0]);
+                // First attempt uses the region already supplied by
+                // groupStringsByRegion(). On retries (issue #500) the
+                // region must be re-resolved: a region captured before
+                // the loop can be stale by the time it is retried
+                // (EpochNotMatch / NotLeader) — the same stale-capture
+                // class as the scan retry fix (#267, GRPC-08). On a
+                // region error RegionErrorHandler::check() has already
+                // invalidated the cache entry, so this re-resolve
+                // reaches PD and picks up the new epoch / leader
+                // instead of replaying the stale one until the budget
+                // runs out. Note: after a region split, the
+                // re-resolved region may no longer cover the whole key
+                // group; the server keeps returning region errors
+                // until the budget is exhausted (known limitation —
+                // re-grouping the keys would be a future improvement).
+                if ($attempt > 1) {
+                    $region = $this->regionResolver->getRegionInfo($regionKeys[0]);
+                }
                 $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
 
                 $request = new PessimisticLockRequest();
