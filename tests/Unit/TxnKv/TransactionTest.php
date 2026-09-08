@@ -2628,4 +2628,235 @@ class TransactionTest extends TestCase
         // the while condition — caught above by the timing assertion.
         $this->assertLessThanOrEqual(2, $lockAttempts);
     }
+
+    public function testPessimisticLockRetriesEpochNotMatchWithReResolvedRegion(): void
+    {
+        // Issue #500: a RegionException (EpochNotMatch) from the pessimistic
+        // lock RPC used to escape pessimisticLockBatch() uncaught and abort
+        // the whole transaction. It must instead invalidate the stale region
+        // (RegionErrorHandler::check) and retry with a fresh resolution.
+        $staleRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+        $freshRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+
+        $this->regionCache->method('getByKey')
+            ->willReturnOnConsecutiveCalls($staleRegion, null, null, null, null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($freshRegion);
+        $this->pdClient->method('scanRegions')->willReturn([$staleRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $regionError = new \CrazyGoat\Proto\Errorpb\Error();
+        $regionError->setMessage('EpochNotMatch');
+        $regionError->setEpochNotMatch(new \CrazyGoat\Proto\Errorpb\EpochNotMatch());
+
+        $staleResponse = new PessimisticLockResponse();
+        $staleResponse->setRegionError($regionError);
+        $okResponse = new PessimisticLockResponse();
+
+        $lockRequests = [];
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+                object $request,
+            ) use (
+                &$lockRequests,
+                $staleResponse,
+                $okResponse,
+            ): object {
+                if ($method === 'KvPessimisticLock') {
+                    $lockRequests[] = $request;
+                    return count($lockRequests) === 1 ? $staleResponse : $okResponse;
+                }
+                return match ($method) {
+                    'KvPrewrite' => new \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse(),
+                    'KvCommit' => new \CrazyGoat\Proto\Kvrpcpb\CommitResponse(),
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => true]);
+        $txn->set('k1', 'v1');
+        $txn->commit();
+
+        // The transaction must commit — the region error was retried, not fatal.
+        $this->assertSame(TransactionStatus::Committed, $txn->getStatus());
+        $this->assertCount(2, $lockRequests);
+
+        // The retried request must carry the FRESH epoch (version 5), not the
+        // stale one captured before the loop (the #267 stale-capture class).
+        $retriedRequest = $lockRequests[1];
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\PessimisticLockRequest::class, $retriedRequest);
+        $retriedContext = $retriedRequest->getContext();
+        $this->assertNotNull($retriedContext);
+        $this->assertSame(1, $retriedContext->getRegionId());
+        $this->assertNotNull($retriedContext->getRegionEpoch());
+        $this->assertSame(5, $retriedContext->getRegionEpoch()->getVersion());
+    }
+
+    public function testPessimisticLockRetriesNotLeaderWithReResolvedRegion(): void
+    {
+        // Issue #500: a NotLeader-carrying region error must invalidate the
+        // stale leader and retry against the re-resolved region instead of
+        // aborting the transaction.
+        $staleRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+        $freshRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 2,
+            leaderStoreId: 2,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+
+        $this->regionCache->method('getByKey')
+            ->willReturnOnConsecutiveCalls($staleRegion, null, null, null, null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($freshRegion);
+        $this->pdClient->method('scanRegions')->willReturn([$staleRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $notLeader = new \CrazyGoat\Proto\Errorpb\NotLeader();
+        $notLeader->setRegionId(1);
+        $leader = new \CrazyGoat\Proto\Metapb\Peer();
+        $leader->setStoreId(2);
+        $notLeader->setLeader($leader);
+        $regionError = new \CrazyGoat\Proto\Errorpb\Error();
+        $regionError->setMessage('not leader');
+        $regionError->setNotLeader($notLeader);
+
+        $staleResponse = new PessimisticLockResponse();
+        $staleResponse->setRegionError($regionError);
+        $okResponse = new PessimisticLockResponse();
+
+        $invalidatedRegionIds = [];
+        $this->regionCache->method('invalidate')
+            ->willReturnCallback(static function (int $regionId) use (&$invalidatedRegionIds): void {
+                $invalidatedRegionIds[] = $regionId;
+            });
+
+        $lockRequests = [];
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+                object $request,
+            ) use (
+                &$lockRequests,
+                $staleResponse,
+                $okResponse,
+            ): object {
+                if ($method === 'KvPessimisticLock') {
+                    $lockRequests[] = $request;
+                    return count($lockRequests) === 1 ? $staleResponse : $okResponse;
+                }
+                return match ($method) {
+                    'KvPrewrite' => new \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse(),
+                    'KvCommit' => new \CrazyGoat\Proto\Kvrpcpb\CommitResponse(),
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => true]);
+        $txn->set('k1', 'v1');
+        $txn->commit();
+
+        $this->assertSame(TransactionStatus::Committed, $txn->getStatus());
+        $this->assertCount(2, $lockRequests);
+
+        // check() (no retry executor owns this site) must have invalidated
+        // the NotLeader-carrying region before the retry.
+        $this->assertContains(1, $invalidatedRegionIds);
+
+        // The retried request must target the hinted NEW leader (store 2).
+        $retriedRequest = $lockRequests[1];
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\PessimisticLockRequest::class, $retriedRequest);
+        $retriedContext = $retriedRequest->getContext();
+        $this->assertNotNull($retriedContext);
+        $this->assertNotNull($retriedContext->getPeer());
+        $this->assertSame(2, $retriedContext->getPeer()->getStoreId());
+    }
+
+    public function testPessimisticLockThrowsRegionExceptionWhenRegionErrorsExhaustBudget(): void
+    {
+        // Issue #500: when region errors persist until the retry budget runs
+        // out, the transaction fails with the RegionException itself — not
+        // LockWaitTimeoutException (no lock conflict was ever reported).
+        $region = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+
+        $this->regionCache->method('getByKey')->willReturn($region);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($region);
+        $this->pdClient->method('scanRegions')->willReturn([$region]);
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $regionError = new \CrazyGoat\Proto\Errorpb\Error();
+        $regionError->setMessage('EpochNotMatch');
+        $regionError->setEpochNotMatch(new \CrazyGoat\Proto\Errorpb\EpochNotMatch());
+
+        $staleResponse = new PessimisticLockResponse();
+        $staleResponse->setRegionError($regionError);
+
+        $this->grpc->method('call')
+            ->willReturnCallback(static fn(string $addr, string $svc, string $method): object => match ($method) {
+                'KvPessimisticLock' => $staleResponse,
+                default => throw new \RuntimeException("Unexpected method: $method"),
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => true, 'maxBackoffMs' => 100]);
+        $txn->set('k1', 'v1');
+
+        try {
+            $txn->commit();
+            $this->fail('Expected RegionException was not thrown');
+        } catch (RegionException $e) {
+            $this->assertStringContainsString('EpochNotMatch', $e->getMessage());
+        }
+    }
 }
