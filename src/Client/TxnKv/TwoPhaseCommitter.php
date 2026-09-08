@@ -613,7 +613,6 @@ final readonly class TwoPhaseCommitter
             $elapsedMs = 0;
             $attempt = 0;
             $needRetry = false;
-            $regionRetry = false;
             $lastRegionError = null;
             do {
                 $attempt++;
@@ -681,7 +680,7 @@ final readonly class TwoPhaseCommitter
                 }
 
                 $needRetry = false;
-                $regionRetry = false;
+                $lastRegionError = null;
 
                 if ($regionError instanceof RegionException) {
                     $this->logger->warning('Region error during pessimistic lock, retrying', [
@@ -689,7 +688,6 @@ final readonly class TwoPhaseCommitter
                         'attempt' => $attempt,
                         'error' => $regionError->getMessage(),
                     ]);
-                    $regionRetry = true;
                     $lastRegionError = $regionError;
                 } else {
                     $errors = $response->getErrors();
@@ -745,7 +743,7 @@ final readonly class TwoPhaseCommitter
                     }
                 }
 
-                if (!$needRetry && !$regionRetry) {
+                if (!$needRetry && !$lastRegionError instanceof \CrazyGoat\TiKV\Client\Exception\RegionException) {
                     break;
                 }
 
@@ -778,7 +776,7 @@ final readonly class TwoPhaseCommitter
             // A lock that could not be acquired within the configured wait
             // budget must fail the transaction instead of silently continuing
             // to prewrite without a lock (issue #219, TXN-14).
-            if ($regionRetry && $lastRegionError !== null) {
+            if ($lastRegionError instanceof \CrazyGoat\TiKV\Client\Exception\RegionException) {
                 // The budget ran out while region errors kept coming — the
                 // region failure is the reason the lock was never acquired,
                 // so surface it rather than a lock timeout (issue #500).
