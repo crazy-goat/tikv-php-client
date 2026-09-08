@@ -413,3 +413,15 @@ hit one trap worth remembering:
    --no-coverage --display-phpunit-deprecations` → must print
    `PHPUnit Deprecations: 0`; baseline comparison counts are Tests: 743,
    Warnings: 5 (pre-existing; the run still exits 1 because of them).
+
+## Don't test generated proto setter behavior in unit tests (PR #498)
+
+`PdClientGcSafePointTest::testUpdateServiceGcSafePointRejectsOutOfRangeUint64`
+asserted that the generated `UpdateServiceGCSafePointResponse::setMinSafePoint()`
+throws for an out-of-range uint64 string. That behavior depends on the
+protobuf extension version: it threw locally but silently accepted the value
+on CI (PHP 8.2–8.4) → unit tests failed only in CI. Rule: never assert on
+gencode internals; test OUR code instead — here `PdClient::uint64ToInt()` was
+strengthened (string→int round-trip check catches clamped out-of-range
+values) and the test calls it via Reflection, which is deterministic across
+platforms.
