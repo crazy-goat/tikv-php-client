@@ -20,6 +20,7 @@ use CrazyGoat\TiKV\Client\Grpc\TimeoutConfig;
 use CrazyGoat\TiKV\Client\Observability\MetricsInterface;
 use CrazyGoat\TiKV\Client\Observability\NoOpMetrics;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadPolicy;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TxnAbortedByGcException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -43,6 +44,15 @@ final class TxnKvClient
      * when PD's safe point has already passed it. false: no validation.
      */
     public const OPT_GC_SAFE_POINT_VALIDATION = 'gcSafePointValidation';
+
+    /**
+     * options[] key for the read preference (issue #421): a
+     * \CrazyGoat\TiKV\Client\Region\ReplicaReadPolicy instance selecting
+     * which replica serves the transaction's reads (leader default,
+     * follower, mixed, prefer-leader), optional store-label matching and
+     * the stale-read flag. Commits always target the leader.
+     */
+    public const OPT_REPLICA_READ = 'replicaRead';
 
     /**
      * options[] key for the GC safe-point cache refresh interval in
@@ -94,6 +104,7 @@ final class TxnKvClient
             allowedStorePorts: $bundle->allowedStorePorts,
             retryDeadlineMs: self::resolveRetryDeadline($options),
             safePointCache: $safePointCache,
+            replicaReadPolicy: self::resolveReplicaReadPolicy($options),
         );
     }
 
@@ -116,6 +127,8 @@ final class TxnKvClient
         int $retryDeadlineMs = Transaction::DEFAULT_RETRY_DEADLINE_MS,
         /** GC safe-point cache for begin() validation; null = validation disabled. */
         private readonly ?SafePointCache $safePointCache = null,
+        /** Read preference applied to every transaction's reads (issue #421). */
+        private readonly ReplicaReadPolicy $replicaReadPolicy = new ReplicaReadPolicy(),
     ) {
         if ($retryDeadlineMs < 0) {
             throw new InvalidArgumentException('retryDeadlineMs must be >= 0');
@@ -270,7 +283,33 @@ final class TxnKvClient
             timeoutConfig: $this->timeoutConfig,
             metrics: $this->metrics,
             retryDeadlineMs: $this->retryDeadlineMs,
+            replicaReadPolicy: $this->replicaReadPolicy,
         );
+    }
+
+    /**
+     * Resolve options['replicaRead'] (see OPT_REPLICA_READ) for create():
+     * the read preference applied to transaction reads (issue #421). Must
+     * be a ReplicaReadPolicy instance when set.
+     *
+     * @param array<string, mixed> $options
+     */
+    private static function resolveReplicaReadPolicy(array $options): ReplicaReadPolicy
+    {
+        if (!array_key_exists(self::OPT_REPLICA_READ, $options)) {
+            return new ReplicaReadPolicy();
+        }
+
+        $policy = $options[self::OPT_REPLICA_READ];
+        if (!$policy instanceof ReplicaReadPolicy) {
+            throw new InvalidArgumentException(sprintf(
+                "options['replicaRead'] must be a %s, %s given",
+                ReplicaReadPolicy::class,
+                get_debug_type($policy),
+            ));
+        }
+
+        return $policy;
     }
 
     /**

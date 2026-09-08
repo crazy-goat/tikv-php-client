@@ -171,6 +171,19 @@ final readonly class RegionResolver
         return $result;
     }
 
+    /**
+     * Look up a store's metadata (address, labels) by id. Results come from
+     * PdClient's StoreCache, which caches the full metapb.Store message —
+     * including its labels — so replica label matching (issue #421) does not
+     * add PD round trips beyond the existing store-address resolution.
+     */
+    public function getStore(int $storeId): ?Store
+    {
+        $store = $this->pdClient->getStore($storeId);
+
+        return $store instanceof Store ? $store : null;
+    }
+
     public function resolveStoreAddress(int $storeId): string
     {
         $store = $this->pdClient->getStore($storeId);

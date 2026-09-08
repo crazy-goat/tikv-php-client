@@ -449,3 +449,33 @@ any invalidation: without `notLeaderOwnedByRetryExecutor: false` (or an owner li
 Budget note (#500): retrying region errors inside `pessimisticLockBatch()`'s do-while
 charges the existing backoff schedule to the lock-wait budget, so exhaustion surfaces as
 the last RegionException — not `LockWaitTimeoutException` (no lock conflict was reported).
+
+## Replica reads: selection must live inside the retry closure, and DataIsNotReady is an exclusion signal
+
+Three rules from issue #421 (`RegionContextFactory::resolveTarget()`):
+
+1. **Peer selection is per-attempt state, like region resolution.** The
+   `ReplicaReadPolicy` selects a peer for every retry attempt inside the
+   read closure (the same stale-capture lesson as #267); never hoist a
+   resolved `ReplicaReadTarget` above the loop. The selected store id (not
+   just the leader's) must also feed `resolveStoreAddress()`.
+2. **`DataIsNotReady` is a replica-lag signal, not a region miss.** It is
+   classified as `BackoffType::None` (immediate retry); the read closure
+   catches the `RegionException`, remembers the failing store id in a
+   by-ref local (`$excludedStore`) and the next attempt excludes it — with
+   a single follower left this degrades to the leader. Sync paths
+   (get/getKeyTTL/scan/txn reads) do this; the async batchGet dispatch
+   cannot (errors surface at wait time outside the retry closure), so
+   there a re-pick relies on the random choice among replicas.
+3. **No new store-label cache is needed.** `StoreCache` already caches the
+   full `metapb.Store` message *including* its labels, and
+   `RegionResolver::getStore()` exposes it; the issue's "extend StoreCache
+   to retain labels" premise had already expired (it retains the whole
+   proto). `RegionContextFactory::resolveTarget()` takes a
+   `Closure(int): ?Store` instead of the resolver, so it is unit-testable
+   without mocking the final `RegionResolver`.
+
+E2E note: `docker-compose run --rm php-test …` recreates the tikv
+containers it depends on; if the cluster was just (re)started the run
+container's DNS can fail with "Name does not resolve tikv1:20160" and the
+whole suite errors — wait ~20 s after `make up` before running E2E.

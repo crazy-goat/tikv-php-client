@@ -150,10 +150,16 @@ final class ErrorClassifier
 
             // Unmapped kinds default to region-miss retry.
             ErrorKind::StoreNotMatch,
-            ErrorKind::DataIsNotReady,
             ErrorKind::MismatchPeerId,
             ErrorKind::BucketVersionNotMatch,
             ErrorKind::UndeterminedResult => BackoffType::RegionMiss,
+
+            // DataIsNotReady is the replica-lag signal TiKV returns on
+            // follower/replica reads when the peer's applied index (or
+            // safe_ts for stale reads) is behind the request. Retry
+            // immediately; the read closure excludes the failing store and
+            // falls back to another replica or the leader (issue #421).
+            ErrorKind::DataIsNotReady => BackoffType::None,
         };
     }
 }

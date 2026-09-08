@@ -11,6 +11,7 @@ use CrazyGoat\TiKV\Client\Batch\CheckedGrpcFuture;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
+use CrazyGoat\TiKV\Client\Exception\RegionException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\Grpc\SlowLogConfig;
 use CrazyGoat\TiKV\Client\Grpc\TimeoutConfig;
@@ -18,6 +19,8 @@ use CrazyGoat\TiKV\Client\Region\RegionContextFactory;
 use CrazyGoat\TiKV\Client\Region\RegionErrorHandler;
 use CrazyGoat\TiKV\Client\Region\RegionRangeClipper;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadPolicy;
+use CrazyGoat\TiKV\Client\Retry\ErrorKind;
 use CrazyGoat\TiKV\Client\Retry\RetryExecutor;
 use Google\Protobuf\Internal\Message;
 use Psr\Log\LoggerInterface;
@@ -38,6 +41,8 @@ final readonly class RawKvScanner
         private ?SlowLogConfig $slowLogConfig = null,
         private int $retryDeadlineMs = RetryExecutor::DEFAULT_RETRY_DEADLINE_MS,
         private int $maxConcurrency = BatchAsyncExecutor::DEFAULT_MAX_CONCURRENCY,
+        /** Read preference for scans (issue #421). */
+        private ReplicaReadPolicy $replicaReadPolicy = new ReplicaReadPolicy(),
     ) {
     }
 
@@ -274,19 +279,32 @@ final readonly class RawKvScanner
 
         while (true) {
             $freshEndKey = '';
+            $leaderFallback = false;
+            $excludedStore = null;
             $batch = $executor->execute($cursorStart, function () use (
                 $cursorStart,
                 $endKey,
                 $pending,
                 $keyOnly,
                 $columnFamily,
+                &$leaderFallback,
+                &$excludedStore,
                 &$freshEndKey,
             ): array {
                 // Resolve the region on every attempt: a stale captured
                 // region would otherwise reproduce the original error on
                 // each retry.
                 $fresh = $this->regionResolver->getRegionInfo($cursorStart);
-                $address = $this->regionResolver->resolveStoreAddress($fresh->leaderStoreId);
+                $target = RegionContextFactory::resolveTarget(
+                    $fresh,
+                    $this->replicaReadPolicy,
+                    $this->regionResolver->getStore(...),
+                    forceLeader: $leaderFallback,
+                    excludedStoreId: $excludedStore,
+                );
+                $leaderFallback = false;
+                $excludedStore = null;
+                $address = $this->regionResolver->resolveStoreAddress($target->storeId);
                 $freshEndKey = $fresh->endKey;
 
                 // Re-clip the sub-range against the freshly resolved region:
@@ -297,7 +315,7 @@ final readonly class RawKvScanner
                     : $endKey;
 
                 $request = new RawScanRequest();
-                $request->setContext(RegionContextFactory::fromRegionInfo($fresh));
+                $request->setContext($target->context);
                 $request->setStartKey($cursorStart);
                 if ($wireEndKey !== '') {
                     $request->setEndKey($wireEndKey);
@@ -311,16 +329,26 @@ final readonly class RawKvScanner
                     $request->setCf($columnFamily);
                 }
 
-                $response = $this->measure('scan', $cursorStart, fn(): RawScanResponse => $this->grpc->call(
-                    $address,
-                    'tikvpb.Tikv',
-                    'RawScan',
-                    $request,
-                    RawScanResponse::class,
-                    $this->timeoutConfig->scanTimeoutMs,
-                ));
-                /** @var RawScanResponse $response */
-                RegionErrorHandler::check($response);
+                try {
+                    $response = $this->measure('scan', $cursorStart, fn(): RawScanResponse => $this->grpc->call(
+                        $address,
+                        'tikvpb.Tikv',
+                        'RawScan',
+                        $request,
+                        RawScanResponse::class,
+                        $this->timeoutConfig->scanTimeoutMs,
+                    ));
+                    /** @var RawScanResponse $response */
+                    RegionErrorHandler::check($response);
+                } catch (RegionException $e) {
+                    if ($e->errorKind === ErrorKind::DataIsNotReady) {
+                        // The selected replica's applied index is behind:
+                        // exclude it so the next attempt falls back to
+                        // another replica or the leader (issue #421).
+                        $excludedStore = $target->storeId;
+                    }
+                    throw $e;
+                }
 
                 $subResults = [];
                 foreach ($response->getKvs() as $pair) {
@@ -380,6 +408,8 @@ final readonly class RawKvScanner
         // the safe resolution key.
         $resolutionKey = $endKey;
         $freshEndKey = '';
+        $leaderFallback = false;
+        $excludedStore = null;
         $batch = $executor->execute($resolutionKey, function () use (
             $startKey,
             $endKey,
@@ -387,12 +417,23 @@ final readonly class RawKvScanner
             $limit,
             $keyOnly,
             $columnFamily,
+            &$leaderFallback,
+            &$excludedStore,
             &$freshEndKey,
         ): array {
             // Resolve the region on every attempt: a stale captured region
             // would otherwise reproduce the original error on each retry.
             $fresh = $this->regionResolver->getRegionInfo($resolutionKey);
-            $address = $this->regionResolver->resolveStoreAddress($fresh->leaderStoreId);
+            $target = RegionContextFactory::resolveTarget(
+                $fresh,
+                $this->replicaReadPolicy,
+                $this->regionResolver->getStore(...),
+                forceLeader: $leaderFallback,
+                excludedStoreId: $excludedStore,
+            );
+            $leaderFallback = false;
+            $excludedStore = null;
+            $address = $this->regionResolver->resolveStoreAddress($target->storeId);
             $freshEndKey = $fresh->endKey;
 
             // After a split the fresh region is smaller: clip the wire
@@ -403,7 +444,7 @@ final readonly class RawKvScanner
             }
 
             $request = new RawScanRequest();
-            $request->setContext(RegionContextFactory::fromRegionInfo($fresh));
+            $request->setContext($target->context);
             $request->setStartKey($wireStartKey);
             if ($endKey !== '') {
                 $request->setEndKey($endKey);
@@ -417,16 +458,23 @@ final readonly class RawKvScanner
                 $request->setCf($columnFamily);
             }
 
-            $response = $this->measure('scan', $startKey, fn(): RawScanResponse => $this->grpc->call(
-                $address,
-                'tikvpb.Tikv',
-                'RawScan',
-                $request,
-                RawScanResponse::class,
-                $this->timeoutConfig->scanTimeoutMs,
-            ));
-            /** @var RawScanResponse $response */
-            RegionErrorHandler::check($response);
+            try {
+                $response = $this->measure('scan', $startKey, fn(): RawScanResponse => $this->grpc->call(
+                    $address,
+                    'tikvpb.Tikv',
+                    'RawScan',
+                    $request,
+                    RawScanResponse::class,
+                    $this->timeoutConfig->scanTimeoutMs,
+                ));
+                /** @var RawScanResponse $response */
+                RegionErrorHandler::check($response);
+            } catch (RegionException $e) {
+                if ($e->errorKind === ErrorKind::DataIsNotReady) {
+                    $excludedStore = $target->storeId;
+                }
+                throw $e;
+            }
 
             $subResults = [];
             foreach ($response->getKvs() as $pair) {
@@ -594,6 +642,8 @@ final readonly class RawKvScanner
         ?string &$freshEndKey,
     ): CheckedGrpcFuture {
         $freshEndKey = '';
+        $leaderFallback = false;
+        $excludedStore = null;
         // The resolution key mirrors the sequential paths: forward scans
         // resolve on the sub-range start, reverse scans on its end (the
         // lower bound), see executeReverseScanForSubRange().
@@ -608,12 +658,23 @@ final readonly class RawKvScanner
             $columnFamily,
             $reverse,
             $resolutionKey,
+            &$leaderFallback,
+            &$excludedStore,
             &$freshEndKey,
         ): CheckedGrpcFuture {
             // Resolve the region on every attempt so retries pick up cache
             // invalidation and leader switching (issue #267).
             $fresh = $this->regionResolver->getRegionInfo($resolutionKey);
-            $address = $this->regionResolver->resolveStoreAddress($fresh->leaderStoreId);
+            $target = RegionContextFactory::resolveTarget(
+                $fresh,
+                $this->replicaReadPolicy,
+                $this->regionResolver->getStore(...),
+                forceLeader: $leaderFallback,
+                excludedStoreId: $excludedStore,
+            );
+            $leaderFallback = false;
+            $excludedStore = null;
+            $address = $this->regionResolver->resolveStoreAddress($target->storeId);
             $freshEndKey = $fresh->endKey;
 
             if ($reverse) {
@@ -624,7 +685,7 @@ final readonly class RawKvScanner
                     $wireStartKey = $freshEndKey;
                 }
                 $request = new RawScanRequest();
-                $request->setContext(RegionContextFactory::fromRegionInfo($fresh));
+                $request->setContext($target->context);
                 $request->setStartKey($wireStartKey);
                 if ($endKey !== '') {
                     $request->setEndKey($endKey);
@@ -637,7 +698,7 @@ final readonly class RawKvScanner
                     ? $freshEndKey
                     : $endKey;
                 $request = new RawScanRequest();
-                $request->setContext(RegionContextFactory::fromRegionInfo($fresh));
+                $request->setContext($target->context);
                 $request->setStartKey($startKey);
                 if ($wireEndKey !== '') {
                     $request->setEndKey($wireEndKey);
