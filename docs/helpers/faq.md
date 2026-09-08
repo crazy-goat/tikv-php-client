@@ -425,3 +425,18 @@ gencode internals; test OUR code instead — here `PdClient::uint64ToInt()` was
 strengthened (string→int round-trip check catches clamped out-of-range
 values) and the test calls it via Reflection, which is deterministic across
 platforms.
+
+## Catching a RegionException around `RegionErrorHandler::check()` is safe because check() invalidates BEFORE throwing
+
+`RegionErrorHandler::check()` (with `notLeaderOwnedByRetryExecutor: false`) invalidates the
+region from the cache and THEN throws — so a call site that wraps `grpc->call()` +
+`check()` in `try { … } catch (RegionException $e)` gets cache invalidation for free and
+can simply retry: the next attempt's `RegionResolver::getRegionInfo()` sees a cache miss,
+reaches PD, and picks up the new epoch/leader. The re-resolve must happen INSIDE the retry
+loop (stale-capture class, #267/#500) — a region/peers pair hoisted above the loop would
+replay the stale epoch on every attempt. Do not catch and ignore a NotLeader hint without
+any invalidation: without `notLeaderOwnedByRetryExecutor: false` (or an owner like
+`RetryExecutor::handleNotLeader()`) the stale entry would survive up to the ~600 s TTL.
+Budget note (#500): retrying region errors inside `pessimisticLockBatch()`'s do-while
+charges the existing backoff schedule to the lock-wait budget, so exhaustion surfaces as
+the last RegionException — not `LockWaitTimeoutException` (no lock conflict was reported).
