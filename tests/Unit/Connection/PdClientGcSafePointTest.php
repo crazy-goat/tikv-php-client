@@ -119,20 +119,19 @@ final class PdClientGcSafePointTest extends TestCase
         $this->assertSame('600', (string) $captured->getTtl());
     }
 
-    public function testUpdateServiceGcSafePointRejectsOutOfRangeUint64(): void
+    public function testUint64ToIntRejectsOutOfRangeDecimalString(): void
     {
-        // A uint64 above PHP_INT_MAX cannot exist as a PHP int: the gencode
-        // rejects the out-of-range string at the setter, and a value that
-        // arrives already-cast is guarded by PdClient::uint64ToInt() —
-        // either way the caller never sees a wrapped negative safe point.
-        $response = new \CrazyGoat\Proto\Pdpb\UpdateServiceGCSafePointResponse();
-        $header = new ResponseHeader();
-        $header->setClusterId(100);
-        $response->setHeader($header);
+        // The gencode setter's out-of-range rejection varies with the
+        // protobuf extension version, so the guarantee is tested against
+        // PdClient::uint64ToInt() directly (via reflection): a decimal
+        // string above the 64-bit range must never be clamped to
+        // PHP_INT_MAX and silently accepted as a safe point.
+        $client = new PdClient($this->createStub(GrpcClientInterface::class), 'pd:2379');
+        $method = new \ReflectionMethod(PdClient::class, 'uint64ToInt');
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Cannot convert');
-        $response->setMinSafePoint('18446744073709551616'); // 2^64: unrepresentable
+        $this->expectException(TiKvException::class);
+        $this->expectExceptionMessage('invalid GC safe point');
+        $method->invoke($client, '18446744073709551616', 'GC safe point'); // 2^64: unrepresentable
     }
 
     public function testUint64GuardRejectsNegativeSafePointValue(): void

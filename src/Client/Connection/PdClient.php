@@ -306,6 +306,13 @@ final class PdClient implements PdClientInterface
         }
 
         $value = (int) $raw;
+        if (is_string($raw) && $raw !== (string) $value) {
+            // A decimal string that does not round-trip through int is
+            // either out of the 64-bit range (clamped to PHP_INT_MAX) or
+            // non-canonical — both are protocol violations, not safe points.
+            throw new TiKvException(sprintf('PD returned an invalid %s: %s', $what, $raw));
+        }
+
         if ($value < 0) {
             // Either an out-of-range uint64 wrapped negative, or PD sent
             // nonsense; both are protocol violations, not safe points.
