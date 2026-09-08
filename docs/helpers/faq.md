@@ -475,14 +475,15 @@ Three rules from issue #421 (`RegionContextFactory::resolveTarget()`):
    `Closure(int): ?Store` instead of the resolver, so it is unit-testable
    without mocking the final `RegionResolver`.
 
-Review note (PR review of the #421 branch): the `$leaderFallback`/`forceLeader`
-parameter threaded through every read closure is never set to `true` — the
-actual leader fallback is the exclusion path (`excludedStoreId` → empty
-candidate list → degrade to leader inside `resolveTarget()`). If you add a
-real leader fallback trigger, remember a leader that answers DataIsNotReady
+Review note (PR review of the #421 branch): a `$leaderFallback`/`forceLeader`
+parameter was removed from `resolveTarget()` — it was never set to `true`;
+the actual leader fallback is the exclusion path (`excludedStoreId` → empty
+candidate list → degrade to leader inside `resolveTarget()`). If you ever add
+a real leader fallback trigger, remember a leader that answers DataIsNotReady
 under Leader+staleRead otherwise loops on itself at zero backoff until the
-attempt cap. Likewise the async batchScan path declares `$excludedStore` but
-has no catch inside the retry closure, so it is always null there.
+attempt cap. The async batchScan path likewise never tracked exclusions: it
+declared `$excludedStore` with no `DataIsNotReady` catch inside its retry
+closure, so the unused plumbing was removed there too.
 
 E2E note: `docker-compose run --rm php-test …` recreates the tikv
 containers it depends on; if the cluster was just (re)started the run

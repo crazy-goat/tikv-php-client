@@ -279,7 +279,6 @@ final readonly class RawKvScanner
 
         while (true) {
             $freshEndKey = '';
-            $leaderFallback = false;
             $excludedStore = null;
             $batch = $executor->execute($cursorStart, function () use (
                 $cursorStart,
@@ -287,7 +286,6 @@ final readonly class RawKvScanner
                 $pending,
                 $keyOnly,
                 $columnFamily,
-                &$leaderFallback,
                 &$excludedStore,
                 &$freshEndKey,
             ): array {
@@ -299,10 +297,8 @@ final readonly class RawKvScanner
                     $fresh,
                     $this->replicaReadPolicy,
                     $this->regionResolver->getStore(...),
-                    forceLeader: $leaderFallback,
                     excludedStoreId: $excludedStore,
                 );
-                $leaderFallback = false;
                 $excludedStore = null;
                 $address = $this->regionResolver->resolveStoreAddress($target->storeId);
                 $freshEndKey = $fresh->endKey;
@@ -408,7 +404,6 @@ final readonly class RawKvScanner
         // the safe resolution key.
         $resolutionKey = $endKey;
         $freshEndKey = '';
-        $leaderFallback = false;
         $excludedStore = null;
         $batch = $executor->execute($resolutionKey, function () use (
             $startKey,
@@ -417,7 +412,6 @@ final readonly class RawKvScanner
             $limit,
             $keyOnly,
             $columnFamily,
-            &$leaderFallback,
             &$excludedStore,
             &$freshEndKey,
         ): array {
@@ -428,10 +422,8 @@ final readonly class RawKvScanner
                 $fresh,
                 $this->replicaReadPolicy,
                 $this->regionResolver->getStore(...),
-                forceLeader: $leaderFallback,
                 excludedStoreId: $excludedStore,
             );
-            $leaderFallback = false;
             $excludedStore = null;
             $address = $this->regionResolver->resolveStoreAddress($target->storeId);
             $freshEndKey = $fresh->endKey;
@@ -642,8 +634,6 @@ final readonly class RawKvScanner
         ?string &$freshEndKey,
     ): CheckedGrpcFuture {
         $freshEndKey = '';
-        $leaderFallback = false;
-        $excludedStore = null;
         // The resolution key mirrors the sequential paths: forward scans
         // resolve on the sub-range start, reverse scans on its end (the
         // lower bound), see executeReverseScanForSubRange().
@@ -658,8 +648,6 @@ final readonly class RawKvScanner
             $columnFamily,
             $reverse,
             $resolutionKey,
-            &$leaderFallback,
-            &$excludedStore,
             &$freshEndKey,
         ): CheckedGrpcFuture {
             // Resolve the region on every attempt so retries pick up cache
@@ -669,11 +657,7 @@ final readonly class RawKvScanner
                 $fresh,
                 $this->replicaReadPolicy,
                 $this->regionResolver->getStore(...),
-                forceLeader: $leaderFallback,
-                excludedStoreId: $excludedStore,
             );
-            $leaderFallback = false;
-            $excludedStore = null;
             $address = $this->regionResolver->resolveStoreAddress($target->storeId);
             $freshEndKey = $fresh->endKey;
 

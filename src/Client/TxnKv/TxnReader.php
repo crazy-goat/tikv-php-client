@@ -75,21 +75,18 @@ final readonly class TxnReader
             return $state->getWriteSetValue($key);
         }
 
-        $leaderFallback = false;
         $excludedStore = null;
 
         return $retryExecutor->execute(
             $key,
-            function () use ($key, $state, &$leaderFallback, &$excludedStore): ?string {
+            function () use ($key, $state, &$excludedStore): ?string {
                 $region = $this->regionResolver->getRegionInfo($key);
                 $target = RegionContextFactory::resolveTarget(
                     $region,
                     $this->replicaReadPolicy,
                     $this->regionResolver->getStore(...),
-                    forceLeader: $leaderFallback,
                     excludedStoreId: $excludedStore,
                 );
-                $leaderFallback = false;
                 $excludedStore = null;
                 $address = $this->regionResolver->resolveStoreAddress($target->storeId);
 
@@ -361,14 +358,12 @@ final readonly class TxnReader
             // the region, so the cache lookup hits and only the end key
             // needs re-clipping after a split.
             $freshEndKey = '';
-            $leaderFallback = false;
             $excludedStore = null;
             $batch = $retryExecutor->execute($cursorStart, function () use (
                 $cursorStart,
                 $endKey,
                 $pending,
                 $maxScanLimit,
-                &$leaderFallback,
                 &$excludedStore,
                 &$freshEndKey,
             ): array {
@@ -381,10 +376,8 @@ final readonly class TxnReader
                     $fresh,
                     $this->replicaReadPolicy,
                     $this->regionResolver->getStore(...),
-                    forceLeader: $leaderFallback,
                     excludedStoreId: $excludedStore,
                 );
-                $leaderFallback = false;
                 $excludedStore = null;
                 $address = $this->regionResolver->resolveStoreAddress($target->storeId);
                 $freshEndKey = $fresh->endKey;

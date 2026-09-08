@@ -40,21 +40,18 @@ final readonly class RawKvCrud
 
     public function get(string $key, RetryExecutor $retryExecutor, string $columnFamily = ''): ?string
     {
-        $leaderFallback = false;
         $excludedStore = null;
 
         return $retryExecutor->execute(
             $key,
-            function () use ($key, $columnFamily, &$leaderFallback, &$excludedStore): ?string {
+            function () use ($key, $columnFamily, &$excludedStore): ?string {
                 $region = $this->regionResolver->getRegionInfo($key);
                 $target = RegionContextFactory::resolveTarget(
                     $region,
                     $this->replicaReadPolicy,
                     $this->regionResolver->getStore(...),
-                    forceLeader: $leaderFallback,
                     excludedStoreId: $excludedStore,
                 );
-                $leaderFallback = false;
                 $excludedStore = null;
                 $address = $this->regionResolver->resolveStoreAddress($target->storeId);
 
@@ -173,21 +170,18 @@ final readonly class RawKvCrud
 
     public function getKeyTTL(string $key, RetryExecutor $retryExecutor, string $columnFamily = ''): ?int
     {
-        $leaderFallback = false;
         $excludedStore = null;
 
         return $retryExecutor->execute(
             $key,
-            function () use ($key, $columnFamily, &$leaderFallback, &$excludedStore): ?int {
+            function () use ($key, $columnFamily, &$excludedStore): ?int {
                 $region = $this->regionResolver->getRegionInfo($key);
                 $target = RegionContextFactory::resolveTarget(
                     $region,
                     $this->replicaReadPolicy,
                     $this->regionResolver->getStore(...),
-                    forceLeader: $leaderFallback,
                     excludedStoreId: $excludedStore,
                 );
-                $leaderFallback = false;
                 $excludedStore = null;
                 $address = $this->regionResolver->resolveStoreAddress($target->storeId);
 

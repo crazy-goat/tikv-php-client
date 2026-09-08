@@ -190,24 +190,10 @@ class ReplicaReadTargetResolutionTest extends TestCase
             $this->region(),
             new ReplicaReadPolicy(mode: ReplicaReadMode::Follower),
             $this->storeLookup(),
-            forceLeader: false,
             excludedStoreId: 4,
         );
 
         self::assertSame(5, $target->storeId);
-    }
-
-    public function testForceLeaderOverridesReplicaSelection(): void
-    {
-        $target = RegionContextFactory::resolveTarget(
-            $this->region(),
-            new ReplicaReadPolicy(mode: ReplicaReadMode::Follower),
-            $this->storeLookup(),
-            forceLeader: true,
-        );
-
-        self::assertSame(3, $target->storeId);
-        self::assertFalse($target->context->getReplicaRead());
     }
 
     public function testExcludingTheOnlyReplicaFallsBackToLeader(): void
@@ -228,7 +214,6 @@ class ReplicaReadTargetResolutionTest extends TestCase
             $oneFollower,
             new ReplicaReadPolicy(mode: ReplicaReadMode::Follower),
             $this->storeLookup(),
-            forceLeader: false,
             excludedStoreId: 4,
         );
 

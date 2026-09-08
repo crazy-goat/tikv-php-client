@@ -23,7 +23,7 @@ final class RegionContextFactory
     /**
      * Resolve the peer (and store) a read request should target (issue #421).
      *
-     * Leader mode (and the $forceLeader fallback) always produces the leader
+     * Leader mode always produces the leader
      * peer as before. Follower / Mixed / PreferLeader select a replica peer
      * from RegionInfo::peers, optionally restricted to stores carrying all
      * of the policy's matchStoreLabels (looked up through $storeLookup, a
@@ -49,7 +49,6 @@ final class RegionContextFactory
         RegionInfo $region,
         ReplicaReadPolicy $policy,
         Closure $storeLookup,
-        bool $forceLeader = false,
         ?int $excludedStoreId = null,
     ): ReplicaReadTarget {
         $leader = self::leaderPeer($region);
@@ -58,7 +57,7 @@ final class RegionContextFactory
             $region->leaderStoreId,
         );
 
-        if ($policy->mode === ReplicaReadMode::Leader || $forceLeader) {
+        if ($policy->mode === ReplicaReadMode::Leader) {
             return $leaderTarget;
         }
 
