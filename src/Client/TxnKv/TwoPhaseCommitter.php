@@ -778,7 +778,7 @@ final readonly class TwoPhaseCommitter
             // A lock that could not be acquired within the configured wait
             // budget must fail the transaction instead of silently continuing
             // to prewrite without a lock (issue #219, TXN-14).
-            if ($regionRetry && $lastRegionError instanceof RegionException) {
+            if ($regionRetry && $lastRegionError !== null) {
                 // The budget ran out while region errors kept coming — the
                 // region failure is the reason the lock was never acquired,
                 // so surface it rather than a lock timeout (issue #500).
