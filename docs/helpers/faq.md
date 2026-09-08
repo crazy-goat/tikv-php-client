@@ -235,7 +235,16 @@ end boundary where the cache lookup misses and PD answers with the
 wire range must be re-clipped on every attempt (end key for forward,
 start/upper key for reverse) — TiKV rejects ranges that cross region
 boundaries. Same stale-capture bug remains in `RawKvRangeOps`
-(deleteRange/checksum) as of this fix.
+(deleteRange/checksum) as of this fix. The rollback closures
+(`batchRollback()`, `pessimisticRollbackAll()` in `TwoPhaseCommitter`)
+had the same bug and were fixed the same way (#502): `getRegionInfo()`
+inside the closure on every attempt — there the group's
+`batchResolveRegions()` already populated the cache, so the first
+attempt is a cache hit and no extra PD round trip is added. Unlike the
+scan fix, the retry does not re-clip or re-group: after a split the
+re-resolved region may not cover the whole key group and the server
+keeps erroring until the budget is exhausted (documented limitation,
+same as the #500 lock path).
 
 ## PHPStan `ternary.alwaysFalse` fires for by-ref bool flags mutated in a sibling closure — sequence mocks instead
 

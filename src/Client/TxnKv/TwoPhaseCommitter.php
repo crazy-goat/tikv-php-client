@@ -509,11 +509,22 @@ final readonly class TwoPhaseCommitter
         $keysByRegion = $this->groupStringsByRegion($keys);
 
         foreach ($keysByRegion as $regionData) {
-            $region = $regionData['region'];
             $regionKeys = $regionData['keys'];
             $firstKey = $regionKeys[0] ?? '';
 
-            $retryExecutor->execute($firstKey, function () use ($region, $regionKeys): null {
+            $retryExecutor->execute($firstKey, function () use ($firstKey, $regionKeys): null {
+                // Resolve the region on every attempt so cache invalidation
+                // and leader switching performed by the retry executor take
+                // effect (issue #502): a stale captured region would
+                // otherwise reproduce the original error on each retry —
+                // the same stale-capture class as the scan retry fix
+                // (#267, GRPC-08) and the pessimistic lock fix (#500).
+                // groupStringsByRegion() populated the cache via
+                // batchResolveRegions(), so the first attempt is a cache
+                // hit. Note: after a region split, the re-resolved region
+                // may no longer cover the whole key group (known
+                // limitation — re-grouping would be a future improvement).
+                $region = $this->regionResolver->getRegionInfo($firstKey);
                 $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
 
                 $request = new BatchRollbackRequest();
@@ -808,11 +819,15 @@ final readonly class TwoPhaseCommitter
         $forUpdateTs = $state->getMaxForUpdateTs() ?? $this->startTs;
 
         foreach ($keysByRegion as $regionData) {
-            $region = $regionData['region'];
             $regionKeys = $regionData['keys'];
             $firstKey = $regionKeys[0] ?? '';
 
-            $retryExecutor->execute($firstKey, function () use ($region, $regionKeys, $forUpdateTs): null {
+            $retryExecutor->execute($firstKey, function () use ($firstKey, $regionKeys, $forUpdateTs): null {
+                // Resolve the region on every attempt so cache invalidation
+                // and leader switching performed by the retry executor take
+                // effect (issue #502) — see batchRollback() for the full
+                // stale-capture rationale (#267/#500 pattern).
+                $region = $this->regionResolver->getRegionInfo($firstKey);
                 $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
 
                 $request = new PessimisticRollbackRequest();
