@@ -18,7 +18,7 @@ final class UndeterminedCommitException extends TiKvException
 {
     public function __construct(
         string $message,
-        public readonly ?\Throwable $previous = null,
+        ?\Throwable $previous = null,
     ) {
         parent::__construct($message, 0, $previous);
     }
