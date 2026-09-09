@@ -8,6 +8,7 @@ use CrazyGoat\Proto\Metapb\Store;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\StoreNotFoundException;
+use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Region\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -101,7 +102,7 @@ class RegionResolverTest extends TestCase
             endKey: 'z',
         );
 
-        $this->pdClient->method('scanRegions')->with('a', 'a')->willReturn([$region]);
+        $this->pdClient->method('scanRegions')->with('a', "a\x00")->willReturn([$region]);
         $this->regionCache->expects($this->once())->method('put')->with($region);
 
         $result = $this->resolver->batchResolveRegions(['a']);
@@ -120,7 +121,7 @@ class RegionResolverTest extends TestCase
             endKey: 'z',
         );
 
-        $this->pdClient->method('scanRegions')->with('a', 'c')->willReturn([$region]);
+        $this->pdClient->method('scanRegions')->with('a', "c\x00")->willReturn([$region]);
         $this->regionCache->expects($this->once())->method('put')->with($region);
 
         $result = $this->resolver->batchResolveRegions(['a', 'b', 'c']);
@@ -151,7 +152,7 @@ class RegionResolverTest extends TestCase
             endKey: '',
         );
 
-        $this->pdClient->method('scanRegions')->with('a', 'z')->willReturn([$region1, $region2]);
+        $this->pdClient->method('scanRegions')->with('a', "z\x00")->willReturn([$region1, $region2]);
         $this->regionCache->expects($this->exactly(2))->method('put');
 
         $result = $this->resolver->batchResolveRegions(['a', 'm', 'z']);
@@ -179,7 +180,7 @@ class RegionResolverTest extends TestCase
         $this->resolver->batchResolveRegions(['a', 'b', 'c']);
     }
 
-    public function testBatchResolveRegionsSkipsKeysOutsideRegions(): void
+    public function testBatchResolveRegionsThrowsOnKeysOutsideRegions(): void
     {
         $region = new RegionInfo(
             regionId: 1,
@@ -191,14 +192,77 @@ class RegionResolverTest extends TestCase
             endKey: 'y',
         );
 
-        $this->pdClient->method('scanRegions')->with('a', 'z')->willReturn([$region]);
+        $this->pdClient->method('scanRegions')->with('a', "z\x00")->willReturn([$region]);
         $this->regionCache->expects($this->once())->method('put')->with($region);
 
-        $result = $this->resolver->batchResolveRegions(['a', 'b', 'x', 'z']);
-        $this->assertCount(2, $result);
-        $this->assertArrayHasKey('b', $result);
-        $this->assertArrayHasKey('x', $result);
-        $this->assertArrayNotHasKey('a', $result);
-        $this->assertArrayNotHasKey('z', $result);
+        $this->expectException(TiKvException::class);
+        $this->expectExceptionMessage('"a"');
+        $this->resolver->batchResolveRegions(['a', 'b', 'x', 'z']);
+    }
+
+    public function testBatchResolveRegionsThrowsNamingFirstUnresolvableKey(): void
+    {
+        $region = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: 'a',
+            endKey: 'b',
+        );
+
+        $this->pdClient->method('scanRegions')->willReturn([$region]);
+        $this->regionCache->method('put');
+
+        $this->expectException(TiKvException::class);
+        $this->expectExceptionMessage('refusing to silently drop');
+        $this->resolver->batchResolveRegions(['a', 'z']);
+    }
+
+    public function testBatchResolveRegionsThrowsWhenPdReturnsNoRegions(): void
+    {
+        $this->pdClient->method('scanRegions')->willReturn([]);
+        $this->regionCache->method('put');
+
+        $this->expectException(TiKvException::class);
+        $this->resolver->batchResolveRegions(['a']);
+    }
+
+    /**
+     * Regression test for issue #244: the maximum key of a batch may sit
+     * exactly on a region boundary (the region's startKey). The scan upper
+     * bound must include that region, otherwise the key found no region
+     * and was silently dropped from the batch.
+     */
+    public function testBatchResolveRegionsIncludesRegionStartingAtMaxKey(): void
+    {
+        $region1 = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: 'a',
+            endKey: 'm',
+        );
+        $region2 = new RegionInfo(
+            regionId: 2,
+            leaderPeerId: 2,
+            leaderStoreId: 2,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: 'm',
+            endKey: '',
+        );
+
+        // Issue #244: the previous bound ('a', 'm') made PD stop before the
+        // region whose startKey is exactly 'm'.
+        $this->pdClient->method('scanRegions')->with('a', "m\x00")->willReturn([$region1, $region2]);
+        $this->regionCache->expects($this->exactly(2))->method('put');
+
+        $result = $this->resolver->batchResolveRegions(['a', 'm']);
+        $this->assertSame($region1, $result['a']);
+        $this->assertSame($region2, $result['m']);
     }
 }

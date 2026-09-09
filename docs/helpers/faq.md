@@ -780,3 +780,25 @@ paraphrasing. Related trap: `docs/configuration.md`'s custom-classifier
 example still returns a non-existent `BackoffType::Custom` case — doc
 examples that subclass and override must match the real class signatures
 (`classifyError()` lives on `ErrorClassifier`, not `RawKvClient`).
+## Unit tests can silently pass because batch grouping dropped every key — check for a missing scanRegions mock
+
+Before #244, `batchResolveRegions()`/`RegionGrouper` silently skipped keys with no region, so a
+unit test for a pessimistic commit/rollback/batch path could pass while **every** key was dropped
+before any RPC was sent — the mock gRPC client was never called and no assertion noticed. Four
+`TransactionTest` tests were in exactly that state: they never mocked
+`PdClientInterface::scanRegions()`, and the "success" they asserted came from the silent-drop
+path. Now that the grouper fails closed (#244), a missing `scanRegions` mock surfaces as
+`TiKvException: PD could not resolve the region for key ...` — fix the test by mocking
+`scanRegions` to return regions covering all batch keys, not by weakening the contract. When
+writing a new batch-path test, assert the gRPC mock actually received the request (call-count
+expectation), otherwise silent key drops remain invisible.
+
+## PD `scanRegions(start, end)` is half-open — the maximum batch key needs an appended `\x00`
+
+`PdClientInterface::scanRegions($start, $end)` stops before the first region whose `startKey >= $end`.
+Passing a batch's maximum key verbatim as `$end` therefore excludes the region that begins exactly
+at that key, and `findRegionForKey()` returns null for it — the classic boundary off-by-one fixed in
+#244 by using `$maxKey . "\x00"` as the upper bound (smallest string strictly greater than `$maxKey`).
+Any new caller of `scanRegions()` used for batch resolution must remember this; client-go resolves the
+last key inclusively for the same reason. Note `TxnReader::scan()` is different: there `$endKey` is the
+scan range's exclusive end by definition, and `RegionRangeClipper` handles the clipping.

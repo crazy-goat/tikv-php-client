@@ -268,7 +268,15 @@ final readonly class TxnReader
         foreach ($keys as $key) {
             $region = $resolved[$key] ?? null;
             if ($region === null) {
-                continue;
+                // Defense in depth: batchResolveRegions() already fails
+                // closed, so this is unreachable unless the resolver
+                // contract changes (issue #244). A silently skipped key
+                // here would read back as null — indistinguishable from
+                // "key not present".
+                throw new TiKvException(sprintf(
+                    'Region could not be resolved for key "%s"; refusing to silently drop it from the batch',
+                    $key,
+                ));
             }
             $regionId = $region->regionId;
             $grouped[$regionId] ??= ['region' => $region, 'keys' => []];
