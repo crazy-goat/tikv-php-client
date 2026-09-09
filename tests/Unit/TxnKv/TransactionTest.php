@@ -27,6 +27,7 @@ use CrazyGoat\TiKV\Client\TxnKv\Exception\DeadlockException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\LockWaitTimeoutException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TransactionConflictException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TxnRetryableException;
+use CrazyGoat\TiKV\Client\TxnKv\Exception\UndeterminedCommitException;
 use CrazyGoat\TiKV\Client\TxnKv\LockResolver;
 use CrazyGoat\TiKV\Client\TxnKv\Transaction;
 use CrazyGoat\TiKV\Client\TxnKv\TransactionState;
@@ -1471,6 +1472,60 @@ class TransactionTest extends TestCase
 
         $this->assertSame(TransactionStatus::Committed, $txn->getStatus());
         $this->assertSame(3000, $txn->getCommitTs());
+    }
+
+    public function testTransportFailureOnPrimaryCommitIsUndetermined(): void
+    {
+        // Issue #216: a transport-level failure on the primary KvCommit RPC
+        // leaves the outcome unknown — the commit may already be applied. The
+        // transaction must be closed (no destructor rollback) and the caller
+        // must receive UndeterminedCommitException.
+        $this->regionCache->method('getByKey')->willReturn($this->testRegion);
+
+        $store = new Store();
+        $store->setId(1);
+        $store->setAddress('127.0.0.1:20160');
+        $this->pdClient->method('getStore')->willReturn($store);
+        $this->pdClient->method('getRegion')->willReturn($this->testRegion);
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+        $this->pdClient->method('scanRegions')->willReturn([$this->testRegion]);
+
+        /** @var list<string> $rpcMethods */
+        $rpcMethods = [];
+        $prewriteResponse = new \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse();
+
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+            ) use (
+                &$rpcMethods,
+                $prewriteResponse
+): object {
+                $rpcMethods[] = $method;
+                return match ($method) {
+                    'KvPrewrite' => $prewriteResponse,
+                    'KvCommit' => throw new GrpcException('UNAVAILABLE: connection reset', 14),
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('k1', 'v1');
+
+        try {
+            $txn->commit();
+            $this->fail('Expected UndeterminedCommitException');
+        } catch (UndeterminedCommitException $e) {
+            $this->assertInstanceOf(GrpcException::class, $e->getPrevious());
+        }
+        $this->assertSame(TransactionStatus::Undetermined, $txn->getStatus());
+        $this->assertNotContains('KvBatchRollback', $rpcMethods);
+
+        // The state is closed: no further rollback can be attempted.
+        $this->expectException(InvalidStateException::class);
+        $txn->rollback();
     }
 
     public function testPessimisticLockSendsNumericStringKeyOnWire(): void

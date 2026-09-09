@@ -48,7 +48,7 @@ extends `\InvalidArgumentException` directly — it is **not** a
 └── InvalidArgumentException                        src/Client/Exception/
 ```
 
-All fifteen `TiKvException` subclasses are `final`; `TiKvException` itself is
+All sixteen `TiKvException` subclasses are `final`; `TiKvException` itself is
 the only non-final class in the tree (it is the intended base for any custom
 project-wide exception work).
 
@@ -87,6 +87,7 @@ bare `catch (TiKvException $e)` does:
 | [`TransactionConflictException`](../src/Client/TxnKv/Exception/TransactionConflictException.php) | `TiKvException` | Write conflict / abort reported during prewrite, commit or pessimistic lock; accessor: `getConflictingKeys()` |
 | [`TxnAbortedByGcException`](../src/Client/TxnKv/Exception/TxnAbortedByGcException.php) | `TiKvException` | The transaction's start timestamp is below the cluster's GC safe point — the data it would read has been garbage collected. Raised by GC safe-point validation at `begin()` (default-on, `options['gcSafePointValidation'] => false` to disable) or when TiKV rejects a read with the "GC life time is shorter than transaction duration" abort |
 | [`TxnRetryableException`](../src/Client/TxnKv/Exception/TxnRetryableException.php) | `TiKvException` | A lock was encountered and resolved inside a transactional operation — safe to retry with the carried `public readonly BackoffType $backoffType` |
+| [`UndeterminedCommitException`](../src/Client/TxnKv/Exception/UndeterminedCommitException.php) | `TiKvException` | The commit outcome is unknown (client-go's `ErrResultUndetermined`): the primary-key commit RPC failed at the transport level, so the commit may or may not have been applied — the transaction must NOT be rolled back; resolve out of band (e.g. `CheckTxnStatus`) |
 | `TiKvException` | `\RuntimeException` | Base class of every library exception |
 
 ## Caller Retryability
@@ -141,6 +142,13 @@ matter:
 2. Once the commit phase succeeds, the transaction status becomes `Committed`
    and a second `commit()` call is rejected with `InvalidStateException`
    (#217/#83).
+3. A **transport-level** failure (`GrpcException`) on the primary-key
+   `KvCommit` RPC raises
+   [`UndeterminedCommitException`](../src/Client/TxnKv/Exception/UndeterminedCommitException.php)
+   and leaves the status `Undetermined` (#216): the commit may already be
+   applied, so the transaction is closed and never rolled back — resolve the
+   ambiguity out of band (e.g. re-check the primary key's status). A
+   `KeyError`-based commit failure still propagates as a definite failure.
 
 Safe pattern:
 
@@ -221,7 +229,7 @@ addresses on the RPC path just the same.
 | `scan(string, string, int $limit = 0)` | `InvalidArgumentException`, `InvalidStateException`, `TiKvException`, `TransactionConflictException`, `RegionException`, `GrpcException` | Limit normalized/rejected ('Scan limit must be 0 or greater', max 10240) |
 | `set(string, string)` | `InvalidStateException` | Buffers the write locally; no I/O |
 | `delete(string)` | `InvalidStateException` | Buffers the delete locally; no I/O |
-| `commit()` | `InvalidStateException`, `TiKvException`, `TransactionConflictException`, `DeadlockException`, `LockWaitTimeoutException`, `RegionException`, `GrpcException` | See [double-apply section](#transactioncommit-and-double-apply); prewrite runs outside the shared retry executor, so conflicts/deadlocks escape rather than being auto-retried |
+| `commit()` | `InvalidStateException`, `TiKvException` (incl. [`UndeterminedCommitException`](../src/Client/TxnKv/Exception/UndeterminedCommitException.php)), `TransactionConflictException`, `DeadlockException`, `LockWaitTimeoutException`, `RegionException`, `GrpcException` | See [double-apply section](#transactioncommit-and-double-apply); prewrite runs outside the shared retry executor, so conflicts/deadlocks escape rather than being auto-retried |
 | `rollback()` | `InvalidStateException`, `TiKvException`, `RegionException`, `GrpcException` | Idempotent-ish: rolling back an already-rolled-back set is a no-op locally |
 | `heartbeat(int $adviseLockTtlMs = 10000): int` | `InvalidStateException`, `TiKvException`, `RegionException`, `GrpcException` | Extends the primary lock TTL |
 
