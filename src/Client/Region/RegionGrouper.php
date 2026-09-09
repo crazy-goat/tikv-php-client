@@ -7,6 +7,7 @@ namespace CrazyGoat\TiKV\Client\Region;
 use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Region\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
+use CrazyGoat\TiKV\Client\Util\KeyRedactor;
 
 final class RegionGrouper
 {
@@ -50,8 +51,8 @@ final class RegionGrouper
                 // closed, so this is unreachable unless the resolver
                 // contract changes (issue #244).
                 throw new TiKvException(sprintf(
-                    'Region could not be resolved for key "%s"; refusing to silently drop it from the batch',
-                    $key,
+                    'Region could not be resolved for key %s; refusing to silently drop it from the batch',
+                    KeyRedactor::redact($key),
                 ));
             }
             $regionId = $region->regionId;
@@ -105,8 +106,8 @@ final class RegionGrouper
                 // closed, so this is unreachable unless the resolver
                 // contract changes (issue #244).
                 throw new TiKvException(sprintf(
-                    'Region could not be resolved for key "%s"; refusing to silently drop it from the batch',
-                    $key,
+                    'Region could not be resolved for key %s; refusing to silently drop it from the batch',
+                    KeyRedactor::redact($key),
                 ));
             }
             $regionId = $region->regionId;

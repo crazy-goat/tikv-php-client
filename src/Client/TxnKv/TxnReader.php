@@ -28,6 +28,7 @@ use CrazyGoat\TiKV\Client\Retry\ErrorKind;
 use CrazyGoat\TiKV\Client\Retry\RetryExecutor;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TxnAbortedByGcException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TxnRetryableException;
+use CrazyGoat\TiKV\Client\Util\KeyRedactor;
 
 /**
  * Read-only operations for a single transaction.
@@ -274,8 +275,8 @@ final readonly class TxnReader
                 // here would read back as null — indistinguishable from
                 // "key not present".
                 throw new TiKvException(sprintf(
-                    'Region could not be resolved for key "%s"; refusing to silently drop it from the batch',
-                    $key,
+                    'Region could not be resolved for key %s; refusing to silently drop it from the batch',
+                    KeyRedactor::redact($key),
                 ));
             }
             $regionId = $region->regionId;

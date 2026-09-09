@@ -7,6 +7,7 @@ namespace CrazyGoat\TiKV\Tests\Unit\RawKv;
 use CrazyGoat\Proto\Errorpb\Error;
 use CrazyGoat\Proto\Errorpb\NotLeader;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
+use CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawCASResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawChecksumResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse;
@@ -560,15 +561,20 @@ class RawKvClientTest extends TestCase
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
         $this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()]);
-        $this->grpc->method('getChannel')->willReturn(new \Grpc\Channel('127.0.0.1:1', [
-            'credentials' => \Grpc\ChannelCredentials::createInsecure(),
-        ]));
 
-        // No TiKV server in unit tests: since #244 the keys resolve (scanRegions
-        // is stubbed above) and the batch fails at the transport layer.
-        $this->expectException(BatchPartialFailureException::class);
+        $pair1 = new KvPair();
+        $pair1->setKey('k1');
+        $pair1->setValue('v1');
+        $response = new RawBatchGetResponse();
+        $response->setPairs([$pair1]);
 
-        $this->client->batchGet(['k1', 'k2']);
+        // Exactly one gRPC call for the single region: guards against a
+        // regression that would silently drop keys before any RPC (issue #244).
+        $this->grpc->expects($this->once())
+            ->method('call')
+            ->willReturn($response);
+
+        $this->assertSame(['k1' => 'v1', 'k2' => null], $this->client->batchGet(['k1', 'k2']));
     }
 
     public function testBatchGetReturnsNullForMissingKeys(): void
@@ -579,15 +585,15 @@ class RawKvClientTest extends TestCase
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
         $this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()]);
-        $this->grpc->method('getChannel')->willReturn(new \Grpc\Channel('127.0.0.1:1', [
-            'credentials' => \Grpc\ChannelCredentials::createInsecure(),
-        ]));
 
-                // No TiKV server in unit tests: since #244 the keys resolve (scanRegions
-        // is stubbed above) and the batch fails at the transport layer.
-        $this->expectException(BatchPartialFailureException::class);
+        // Empty response: the key exists in no pair, so batchGet maps it to
+        // null — indistinguishable from "key not present" only because the
+        // batch itself succeeded (issue #244 guarantees nothing is dropped).
+        $this->grpc->expects($this->once())
+            ->method('call')
+            ->willReturn(new RawBatchGetResponse());
 
-        $this->client->batchGet(['missing']);
+        $this->assertSame(['missing' => null], $this->client->batchGet(['missing']));
     }
 
     public function testBatchGetAcceptsNumericStringKeys(): void

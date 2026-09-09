@@ -910,6 +910,7 @@ test to actually dispatch, also mock
 and `$this->pdClient->method('getStore')->willReturn($this->defaultStore())`
 (missing getStore makes dispatch fail early with "Store 1 not found in PD"
 before `getChannel()` is reached).
+
 ## Unit tests can silently pass because batch grouping dropped every key — check for a missing scanRegions mock
 
 Before #244, `batchResolveRegions()`/`RegionGrouper` silently skipped keys with no region, so a

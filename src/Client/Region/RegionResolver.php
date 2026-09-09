@@ -14,6 +14,7 @@ use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Observability\MetricsInterface;
 use CrazyGoat\TiKV\Client\Observability\NoOpMetrics;
 use CrazyGoat\TiKV\Client\Region\Dto\RegionInfo;
+use CrazyGoat\TiKV\Client\Util\KeyRedactor;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -135,8 +136,8 @@ final readonly class RegionResolver
         foreach ($keys as $key) {
             if (!isset($resolved[$key])) {
                 throw new TiKvException(sprintf(
-                    'PD could not resolve the region for key "%s"; refusing to silently drop it from the batch',
-                    $key,
+                    'PD could not resolve the region for key %s; refusing to silently drop it from the batch',
+                    KeyRedactor::redact($key),
                 ));
             }
         }

@@ -191,7 +191,7 @@ class RegionGrouperTest extends TestCase
         $resolver = new RegionResolver($pdClient, $regionCache);
 
         $this->expectException(TiKvException::class);
-        $this->expectExceptionMessage('"z"');
+        $this->expectExceptionMessage('"7a" (1 bytes)');
         RegionGrouper::groupKeysByRegionBatch(['a', 'z'], $resolver);
     }
 
@@ -216,7 +216,7 @@ class RegionGrouperTest extends TestCase
         $resolver = new RegionResolver($pdClient, $regionCache);
 
         $this->expectException(TiKvException::class);
-        $this->expectExceptionMessage('"z"');
+        $this->expectExceptionMessage('"7a" (1 bytes)');
         RegionGrouper::groupItemsByRegion(
             [(object) ['key' => 'a'], (object) ['key' => 'z']],
             fn (object $item): string => $item->key,

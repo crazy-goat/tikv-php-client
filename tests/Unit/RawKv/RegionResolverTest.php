@@ -196,7 +196,7 @@ class RegionResolverTest extends TestCase
         $this->regionCache->expects($this->once())->method('put')->with($region);
 
         $this->expectException(TiKvException::class);
-        $this->expectExceptionMessage('"a"');
+        $this->expectExceptionMessage('"61" (1 bytes)');
         $this->resolver->batchResolveRegions(['a', 'b', 'x', 'z']);
     }
 
