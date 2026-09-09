@@ -142,6 +142,13 @@ matter:
 2. Once the commit phase succeeds, the transaction status becomes `Committed`
    and a second `commit()` call is rejected with `InvalidStateException`
    (#217/#83).
+3. A **transport-level** failure (`GrpcException`) on the primary-key
+   `KvCommit` RPC raises
+   [`UndeterminedCommitException`](../src/Client/TxnKv/Exception/UndeterminedCommitException.php)
+   and leaves the status `Undetermined` (#216): the commit may already be
+   applied, so the transaction is closed and never rolled back — resolve the
+   ambiguity out of band (e.g. re-check the primary key's status). A
+   `KeyError`-based commit failure still propagates as a definite failure.
 
 Safe pattern:
 
@@ -222,7 +229,7 @@ addresses on the RPC path just the same.
 | `scan(string, string, int $limit = 0)` | `InvalidArgumentException`, `InvalidStateException`, `TiKvException`, `TransactionConflictException`, `RegionException`, `GrpcException` | Limit normalized/rejected ('Scan limit must be 0 or greater', max 10240) |
 | `set(string, string)` | `InvalidStateException` | Buffers the write locally; no I/O |
 | `delete(string)` | `InvalidStateException` | Buffers the delete locally; no I/O |
-| `commit()` | `InvalidStateException`, `TiKvException`, `TransactionConflictException`, `DeadlockException`, `LockWaitTimeoutException`, `RegionException`, `GrpcException` | See [double-apply section](#transactioncommit-and-double-apply); prewrite runs outside the shared retry executor, so conflicts/deadlocks escape rather than being auto-retried |
+| `commit()` | `InvalidStateException`, `TiKvException` (incl. [`UndeterminedCommitException`](../src/Client/TxnKv/Exception/UndeterminedCommitException.php)), `TransactionConflictException`, `DeadlockException`, `LockWaitTimeoutException`, `RegionException`, `GrpcException` | See [double-apply section](#transactioncommit-and-double-apply); prewrite runs outside the shared retry executor, so conflicts/deadlocks escape rather than being auto-retried |
 | `rollback()` | `InvalidStateException`, `TiKvException`, `RegionException`, `GrpcException` | Idempotent-ish: rolling back an already-rolled-back set is a no-op locally |
 | `heartbeat(int $adviseLockTtlMs = 10000): int` | `InvalidStateException`, `TiKvException`, `RegionException`, `GrpcException` | Extends the primary lock TTL |
 
