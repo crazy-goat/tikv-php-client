@@ -9,6 +9,7 @@ use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\Observability\InMemoryMetrics;
+use CrazyGoat\TiKV\Client\Region\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
 use CrazyGoat\TiKV\Client\Retry\BackoffType;
 use CrazyGoat\TiKV\Client\Retry\RetryBudgetExhaustedException;
@@ -484,11 +485,13 @@ class RetryExecutorTest extends TestCase
         $executor = $this->createExecutor(metrics: $metrics);
 
         try {
-            // EpochNotMatch → BackoffType::None (sleepMs=0). Total backoff stays
-            // at 0 so the 30-attempt cap kicks in, giving us a deterministic
-            // number of retries (DEFAULT_MAX_ATTEMPTS - 1 = 29 attempts to retry).
+            // DataIsNotReady classifies as BackoffType::None (sleepMs=0) —
+            // the only remaining zero-sleep class since EpochNotMatch got a
+            // real backoff (issue #241). Total backoff stays at 0 so the
+            // 30-attempt cap kicks in, giving us a deterministic number of
+            // retries (DEFAULT_MAX_ATTEMPTS - 1 = 29 attempts to retry).
             $executor->execute('retry_key', function (): void {
-                throw new TiKvException('EpochNotMatch something');
+                throw new TiKvException('DataIsNotReady something');
             });
         } catch (RetryBudgetExhaustedException) {
             // expected
@@ -557,6 +560,87 @@ class RetryExecutorTest extends TestCase
         $this->assertSame(2, $secondCalls, 'Second call should have retried once with a fresh budget');
     }
 
+    // ========================================================================
+    // EpochNotMatch minimum backoff (issue #241, REG-10)
+    //
+    // EpochNotMatch used to classify as BackoffType::None (sleepMs=0): the
+    // retries were zero-delay and free, and the only bound was the attempt
+    // cap. They now get a small jittered backoff (2–500 ms, like client-go's
+    // BoEpochNotMatch) whose sleeps feed totalBackoffMs, so repeated errors
+    // exhaust the per-operation backoff budget before the attempt cap.
+    // ========================================================================
+
+    public function testEpochNotMatchRetriesExhaustBackoffBudgetBeforeAttemptCap(): void
+    {
+        $executor = $this->createExecutor(
+            maxBackoffMs: 50,
+            serverBusyBudgetMs: 10000,
+        );
+
+        $attempts = 0;
+        $startMs = (int) (microtime(true) * 1000);
+        try {
+            $executor->execute('epoch_key', function () use (&$attempts): void {
+                $attempts++;
+                throw new TiKvException('EpochNotMatch something');
+            });
+        } catch (TiKvException) {
+            // Budget exhaustion rethrows the ORIGINAL error (not
+            // RetryBudgetExhaustedException) for sleep-budget classes.
+        }
+
+        $elapsedMs = (int) (microtime(true) * 1000) - $startMs;
+
+        // The budget (50 ms) must fire long before the 30-attempt cap:
+        // jittered sleeps are 1-2, 2-4, 4-8, 8-16, 16-32, 32-64... ms, so
+        // only a handful of retries fit.
+        $this->assertLessThan(RetryExecutor::DEFAULT_MAX_ATTEMPTS, $attempts);
+        $this->assertGreaterThanOrEqual(2, $attempts, 'at least one retry must happen before exhaustion');
+
+        // The sleeps are real, non-zero wall-clock time (a zero-sleep loop
+        // would finish in well under 10 ms).
+        $this->assertGreaterThanOrEqual(10, $elapsedMs);
+    }
+
+    public function testEpochNotMatchRetriesProduceAtMostOnePdGetRegionPerAttempt(): void
+    {
+        $region = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+        );
+        $pdCalls = 0;
+        $this->pdClient->method('getRegion')->willReturnCallback(function () use (&$pdCalls, $region): RegionInfo {
+            $pdCalls++;
+            return $region;
+        });
+
+        $resolver = new RegionResolver($this->pdClient, $this->regionCache);
+        $executor = $this->createExecutor(
+            maxBackoffMs: 50,
+            serverBusyBudgetMs: 10000,
+        );
+
+        $attempts = 0;
+        try {
+            // Mirror real usage: the retried closure re-resolves the region
+            // on every attempt (cache miss → PD GetRegion) — exactly one
+            // PD call per attempt is the upper bound.
+            $executor->execute('epoch_key', function () use (&$attempts, $resolver): void {
+                $attempts++;
+                $resolver->getRegionInfo('epoch_key');
+                throw new TiKvException('EpochNotMatch something');
+            });
+        } catch (TiKvException) {
+            // expected
+        }
+
+        $this->assertSame($attempts, $pdCalls, 'each attempt must cost at most one PD GetRegion call');
+        $this->assertLessThan(RetryExecutor::DEFAULT_MAX_ATTEMPTS, $attempts);
+    }
+
     public function testNestedExecuteDoesNotCorruptOuterAttemptCounter(): void
     {
         $executor = $this->createExecutor(
@@ -571,8 +655,9 @@ class RetryExecutorTest extends TestCase
         //
         // The outer operation fails every time and nests a succeeding
         // execute() on each attempt. EpochNotMatch is classified as
-        // BackoffType::None (sleepMs=0), so the budget never exhausts and
-        // the outer loop is bounded only by the attempt cap (5). Under the
+        // BackoffType::EpochNotMatch (small 2/4/8… ms sleeps since issue
+        // #241), so the budget does not exhaust and the outer loop is
+        // bounded by the attempt cap (5). Under the
         // old instance-field implementation the nested call reset
         // $this->attempt to 0 on every iteration, so the counter never
         // reached the cap and the loop would never have terminated.

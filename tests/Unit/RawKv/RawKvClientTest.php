@@ -1433,8 +1433,11 @@ class RawKvClientTest extends TestCase
                 && str_contains($context['key'], 'bytes')
                 && ! str_contains($context['key'], 'key')
                 && $context['attempt'] === 0
-                && $context['backoffType'] === 'None'
-                && $context['sleepMs'] === 0));
+                // EpochNotMatch has a small jittered backoff since #241
+                // (base 2 ms): the sleep is non-zero but still small.
+                && $context['backoffType'] === 'EpochNotMatch'
+                && $context['sleepMs'] >= 1
+                && $context['sleepMs'] <= 2));
 
         $client->get('key');
     }

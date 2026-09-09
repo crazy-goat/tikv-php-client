@@ -22,9 +22,14 @@ final readonly class RetryExecutor
 {
     /**
      * Default maximum number of attempts per call. Bounds the retry loop
-     * independently of accumulated backoff time — ensures that errors
-     * classified as BackoffType::None (e.g. EpochNotMatch) with sleepMs=0
-     * cannot drive an infinite, zero-delay busy loop.
+     * as a termination backstop — it limits the number of requests, NOT
+     * their rate. Rate limiting comes from the backoff classes themselves:
+     * every retryable error sleeps for a non-zero, jittered interval and
+     * contributes to a per-operation budget (BackoffType::None, the only
+     * zero-sleep class, is reserved for the DataIsNotReady replica-lag
+     * signal, where the very next attempt uses a different peer —
+     * issue #241, REG-10). The cap still catches zero-backoff errors so
+     * they cannot drive an infinite loop.
      */
     public const DEFAULT_MAX_ATTEMPTS = 30;
 
@@ -79,8 +84,10 @@ final readonly class RetryExecutor
             // Enforce absolute attempt cap before running the operation.
             // 'attempt' counts completed runs, so on the next retry we would
             // run call #attempt+1; cap once that would exceed maxAttempts.
-            // Catches zero-backoff errors (e.g. EpochNotMatch classified as
-            // BackoffType::None) that would otherwise drive an infinite loop.
+            // This is a termination backstop (BackoffType::None no longer
+            // covers EpochNotMatch — issue #241 — so retryable errors also
+            // spend a real backoff budget); the cap catches any remaining
+            // zero-backoff classification.
             if ($attempt >= $this->maxAttempts) {
                 $this->logger->error('Retry attempt cap exhausted', [
                     'key' => KeyRedactor::redact($key),
