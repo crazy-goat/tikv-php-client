@@ -161,6 +161,25 @@ final class RawKvBatchConcurrencyCapTest extends TestCase
         $this->assertSame(2, $this->maxInFlight);
     }
 
+    public function testBatchPutFanOutNeverExceedsMaxConcurrency(): void
+    {
+        $this->stubCluster();
+
+        $values = [];
+        foreach ($this->manyKeys(1100) as $key) {
+            $values[$key] = 'v';
+        }
+
+        try {
+            $this->createBatch(2)->batchPut($values, 0, $this->createRetryExecutor());
+            $this->fail('Expected BatchPartialFailureException from the dead-endpoint channel');
+        } catch (BatchPartialFailureException) {
+        }
+
+        $this->assertLessThanOrEqual(2, $this->maxInFlight);
+        $this->assertSame(2, $this->maxInFlight);
+    }
+
     private function createRetryExecutor(): RetryExecutor
     {
         return new RetryExecutor(
