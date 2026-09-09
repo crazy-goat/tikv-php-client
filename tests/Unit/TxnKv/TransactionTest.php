@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Tests\Unit\TxnKv;
 
+use CrazyGoat\Proto\Kvrpcpb\CommitResponse;
 use CrazyGoat\Proto\Kvrpcpb\Deadlock;
 use CrazyGoat\Proto\Kvrpcpb\GetResponse;
 use CrazyGoat\Proto\Kvrpcpb\KeyError;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
 use CrazyGoat\Proto\Kvrpcpb\LockInfo;
+use CrazyGoat\Proto\Kvrpcpb\Op;
 use CrazyGoat\Proto\Kvrpcpb\PessimisticLockRequest;
 use CrazyGoat\Proto\Kvrpcpb\PessimisticLockResponse;
+use CrazyGoat\Proto\Kvrpcpb\PrewriteRequest;
+use CrazyGoat\Proto\Kvrpcpb\PrewriteResponse;
 use CrazyGoat\Proto\Kvrpcpb\ScanRequest;
 use CrazyGoat\Proto\Kvrpcpb\ScanResponse;
 use CrazyGoat\Proto\Metapb\Store;
@@ -131,6 +135,112 @@ class TransactionTest extends TestCase
             'key1' => 'value1',
             'key2' => null,
         ], $txn->getWriteSet());
+    }
+
+    public function testCommitOfDeleteSendsDeleteMutation(): void
+    {
+        // Issue #328: a delete in the write set must map to Op::Del with an
+        // empty value in the actual PrewriteRequest — not an Op::Put with an
+        // empty value, which would write '' instead of a tombstone.
+        $this->regionCache->method('getByKey')->willReturn($this->testRegion);
+
+        $store = new Store();
+        $store->setId(1);
+        $store->setAddress('127.0.0.1:20160');
+        $this->pdClient->method('getStore')->willReturn($store);
+        $this->pdClient->method('getRegion')->willReturn($this->testRegion);
+        $this->pdClient->method('scanRegions')->willReturn([$this->testRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(2000);
+
+        $capturedRequest = null;
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+                mixed $request,
+            ) use (
+                &$capturedRequest,
+            ): object {
+                if ($method === 'KvPrewrite') {
+                    $capturedRequest = $request;
+                }
+                return match ($method) {
+                    'KvPrewrite' => new PrewriteResponse(),
+                    'KvCommit' => new CommitResponse(),
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('keep', 'v');
+        $txn->delete('gone');
+        $txn->commit();
+
+        $this->assertSame(TransactionStatus::Committed, $txn->getStatus());
+        $this->assertInstanceOf(PrewriteRequest::class, $capturedRequest);
+        $byKey = [];
+        foreach ($capturedRequest->getMutations() as $m) {
+            $byKey[(string) $m->getKey()] = $m;
+        }
+
+        $this->assertSame(Op::Put, $byKey['keep']->getOp());
+        $this->assertSame('v', $byKey['keep']->getValue());
+        $this->assertSame(Op::Del, $byKey['gone']->getOp());
+        $this->assertSame('', $byKey['gone']->getValue());
+    }
+
+    public function testCommitOfDeleteOnlyTransactionSendsOnlyDeleteMutations(): void
+    {
+        // Issue #328: a transaction containing only deletes must send only
+        // Op::Del mutations on prewrite.
+        $this->regionCache->method('getByKey')->willReturn($this->testRegion);
+
+        $store = new Store();
+        $store->setId(1);
+        $store->setAddress('127.0.0.1:20160');
+        $this->pdClient->method('getStore')->willReturn($store);
+        $this->pdClient->method('getRegion')->willReturn($this->testRegion);
+        $this->pdClient->method('scanRegions')->willReturn([$this->testRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(2000);
+
+        $capturedRequest = null;
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+                mixed $request,
+            ) use (
+                &$capturedRequest,
+            ): object {
+                if ($method === 'KvPrewrite') {
+                    $capturedRequest = $request;
+                }
+                return match ($method) {
+                    'KvPrewrite' => new PrewriteResponse(),
+                    'KvCommit' => new CommitResponse(),
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->delete('gone1');
+        $txn->delete('gone2');
+        $txn->commit();
+
+        $this->assertSame(TransactionStatus::Committed, $txn->getStatus());
+        $this->assertInstanceOf(PrewriteRequest::class, $capturedRequest);
+        $mutations = $capturedRequest->getMutations();
+        $this->assertCount(2, $mutations);
+        foreach ($mutations as $m) {
+            $this->assertSame(Op::Del, $m->getOp());
+            $this->assertSame('', $m->getValue());
+        }
+        $this->assertSame(['gone1', 'gone2'], array_map(
+            static fn(\CrazyGoat\Proto\Kvrpcpb\Mutation $m): string => (string) $m->getKey(),
+            iterator_to_array($mutations),
+        ));
     }
 
     public function testRollbackOnEmptyWriteSet(): void
