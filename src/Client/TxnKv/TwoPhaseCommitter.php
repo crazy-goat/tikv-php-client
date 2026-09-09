@@ -850,7 +850,8 @@ final readonly class TwoPhaseCommitter
     private function regionCoversAllKeys(RegionInfo $region, array $keys): bool
     {
         foreach ($keys as $key) {
-            if ($key < $region->startKey
+            if (
+                $key < $region->startKey
                 || ($region->endKey !== '' && $key >= $region->endKey)
             ) {
                 return false;
