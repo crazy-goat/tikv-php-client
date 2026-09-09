@@ -100,7 +100,13 @@ final class GcSafePointE2ETest extends TestCase
         $this->assertNotNull($minWhileHeld, 'PD does not support service GC safe points');
         $this->assertLessThanOrEqual($safePoint, $minWhileHeld);
 
-        $minAfterRelease = self::$txnClient->releaseGcSafePoint();
+        try {
+            $minAfterRelease = self::$txnClient->releaseGcSafePoint();
+        } catch (\Throwable $e) {
+            // Never leave the registration behind on an unexpected error.
+            self::$txnClient->releaseGcSafePoint();
+            throw $e;
+        }
 
         $this->assertNotNull($minAfterRelease);
     }

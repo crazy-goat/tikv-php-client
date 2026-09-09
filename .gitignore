@@ -15,3 +15,6 @@ repomix-output.xml
 /.pi-subagents/
 
 /.tyci/
+/coverage-html/
+/coverage.xml
+/coverage-clover.xml
