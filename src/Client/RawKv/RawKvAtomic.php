@@ -6,13 +6,17 @@ namespace CrazyGoat\TiKV\Client\RawKv;
 
 use CrazyGoat\Proto\Kvrpcpb\RawCASRequest;
 use CrazyGoat\Proto\Kvrpcpb\RawCASResponse;
+use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Exception\RegionException;
+use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\Grpc\SlowLogConfig;
 use CrazyGoat\TiKV\Client\Grpc\TimeoutConfig;
 use CrazyGoat\TiKV\Client\Region\RegionContextFactory;
 use CrazyGoat\TiKV\Client\Region\RegionErrorHandler;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
+use CrazyGoat\TiKV\Client\Retry\BackoffType;
+use CrazyGoat\TiKV\Client\Retry\ErrorClassifier;
 use CrazyGoat\TiKV\Client\Retry\RetryExecutor;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -36,6 +40,22 @@ final readonly class RawKvAtomic
         RetryExecutor $retryExecutor,
         string $columnFamily = '',
     ): CasResult {
+        // CAS (and therefore putIfAbsent) is not idempotent: if the server
+        // applied the write and the response was lost, retrying on a
+        // transport error would re-send the CAS against the new state and
+        // report a false failure (issue #239). Region errors (NotLeader,
+        // EpochNotMatch, …) are rejected *before* the write is proposed and
+        // remain safe to retry; every GrpcException (DEADLINE_EXCEEDED,
+        // UNAVAILABLE, …) leaves the outcome indeterminate and is rethrown
+        // from the classifier so it propagates to the caller un-retried.
+        $classifier = static function (TiKvException $e): ?BackoffType {
+            if ($e instanceof GrpcException) {
+                throw $e;
+            }
+
+            return ErrorClassifier::classify($e);
+        };
+
         return $retryExecutor->execute($key, function () use (
             $key,
             $expectedValue,
@@ -85,7 +105,7 @@ final readonly class RawKvAtomic
                 swapped: $response->getSucceed(),
                 previousValue: $response->getPreviousNotExist() ? null : $response->getPreviousValue(),
             );
-        });
+        }, $classifier);
     }
 
     /**
