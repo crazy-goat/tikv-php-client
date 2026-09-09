@@ -853,7 +853,8 @@ Facts fixed by the implementation, worth not re-deriving:
 places as "regionId → exception", but the keys are actually indices into the
 internal list of sub-batch callables (`RawKvBatch` groups keys per region and
 splits each region into ≤512-key/16 KB sub-batches before dispatch, so the
-count of units is usually larger than the region count). There is no public
+count of units is larger than the region count whenever any region's keys
+exceed one sub-batch). There is no public
 mapping from a failed index back to the user keys it contained. Practical
 consequence for recovery advice: you cannot "re-drive only the affected keys"
 through the exception alone — for idempotent work retry the whole batch; for

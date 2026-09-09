@@ -100,7 +100,7 @@ if ($client->get('lock:resource') !== null) {
 > **Batch operations are not atomic.** Keys are grouped by region and each
 > region's keys are split further into sub-batches (at most 512 keys or 16 KB
 > per RPC), then all sub-batches are dispatched concurrently. If any
-> sub-batch fails — after the client's own per-region retry budget is
+> sub-batch fails — after the client's own per-sub-batch retry budget is
 > exhausted — the client throws
 > [`BatchPartialFailureException`](error-handling.md): an **unknown subset**
 > of the batch has already been applied. Do not assume the exception means
@@ -162,8 +162,9 @@ $client->batchPut(['key1' => 'value1', 'key2' => 'value2']);
 > pairs has already been written. For a *fixed* key/value set a full retry
 > is safe — puts are idempotent — but if your application layers
 > non-idempotent logic on top (counters, appends), a blind whole-batch
-> retry may double-apply work. In that case re-issue only the affected
-> keys (see [Partial Failure and Recovery](#partial-failure-and-recovery)).
+> retry may double-apply work. In that case the failed sub-batch's keys
+> are not identifiable through the exception — recompute or issue keys
+> individually (see [Partial Failure and Recovery](#partial-failure-and-recovery)).
 
 **Example:**
 
