@@ -678,3 +678,22 @@ constraints are unsatisfiable (`tests/Unit/Retry/RetryExecutorTest.php`
 `testReusedExecutorRetriesNormallyOnSecondCallAfterFirstConsumesBudget`,
 comment documents the math). Accept probabilistic detection: the
 no-carry-over invariant ("second call succeeds") still holds deterministically.
+=======
+## Issue duplication: a fix's refactor can silently close an older issue — grep the source before coding
+
+Issue #243 (REG-12) reported per-executor retry-budget fields surviving across
+`execute()` calls, exhausting a Transaction's budget permanently. The code fix
+had already shipped in ee4c0f6 (issue #271), which moved `totalBackoffMs` /
+`serverBusyBackoffMs` / `attempt` from instance fields to locals inside
+`execute()` (also for reentrancy) — #243's remaining value was only the
+missing regression tests (executor-level sequential-call budget reset, plus
+two sequential `Transaction::get()` calls each getting a usable budget, per
+the acceptance criteria). Lesson: read `git log <file>` for the issue's cited
+lines before implementing; an audit finding can be a duplicate of a later
+refactor that fixed it as a side effect. Also: when writing budget-reset
+tests, remember `maxBackoffMs` is an *upper bound on the accumulated total* —
+with RegionMiss backoff 2,4,8 a budget of N allows exactly ⌊N/2⌋-ish retries,
+so compute the attempt count from the exponential sequence (2+4=6 ≤ 6 allows
+two retries; 6+8=14 > 6 aborts the third), and an operation that "fails twice
+then succeeds" needs a per-call failure counter (a shared `$calls % 3`
+pattern silently gives the second execute() zero retries).
