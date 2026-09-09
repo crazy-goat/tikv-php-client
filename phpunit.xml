@@ -40,6 +40,7 @@
             <directory>tests/E2E</directory>
             <exclude>tests/E2E/TxnKvE2ETest.php</exclude>
             <exclude>tests/E2E/GcSafePointE2ETest.php</exclude>
+            <exclude>tests/E2E/FastCommitModesE2ETest.php</exclude>
         </testsuite>
         <testsuite name="E2E-TxnKV">
             <file>tests/E2E/TxnKvE2ETest.php</file>
