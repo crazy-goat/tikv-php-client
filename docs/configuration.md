@@ -409,7 +409,12 @@ To guard against TLS misconfiguration, the factory rejects:
   `'tls' => true`) with `InvalidArgumentException` instead of silently
   connecting in plaintext;
 - unrecognised keys inside `options['tls']` (e.g. the snake_case
-  `ca_cert` typo) with `InvalidArgumentException` naming the offending key.
+  `ca_cert` typo) with `InvalidArgumentException` naming the offending key;
+- a recognised key inside `options['tls']` with a non-string value (e.g.
+  `'caCertFile' => 123`), which would otherwise be silently dropped and the
+  connection would go out in plaintext;
+- an incomplete client certificate pair (e.g. `clientCertFile` without
+  `clientKeyFile`), which would otherwise be silently dropped the same way.
 
 Recognised `options['tls']` keys: `caCertFile`, `caCertBaseDir`, `caCertPem`,
 `caCert`, `clientCertFile`, `clientCertBaseDir`, `clientKeyFile`,

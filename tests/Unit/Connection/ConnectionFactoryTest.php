@@ -231,4 +231,29 @@ class ConnectionFactoryTest extends TestCase
             options: ['tls' => ['ca_cert' => '/etc/tikv/ca.pem']],
         );
     }
+
+    public function testTlsKeyWithNonStringValueThrowsInsteadOfSilentPlaintext(): void
+    {
+        // A recognised key with a mistyped value would be silently dropped by
+        // the is_string() guards, producing a plaintext connection while the
+        // caller believes TLS is configured.
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("options['tls'][caCertFile] must be a string, got int");
+
+        ConnectionFactory::create(
+            ['127.0.0.1:2379'],
+            options: ['tls' => ['caCertFile' => 123]],
+        );
+    }
+
+    public function testIncompleteClientCertPairThrowsInsteadOfSilentPlaintext(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Incomplete client certificate pair');
+
+        ConnectionFactory::create(
+            ['127.0.0.1:2379'],
+            options: ['tls' => ['clientCertFile' => '/etc/tikv/client.crt']],
+        );
+    }
 }
