@@ -8,10 +8,11 @@ Complete guide to configuring the TiKV PHP Client for development and production
 2. [Connection Settings](#connection-settings)
 3. [TLS/SSL Configuration](#tlsssl-configuration)
 4. [Logging](#logging)
-5. [Retry and Backoff](#retry-and-backoff)
-6. [Caching](#caching)
-7. [Timeouts](#timeouts)
-8. [Production Configuration](#production-configuration)
+5. [Replica Reads](#replica-reads)
+6. [Retry and Backoff](#retry-and-backoff)
+7. [Caching](#caching)
+8. [Timeouts](#timeouts)
+9. [Production Configuration](#production-configuration)
 
 ## Basic Configuration
 
@@ -29,6 +30,8 @@ $client = RawKvClient::create(['127.0.0.1:2379']);
 
 ```php
 use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadMode;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadPolicy;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
@@ -54,6 +57,10 @@ $options = [
     // but let begin() accept timestamps up to this much staler; the read
     // itself still fails typed (TxnAbortedByGcException) when GC has passed.
     'gcSafePointRefreshMs' => 30000,
+    // Replica read preference (issue #421): an instance of
+    // ReplicaReadPolicy controlling which peer serves read requests.
+    // Default: leader-only (unchanged behaviour). See "Replica Reads".
+    'replicaRead' => new ReplicaReadPolicy(ReplicaReadMode::PreferLeader),
     'tls' => [
         'caCertFile' => '/path/to/ca.crt',
         'clientCertFile' => '/path/to/client.crt',
@@ -385,6 +392,62 @@ $logger->pushHandler(new StreamHandler('/var/log/tikv.log', Logger::DEBUG));
 
 // Critical alerts to Slack/Email (using Monolog handlers)
 $logger->pushHandler(new SlackWebhookHandler(...));
+```
+
+## Replica Reads
+
+By default every read targets the region **leader**. The `replicaRead` option
+(issue #421, available on both `RawKvClient` and `TxnKvClient`) lets reads be
+served by follower replicas — useful in multi-AZ deployments to avoid
+inter-AZ latency and to spread read load beyond the leader.
+
+```php
+use CrazyGoat\TiKV\Client\RawKv\RawKvClient;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadMode;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadPolicy;
+
+$client = RawKvClient::create(
+    ['127.0.0.1:2379'],
+    options: [
+        'replicaRead' => new ReplicaReadPolicy(
+            mode: ReplicaReadMode::Follower,
+            matchStoreLabels: ['zone' => 'az-1'], // optional: only replicas
+                                                  // whose store labels match
+                                                  // are eligible
+            staleRead: false,
+        ),
+    ],
+);
+```
+
+Modes:
+
+| Mode             | Behaviour                                                                       |
+|------------------|---------------------------------------------------------------------------------|
+| `Leader`         | Default — all reads go to the leader (unchanged behaviour).                     |
+| `Follower`       | Reads go to a follower replica (random among eligible).                         |
+| `Mixed`          | Reads may go to the leader or any follower (random among all eligible peers).   |
+| `PreferLeader`   | The leader is used when it matches the label filter; otherwise a follower.      |
+
+Details:
+
+- For non-leader targets the client sets `Context.replica_read = true` in the
+  gRPC request; with `staleRead: true` it additionally sets
+  `Context.stale_read = true` so any replica whose `safe_ts` covers the read
+  timestamp may serve it locally.
+- `matchStoreLabels` restricts eligible replicas to stores whose
+  `metapb.Store.labels` contain all given key/value pairs (e.g.
+  `['zone' => 'az-1']`). When no replica qualifies, selection degrades to the
+  leader.
+- A `DataIsNotReady` region error on a replica excludes that store for the
+  current operation and the retry falls back to another replica or the leader.
+- **Writes always target the leader**, regardless of the policy. On
+  `TxnKvClient` the policy applies to transaction reads (`get`, `batchGet`,
+  `scan`); pessimistic locking and commits remain leader-only.
+
+```php
+// Stale read: allow any replica with a sufficiently fresh safe_ts
+$policy = new ReplicaReadPolicy(ReplicaReadMode::Mixed, staleRead: true);
 ```
 
 ## Retry and Backoff

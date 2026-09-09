@@ -14,6 +14,7 @@ use CrazyGoat\Proto\Kvrpcpb\ScanResponse;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
+use CrazyGoat\TiKV\Client\Exception\RegionException;
 use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\Grpc\TimeoutConfig;
@@ -21,7 +22,9 @@ use CrazyGoat\TiKV\Client\Region\RegionContextFactory;
 use CrazyGoat\TiKV\Client\Region\RegionErrorHandler;
 use CrazyGoat\TiKV\Client\Region\RegionRangeClipper;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadPolicy;
 use CrazyGoat\TiKV\Client\Retry\BackoffType;
+use CrazyGoat\TiKV\Client\Retry\ErrorKind;
 use CrazyGoat\TiKV\Client\Retry\RetryExecutor;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TxnAbortedByGcException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TxnRetryableException;
@@ -49,6 +52,8 @@ final readonly class TxnReader
         private TimeoutConfig $timeoutConfig,
         private LockResolver $lockResolver,
         private RegionCacheInterface $regionCache,
+        /** Read preference for reads (issue #421); commits always target the leader. */
+        private ReplicaReadPolicy $replicaReadPolicy = new ReplicaReadPolicy(),
     ) {
     }
 
@@ -70,63 +75,86 @@ final readonly class TxnReader
             return $state->getWriteSetValue($key);
         }
 
-        return $retryExecutor->execute($key, function () use ($key, $state): ?string {
-            $region = $this->regionResolver->getRegionInfo($key);
-            $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
+        $excludedStore = null;
 
-            $request = new GetRequest();
-            $request->setContext(RegionContextFactory::fromRegionInfo($region));
-            $request->setKey($key);
-            $request->setVersion($this->startTs);
+        return $retryExecutor->execute(
+            $key,
+            function () use ($key, $state, &$excludedStore): ?string {
+                $region = $this->regionResolver->getRegionInfo($key);
+                $target = RegionContextFactory::resolveTarget(
+                    $region,
+                    $this->replicaReadPolicy,
+                    $this->regionResolver->getStore(...),
+                    excludedStoreId: $excludedStore,
+                );
+                $excludedStore = null;
+                $address = $this->regionResolver->resolveStoreAddress($target->storeId);
 
-            /** @var GetResponse $response */
-            $response = $this->grpc->call(
-                $address,
-                'tikvpb.Tikv',
-                'KvGet',
-                $request,
-                GetResponse::class,
-                $this->timeoutMs('read'),
-            );
+                $request = new GetRequest();
+                $request->setContext($target->context);
+                $request->setKey($key);
+                $request->setVersion($this->startTs);
 
-            RegionErrorHandler::check($response, $this->regionCache, $region->regionId);
+                try {
+                    /** @var GetResponse $response */
+                    $response = $this->grpc->call(
+                        $address,
+                        'tikvpb.Tikv',
+                        'KvGet',
+                        $request,
+                        GetResponse::class,
+                        $this->timeoutMs('read'),
+                    );
 
-            $error = $response->getError();
-            if ($error !== null) {
-                $locked = $error->getLocked();
-                if ($locked !== null) {
-                    $rawPrimary = $locked->getPrimaryLock();
-                    $lockPrimary = (string) ($rawPrimary !== '' ? $rawPrimary : $key);
-                    $this->lockResolver->resolveLock($lockPrimary, $locked);
-                    throw new TxnRetryableException('Lock encountered, resolved - retry', BackoffType::TxnLock);
+                    RegionErrorHandler::check($response, $this->regionCache, $region->regionId);
+                } catch (RegionException $e) {
+                    if ($e->errorKind === ErrorKind::DataIsNotReady) {
+                        // The selected replica's applied index is behind: exclude
+                        // it so the next attempt falls back to another replica or
+                        // the leader (issue #421).
+                        $excludedStore = $target->storeId;
+                    }
+                    throw $e;
                 }
 
-                $retryable = $error->getRetryable();
-                if ($retryable !== '') {
-                    throw new \CrazyGoat\TiKV\Client\TxnKv\Exception\TransactionConflictException($retryable);
+                $error = $response->getError();
+                if ($error !== null) {
+                    $locked = $error->getLocked();
+                    if ($locked !== null) {
+                        $rawPrimary = $locked->getPrimaryLock();
+                        $lockPrimary = (string) ($rawPrimary !== '' ? $rawPrimary : $key);
+                        $this->lockResolver->resolveLock($lockPrimary, $locked);
+                        throw new TxnRetryableException('Lock encountered, resolved - retry', BackoffType::TxnLock);
+                    }
+
+                    $retryable = $error->getRetryable();
+                    if ($retryable !== '') {
+                        throw new \CrazyGoat\TiKV\Client\TxnKv\Exception\TransactionConflictException($retryable);
+                    }
+
+                    // GC has passed this transaction's start timestamp — the
+                    // server names it in the abort field ("GC life time is
+                    // shorter than transaction duration"). Throw the typed,
+                    // non-retryable GC exception; the previous fall-through
+                    // here returned the response as-if-successful and the
+                    // caller read an empty value (issue #422).
+                    $abort = $error->getAbort();
+                    if ($abort !== '') {
+                        throw $this->gcExceptionFromAbort($abort);
+                    }
                 }
 
-                // GC has passed this transaction's start timestamp — the
-                // server names it in the abort field ("GC life time is
-                // shorter than transaction duration"). Throw the typed,
-                // non-retryable GC exception; the previous fall-through
-                // here returned the response as-if-successful and the
-                // caller read an empty value (issue #422).
-                $abort = $error->getAbort();
-                if ($abort !== '') {
-                    throw $this->gcExceptionFromAbort($abort);
+                if ($response->getNotFound()) {
+                    $state->setReadValue($key, null);
+                    return null;
                 }
-            }
 
-            if ($response->getNotFound()) {
-                $state->setReadValue($key, null);
-                return null;
-            }
-
-            $value = $response->getValue();
-            $state->setReadValue($key, $value);
-            return $value;
-        }, $classifier);
+                $value = $response->getValue();
+                $state->setReadValue($key, $value);
+                return $value;
+            },
+            $classifier
+        );
     }
 
     /**
@@ -250,10 +278,15 @@ final readonly class TxnReader
         foreach ($grouped as $regionData) {
             $region = $regionData['region'];
             $regionKeys = $regionData['keys'];
-            $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
+            $target = RegionContextFactory::resolveTarget(
+                $region,
+                $this->replicaReadPolicy,
+                $this->regionResolver->getStore(...),
+            );
+            $address = $this->regionResolver->resolveStoreAddress($target->storeId);
 
             $request = new BatchGetRequest();
-            $request->setContext(RegionContextFactory::fromRegionInfo($region));
+            $request->setContext($target->context);
             $request->setKeys($regionKeys);
             $request->setVersion($this->startTs);
 
@@ -325,11 +358,13 @@ final readonly class TxnReader
             // the region, so the cache lookup hits and only the end key
             // needs re-clipping after a split.
             $freshEndKey = '';
+            $excludedStore = null;
             $batch = $retryExecutor->execute($cursorStart, function () use (
                 $cursorStart,
                 $endKey,
                 $pending,
                 $maxScanLimit,
+                &$excludedStore,
                 &$freshEndKey,
             ): array {
                 // Resolve the region on every attempt so cache invalidation
@@ -337,7 +372,14 @@ final readonly class TxnReader
                 // effect (issue #267): a stale captured region would
                 // otherwise reproduce the original error on each retry.
                 $fresh = $this->regionResolver->getRegionInfo($cursorStart);
-                $address = $this->regionResolver->resolveStoreAddress($fresh->leaderStoreId);
+                $target = RegionContextFactory::resolveTarget(
+                    $fresh,
+                    $this->replicaReadPolicy,
+                    $this->regionResolver->getStore(...),
+                    excludedStoreId: $excludedStore,
+                );
+                $excludedStore = null;
+                $address = $this->regionResolver->resolveStoreAddress($target->storeId);
                 $freshEndKey = $fresh->endKey;
 
                 // Re-clip the sub-range against the freshly resolved region:
@@ -348,7 +390,7 @@ final readonly class TxnReader
                     : $endKey;
 
                 $request = new ScanRequest();
-                $request->setContext(RegionContextFactory::fromRegionInfo($fresh));
+                $request->setContext($target->context);
                 $request->setStartKey($cursorStart);
                 if ($scanEnd !== '') {
                     $request->setEndKey($scanEnd);
@@ -356,16 +398,23 @@ final readonly class TxnReader
                 $request->setLimit($pending > 0 ? $pending : $maxScanLimit);
                 $request->setVersion($this->startTs);
 
-                /** @var ScanResponse $response */
-                $response = $this->grpc->call(
-                    $address,
-                    'tikvpb.Tikv',
-                    'KvScan',
-                    $request,
-                    ScanResponse::class,
-                    $this->timeoutMs('scan'),
-                );
-                RegionErrorHandler::check($response, $this->regionCache, $fresh->regionId);
+                try {
+                    /** @var ScanResponse $response */
+                    $response = $this->grpc->call(
+                        $address,
+                        'tikvpb.Tikv',
+                        'KvScan',
+                        $request,
+                        ScanResponse::class,
+                        $this->timeoutMs('scan'),
+                    );
+                    RegionErrorHandler::check($response, $this->regionCache, $fresh->regionId);
+                } catch (RegionException $e) {
+                    if ($e->errorKind === ErrorKind::DataIsNotReady) {
+                        $excludedStore = $target->storeId;
+                    }
+                    throw $e;
+                }
 
                 $error = $response->getError();
                 if ($error !== null) {

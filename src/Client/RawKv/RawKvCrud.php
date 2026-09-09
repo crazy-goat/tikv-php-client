@@ -19,6 +19,8 @@ use CrazyGoat\TiKV\Client\Grpc\TimeoutConfig;
 use CrazyGoat\TiKV\Client\Region\RegionContextFactory;
 use CrazyGoat\TiKV\Client\Region\RegionErrorHandler;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadPolicy;
+use CrazyGoat\TiKV\Client\Retry\ErrorKind;
 use CrazyGoat\TiKV\Client\Retry\RetryExecutor;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -31,39 +33,63 @@ final readonly class RawKvCrud
         private TimeoutConfig $timeoutConfig,
         private LoggerInterface $logger = new NullLogger(),
         private ?SlowLogConfig $slowLogConfig = null,
+        /** Read preference for reads (issue #421); writes always target the leader. */
+        private ReplicaReadPolicy $replicaReadPolicy = new ReplicaReadPolicy(),
     ) {
     }
 
     public function get(string $key, RetryExecutor $retryExecutor, string $columnFamily = ''): ?string
     {
-        return $retryExecutor->execute($key, function () use ($key, $columnFamily): ?string {
-            $region = $this->regionResolver->getRegionInfo($key);
-            $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
+        $excludedStore = null;
 
-            $request = new RawGetRequest();
-            $request->setContext(RegionContextFactory::fromRegionInfo($region));
-            $request->setKey($key);
-            if ($columnFamily !== '') {
-                $request->setCf($columnFamily);
+        return $retryExecutor->execute(
+            $key,
+            function () use ($key, $columnFamily, &$excludedStore): ?string {
+                $region = $this->regionResolver->getRegionInfo($key);
+                $target = RegionContextFactory::resolveTarget(
+                    $region,
+                    $this->replicaReadPolicy,
+                    $this->regionResolver->getStore(...),
+                    excludedStoreId: $excludedStore,
+                );
+                $excludedStore = null;
+                $address = $this->regionResolver->resolveStoreAddress($target->storeId);
+
+                $request = new RawGetRequest();
+                $request->setContext($target->context);
+                $request->setKey($key);
+                if ($columnFamily !== '') {
+                    $request->setCf($columnFamily);
+                }
+
+                try {
+                    $response = $this->measure('read', $key, fn(): RawGetResponse => $this->grpc->call(
+                        $address,
+                        'tikvpb.Tikv',
+                        'RawGet',
+                        $request,
+                        RawGetResponse::class,
+                        $this->timeoutMs('read'),
+                    ));
+                    /** @var RawGetResponse $response */
+                    RegionErrorHandler::check($response);
+                } catch (RegionException $e) {
+                    if ($e->errorKind === ErrorKind::DataIsNotReady) {
+                        // The selected replica's applied index is behind: exclude
+                        // it so the next attempt falls back to another replica or
+                        // the leader (issue #421).
+                        $excludedStore = $target->storeId;
+                    }
+                    throw $e;
+                }
+
+                if ($response->getNotFound()) {
+                    return null;
+                }
+
+                return $response->getValue();
             }
-
-            $response = $this->measure('read', $key, fn(): RawGetResponse => $this->grpc->call(
-                $address,
-                'tikvpb.Tikv',
-                'RawGet',
-                $request,
-                RawGetResponse::class,
-                $this->timeoutMs('read'),
-            ));
-            /** @var RawGetResponse $response */
-            RegionErrorHandler::check($response);
-
-            if ($response->getNotFound()) {
-                return null;
-            }
-
-            return $response->getValue();
-        });
+        );
     }
 
     public function put(
@@ -144,40 +170,59 @@ final readonly class RawKvCrud
 
     public function getKeyTTL(string $key, RetryExecutor $retryExecutor, string $columnFamily = ''): ?int
     {
-        return $retryExecutor->execute($key, function () use ($key, $columnFamily): ?int {
-            $region = $this->regionResolver->getRegionInfo($key);
-            $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
+        $excludedStore = null;
 
-            $request = new RawGetKeyTTLRequest();
-            $request->setContext(RegionContextFactory::fromRegionInfo($region));
-            $request->setKey($key);
-            if ($columnFamily !== '') {
-                $request->setCf($columnFamily);
+        return $retryExecutor->execute(
+            $key,
+            function () use ($key, $columnFamily, &$excludedStore): ?int {
+                $region = $this->regionResolver->getRegionInfo($key);
+                $target = RegionContextFactory::resolveTarget(
+                    $region,
+                    $this->replicaReadPolicy,
+                    $this->regionResolver->getStore(...),
+                    excludedStoreId: $excludedStore,
+                );
+                $excludedStore = null;
+                $address = $this->regionResolver->resolveStoreAddress($target->storeId);
+
+                $request = new RawGetKeyTTLRequest();
+                $request->setContext($target->context);
+                $request->setKey($key);
+                if ($columnFamily !== '') {
+                    $request->setCf($columnFamily);
+                }
+
+                try {
+                    $response = $this->measure('read', $key, fn(): RawGetKeyTTLResponse => $this->grpc->call(
+                        $address,
+                        'tikvpb.Tikv',
+                        'RawGetKeyTTL',
+                        $request,
+                        RawGetKeyTTLResponse::class,
+                        $this->timeoutMs('read'),
+                    ));
+                    /** @var RawGetKeyTTLResponse $response */
+                    RegionErrorHandler::check($response);
+                } catch (RegionException $e) {
+                    if ($e->errorKind === ErrorKind::DataIsNotReady) {
+                        $excludedStore = $target->storeId;
+                    }
+                    throw $e;
+                }
+
+                $error = $response->getError();
+                if ($error !== '') {
+                    throw new RegionException('RawGetKeyTTL', $error);
+                }
+
+                if ($response->getNotFound()) {
+                    return null;
+                }
+
+                $ttl = (int) $response->getTtl();
+                return $ttl > 0 ? $ttl : null;
             }
-
-            $response = $this->measure('read', $key, fn(): RawGetKeyTTLResponse => $this->grpc->call(
-                $address,
-                'tikvpb.Tikv',
-                'RawGetKeyTTL',
-                $request,
-                RawGetKeyTTLResponse::class,
-                $this->timeoutMs('read'),
-            ));
-            /** @var RawGetKeyTTLResponse $response */
-            RegionErrorHandler::check($response);
-
-            $error = $response->getError();
-            if ($error !== '') {
-                throw new RegionException('RawGetKeyTTL', $error);
-            }
-
-            if ($response->getNotFound()) {
-                return null;
-            }
-
-            $ttl = (int) $response->getTtl();
-            return $ttl > 0 ? $ttl : null;
-        });
+        );
     }
 
     private function timeoutMs(string $operationType): ?int

@@ -23,6 +23,7 @@ use CrazyGoat\TiKV\Client\Grpc\TimeoutConfig;
 use CrazyGoat\TiKV\Client\Observability\MetricsInterface;
 use CrazyGoat\TiKV\Client\Observability\NoOpMetrics;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadPolicy;
 use CrazyGoat\TiKV\Client\Retry\RetryExecutor;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -97,6 +98,15 @@ final class RawKvClient
      */
     public const OPT_MAX_CONCURRENCY = 'maxConcurrency';
 
+    /**
+     * options[] key for the read preference (issue #421): a
+     * {@see ReplicaReadPolicy} instance selecting which replica serves
+     * reads (leader default, follower, mixed, prefer-leader), optional
+     * store-label matching and the stale-read flag. Writes always target
+     * the leader.
+     */
+    public const OPT_REPLICA_READ = 'replicaRead';
+
     /** Default bound on in-flight requests for fanned-out range operations. */
     public const DEFAULT_MAX_CONCURRENCY = BatchAsyncExecutor::DEFAULT_MAX_CONCURRENCY;
 
@@ -143,6 +153,7 @@ final class RawKvClient
             allowedStorePorts: $bundle->allowedStorePorts,
             retryDeadlineMs: self::resolveRetryDeadline($options),
             maxConcurrency: self::resolveMaxConcurrency($options),
+            replicaReadPolicy: self::resolveReplicaReadPolicy($options),
         );
     }
 
@@ -172,6 +183,8 @@ final class RawKvClient
         private readonly ?array $allowedStorePorts = null,
         int $retryDeadlineMs = self::DEFAULT_RETRY_DEADLINE_MS,
         int $maxConcurrency = self::DEFAULT_MAX_CONCURRENCY,
+        /** Read preference applied to every read issued by this client (issue #421). */
+        private readonly ReplicaReadPolicy $replicaReadPolicy = new ReplicaReadPolicy(),
     ) {
         if ($retryDeadlineMs < 0) {
             throw new InvalidArgumentException('retryDeadlineMs must be >= 0');
@@ -206,6 +219,7 @@ final class RawKvClient
             $timeoutConfig,
             $this->logger,
             $this->slowLogConfig,
+            $this->replicaReadPolicy,
         );
         $this->atomic = $atomic ?? new RawKvAtomic(
             $grpc,
@@ -220,6 +234,7 @@ final class RawKvClient
             $timeoutConfig,
             $this->logger,
             $this->slowLogConfig,
+            $this->replicaReadPolicy,
         );
         $this->scanner = $scanner ?? new RawKvScanner(
             $pdClient,
@@ -233,6 +248,7 @@ final class RawKvClient
             $this->slowLogConfig,
             $this->retryDeadlineMs,
             $this->maxConcurrency,
+            $this->replicaReadPolicy,
         );
         $this->rangeOps = $rangeOps ?? new RawKvRangeOps(
             $pdClient,
@@ -415,6 +431,31 @@ final class RawKvClient
         }
 
         return $maxConcurrency;
+    }
+
+    /**
+     * Resolve options['replicaRead'] (see OPT_REPLICA_READ) for create():
+     * the read preference applied to reads (issue #421). Must be a
+     * ReplicaReadPolicy instance when set.
+     *
+     * @param array<string, mixed> $options
+     */
+    private static function resolveReplicaReadPolicy(array $options): ReplicaReadPolicy
+    {
+        if (!array_key_exists(self::OPT_REPLICA_READ, $options)) {
+            return new ReplicaReadPolicy();
+        }
+
+        $policy = $options[self::OPT_REPLICA_READ];
+        if (!$policy instanceof ReplicaReadPolicy) {
+            throw new InvalidArgumentException(sprintf(
+                "options['replicaRead'] must be a %s, %s given",
+                ReplicaReadPolicy::class,
+                get_debug_type($policy),
+            ));
+        }
+
+        return $policy;
     }
 
     private function createRetryExecutor(): RetryExecutor

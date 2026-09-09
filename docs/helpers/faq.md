@@ -449,3 +449,56 @@ any invalidation: without `notLeaderOwnedByRetryExecutor: false` (or an owner li
 Budget note (#500): retrying region errors inside `pessimisticLockBatch()`'s do-while
 charges the existing backoff schedule to the lock-wait budget, so exhaustion surfaces as
 the last RegionException — not `LockWaitTimeoutException` (no lock conflict was reported).
+
+## Replica reads: selection must live inside the retry closure, and DataIsNotReady is an exclusion signal
+
+Three rules from issue #421 (`RegionContextFactory::resolveTarget()`):
+
+1. **Peer selection is per-attempt state, like region resolution.** The
+   `ReplicaReadPolicy` selects a peer for every retry attempt inside the
+   read closure (the same stale-capture lesson as #267); never hoist a
+   resolved `ReplicaReadTarget` above the loop. The selected store id (not
+   just the leader's) must also feed `resolveStoreAddress()`.
+2. **`DataIsNotReady` is a replica-lag signal, not a region miss.** It is
+   classified as `BackoffType::None` (immediate retry); the read closure
+   catches the `RegionException`, remembers the failing store id in a
+   by-ref local (`$excludedStore`) and the next attempt excludes it — with
+   a single follower left this degrades to the leader. Sync paths
+   (get/getKeyTTL/scan/txn reads) do this; the async batchGet dispatch
+   cannot (errors surface at wait time outside the retry closure), so
+   there a re-pick relies on the random choice among replicas.
+3. **No new store-label cache is needed.** `StoreCache` already caches the
+   full `metapb.Store` message *including* its labels, and
+   `RegionResolver::getStore()` exposes it; the issue's "extend StoreCache
+   to retain labels" premise had already expired (it retains the whole
+   proto). `RegionContextFactory::resolveTarget()` takes a
+   `Closure(int): ?Store` instead of the resolver, so it is unit-testable
+   without mocking the final `RegionResolver`.
+
+Review note (PR review of the #421 branch): a `$leaderFallback`/`forceLeader`
+parameter was removed from `resolveTarget()` — it was never set to `true`;
+the actual leader fallback is the exclusion path (`excludedStoreId` → empty
+candidate list → degrade to leader inside `resolveTarget()`). If you ever add
+a real leader fallback trigger, remember a leader that answers DataIsNotReady
+under Leader+staleRead otherwise loops on itself at zero backoff until the
+attempt cap. The async batchScan path likewise never tracked exclusions: it
+declared `$excludedStore` with no `DataIsNotReady` catch inside its retry
+closure, so the unused plumbing was removed there too.
+
+## TxnKV E2E can flake with a one-off empty scan on a fresh CI cluster
+
+PR #506's CI failed once with `TxnKvE2ETest::testScanWithLimitOneReturnsSingleKey`
+asserting `actual size 0` for keys committed moments earlier — no exception, just
+an empty `KvScan` answer. The PR's replica-read changes are no-ops in leader mode
+(`RegionContextFactory::resolveTarget()` returns the identical leader context), and
+the suite passes repeatedly on a fresh local cluster (full suite ×3, targeted
+test ×10). Re-running the failed CI job went green. Diagnosis: transient infra
+flake, not a code regression. If it recurs, suspect the scan loop in
+`TxnReader::executeScanForRegion()` — an empty batch with `$pending > 0` and no
+split exits silently (see `while (true)` loop, `break` conditions); a one-off
+empty answer for non-empty data is never retried.
+
+E2E note: `docker-compose run --rm php-test …` recreates the tikv
+containers it depends on; if the cluster was just (re)started the run
+container's DNS can fail with "Name does not resolve tikv1:20160" and the
+whole suite errors — wait ~20 s after `make up` before running E2E.

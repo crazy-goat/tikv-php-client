@@ -16,6 +16,7 @@ use CrazyGoat\TiKV\Client\Grpc\TimeoutConfig;
 use CrazyGoat\TiKV\Client\Observability\MetricsInterface;
 use CrazyGoat\TiKV\Client\Observability\NoOpMetrics;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadPolicy;
 use CrazyGoat\TiKV\Client\Retry\BackoffType;
 use CrazyGoat\TiKV\Client\Retry\RetryExecutor;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\DeadlockException;
@@ -83,6 +84,8 @@ final class Transaction
         private readonly TimeoutConfig $timeoutConfig = new TimeoutConfig(),
         private readonly MetricsInterface $metrics = new NoOpMetrics(),
         int $retryDeadlineMs = self::DEFAULT_RETRY_DEADLINE_MS,
+        /** Read preference applied to this transaction's reads (issue #421). */
+        private readonly ReplicaReadPolicy $replicaReadPolicy = new ReplicaReadPolicy(),
     ) {
         if ($retryDeadlineMs < 0) {
             throw new InvalidArgumentException('retryDeadlineMs must be >= 0');
@@ -98,6 +101,7 @@ final class Transaction
             timeoutConfig: $this->timeoutConfig,
             lockResolver: $this->lockResolver,
             regionCache: $this->regionCache,
+            replicaReadPolicy: $this->replicaReadPolicy,
         );
 
         $this->committer = new TwoPhaseCommitter(

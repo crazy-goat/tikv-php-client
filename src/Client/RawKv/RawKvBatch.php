@@ -23,6 +23,7 @@ use CrazyGoat\TiKV\Client\Region\RegionContextFactory;
 use CrazyGoat\TiKV\Client\Region\RegionErrorHandler;
 use CrazyGoat\TiKV\Client\Region\RegionGrouper;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
+use CrazyGoat\TiKV\Client\Region\ReplicaReadPolicy;
 use CrazyGoat\TiKV\Client\Retry\RetryExecutor;
 use Google\Protobuf\Internal\Message;
 use Grpc\Call;
@@ -42,6 +43,8 @@ final readonly class RawKvBatch
         private TimeoutConfig $timeoutConfig,
         private LoggerInterface $logger,
         private ?SlowLogConfig $slowLogConfig = null,
+        /** Read preference for reads (issue #421); writes always target the leader. */
+        private ReplicaReadPolicy $replicaReadPolicy = new ReplicaReadPolicy(),
     ) {
     }
 
@@ -231,10 +234,17 @@ final readonly class RawKvBatch
         array $keys,
         string $columnFamily = '',
     ): GrpcFuture {
-        $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
+        // Replica-read policy applies to batchGet only; batchPut/batchDelete
+        // are writes and always target the leader (issue #421).
+        $target = RegionContextFactory::resolveTarget(
+            $region,
+            $this->replicaReadPolicy,
+            $this->regionResolver->getStore(...),
+        );
+        $address = $this->regionResolver->resolveStoreAddress($target->storeId);
 
         $request = new RawBatchGetRequest();
-        $request->setContext(RegionContextFactory::fromRegionInfo($region));
+        $request->setContext($target->context);
         $request->setKeys($keys);
         if ($columnFamily !== '') {
             $request->setCf($columnFamily);

@@ -49,7 +49,9 @@ class ErrorClassifierTest extends TestCase
 
             // Unmapped kinds default to RegionMiss
             'StoreNotMatch'            => [ErrorKind::StoreNotMatch, BackoffType::RegionMiss],
-            'DataIsNotReady'           => [ErrorKind::DataIsNotReady, BackoffType::RegionMiss],
+            // Replica-lag signal: retried immediately with a leader fallback
+            // instead of a region-miss backoff (issue #421)
+            'DataIsNotReady'           => [ErrorKind::DataIsNotReady, BackoffType::None],
             'MismatchPeerId'           => [ErrorKind::MismatchPeerId, BackoffType::RegionMiss],
             'BucketVersionNotMatch'    => [ErrorKind::BucketVersionNotMatch, BackoffType::RegionMiss],
             'UndeterminedResult'       => [ErrorKind::UndeterminedResult, BackoffType::RegionMiss],
