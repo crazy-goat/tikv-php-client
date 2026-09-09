@@ -11,6 +11,7 @@ Complete reference for all TiKV RawKV operations supported by the PHP client.
 5. [TTL Operations](#ttl-operations)
 6. [Atomic Operations](#atomic-operations)
 7. [Data Integrity](#data-integrity)
+8. [Bulk Import (SST Ingest)](#bulk-import-sst-ingest)
 
 ## Basic CRUD Operations
 
@@ -761,6 +762,80 @@ foreach ($chunks as $chunk) {
     $client->batchDelete($chunk);
 }
 ```
+
+## Bulk Import (SST Ingest)
+
+### Ingest
+
+Bulk-import key-value pairs into TiKV via SST (Sorted String Table) ingestion:
+
+```php
+$client->ingest(['k1' => 'v1', 'k2' => 'v2'], ttl: 3600);
+```
+
+**Signature:** `ingest(array $keyValuePairs, ?int $ttl = null): void` — `$ttl`
+is in seconds; `null` means no TTL (the TTL is only sent to TiKV when it is a
+positive integer).
+
+**How it works** (see `src/Client/RawKv/SstIngestor.php`):
+
+1. Keys are sorted client-side (`ksort(..., SORT_STRING)` — SST data must be
+   sorted), converted to `import_sstpb.Pair` messages and grouped by region
+   (batch region resolution against PD).
+2. For each region the pairs are streamed to the region leader via the TiKV
+   ImportSST **`RawWrite`** client-streaming RPC (1024 pairs per chunk, first
+   message carries the SST metadata: UUID, key range, region epoch, CRC32),
+   and the resulting SST is committed with the **`Ingest`** RPC.
+
+This bypasses the normal Raft write path and writes pre-sorted data directly
+into regions, giving far higher throughput than `batchPut()` on large loads.
+Keys are validated like every other write (non-empty, key/value size limits);
+an empty array is a no-op.
+
+> **Cluster-wide side effect — read before running in production.** For the
+> duration of the call **every** TiKV store in the cluster is switched into
+> **import mode** (`SwitchMode(Import)` via the ImportSST service) and switched
+> back to normal mode on completion. Import mode changes behaviour for every
+> client of the cluster, not just the one that set it. The switch-back runs in
+> a `finally` block, so exceptions are safe — but a **killed process** (OOM
+> killer, deployment restart, `max_execution_time`, fatal error) leaves the
+> cluster in import mode with no client-side record and no automatic recovery.
+>
+> Before running `ingest()` in production:
+>
+> - Run it in a dedicated, supervised process with no execution-time limit
+>   (CLI, `max_execution_time = 0`), never inside a web request.
+> - Run batches in a size you can afford to re-run: `ingest()` is **not**
+>   retried automatically — any region error or transport error aborts the
+>   remaining regions and throws.
+> - Verify afterwards that all stores are back in normal mode.
+>
+> **Recovering a cluster stuck in import mode:** the switch-back is issued to
+> every store PD reports, so the simplest recovery is to re-run a successful
+> `ingest()` call (any batch, even small) against the same cluster — its
+> `finally` block switches all stores back to normal mode. Alternatively, issue
+> the ImportSST `SwitchMode(Normal)` RPC to every store directly (see the
+> `import_sstpb.ImportSST/SwitchMode` gRPC service); the client's
+> `switchStoresMode()` in `SstIngestor` shows the exact request shape. Stores
+> skipped for a rejected address (logged as `Failed to switch store to normal
+> mode`) must be restored manually on that store.
+
+**Operational notes:**
+
+- The SwitchMode fan-out to all stores, the `RawWrite` stream and the `Ingest`
+  RPC each use the ingest gRPC deadline, fixed at **60 s**
+  (`TimeoutConfig::ingestTimeoutMs`, default `60000`). It is **not**
+  configurable through `RawKvClient::create()` `options['timeout']` — that
+  array only maps `readTimeoutMs`, `writeTimeoutMs`, `batchReadTimeoutMs`,
+  `batchWriteTimeoutMs`, `scanTimeoutMs`, `deleteRangeTimeoutMs` and
+  `checksumTimeoutMs` keys.
+- Keys that cannot be resolved to a region (region lookup returned nothing for
+  them) are **silently dropped** from the import — no error is raised. Verify
+  the imported key count if completeness matters.
+- The number of simultaneously in-flight SwitchMode requests is bounded by the
+  client's `options['maxConcurrency']` (default
+  `RawKvClient::DEFAULT_MAX_CONCURRENCY`), so the per-call mode-switch overhead
+  does not scale linearly with store count.
 
 ## See Also
 
