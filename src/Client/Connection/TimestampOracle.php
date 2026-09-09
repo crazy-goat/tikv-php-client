@@ -18,9 +18,11 @@ use Psr\Log\NullLogger;
  * PD TSO oracle: batching and low-resolution caching of PD timestamps.
  *
  * TSO timestamps carry an 18-bit logical counter inside one physical
- * millisecond; a single TSO grant of $count timestamps is handed out as
- * the consecutive values base … base + $count - 1 (plain integer
- * addition composes/wraps the logical part correctly).
+ * millisecond; a single TSO grant of $count timestamps covers the
+ * consecutive values base - $count + 1 … base (PD's response timestamp
+ * is the highest of the grant — see client-rust's `allocate_timestamps`).
+ * Plain integer addition/subtraction composes/wraps the logical part
+ * correctly.
  */
 final class TimestampOracle
 {
@@ -39,9 +41,10 @@ final class TimestampOracle
      * @param \Closure(int): void $setClusterId
      * @param int|null $lowResMaxStalenessMs maximum allowed staleness (ms) of the
      *                                       low-resolution timestamp cache;
-     *                                       null = no caching (default), 0 =
-     *                                       refetch on every call (only bounds
-     *                                       staleness, never returns stale data)
+     *                                       null = no caching (default), 0 = a
+     *                                       cached value may be reused only
+     *                                       within the same wall-clock
+     *                                       millisecond (never stale data)
      * @param \Closure(): int $clock wall-clock milliseconds; injectable for tests
      */
     public function __construct(
@@ -78,10 +81,12 @@ final class TimestampOracle
      * TSO service in a single RPC (issue #420, GAP-06).
      *
      * A single `Tso` request with `count = $count` costs one round trip
-     * and yields a consecutive range of timestamps; the surplus
-     * timestamps beyond the first are handed out in order by plain
-     * integer increment, which composes and wraps the 18-bit logical
-     * counter inside the physical millisecond correctly.
+     * and yields a consecutive range of timestamps; PD's response
+     * timestamp is the highest of the granted range, so the range is
+     * handed out in ascending order as
+     * `base - (n - 1) … base` (plain integer arithmetic composes and
+     * wraps the 18-bit logical counter inside the physical millisecond
+     * correctly).
      *
      * @param int $count number of timestamps to request (>= 1)
      * @param int|null $timeoutMs Optional gRPC call timeout in milliseconds (null = no timeout)
@@ -248,9 +253,11 @@ final class TimestampOracle
     /**
      * Turn a TSO grant into exactly $count consecutive timestamps.
      *
-     * PD may grant fewer timestamps than requested (`TsoResponse.count`);
-     * the handout never exceeds the granted count so we never fabricate
-     * timestamps outside the grant.
+     * PD's response timestamp is the highest of the granted range
+     * (client-rust `allocate_timestamps`); the handout is therefore
+     * `base - (n - 1) … base` in ascending order, where
+     * $n = min(granted, requested). The handout never exceeds the
+     * granted count so we never fabricate timestamps outside the grant.
      *
      * @return list<int>
      */
@@ -279,9 +286,12 @@ final class TimestampOracle
             ]);
         }
 
+        $n = min($granted, $requested);
+        $start = $base - ($n - 1);
+
         $range = [];
-        for ($i = 0; $i < min($granted, $requested); $i++) {
-            $range[] = $base + $i;
+        for ($i = 0; $i < $n; $i++) {
+            $range[] = $start + $i;
         }
 
         return $range;

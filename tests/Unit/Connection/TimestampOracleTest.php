@@ -382,15 +382,17 @@ class TimestampOracleTest extends TestCase
         $oracle = $this->makeOracle($grpc);
         $range = $oracle->getTimestampBatch(64);
 
+        // PD's response timestamp is the highest of the grant: the handout
+        // ends at the response timestamp.
         $this->assertCount(64, $range);
-        $this->assertSame(((1715000000000 << 18) + ((1 << 18) - 2)), $range[0]);
-        // Monotonic and consecutive.
+        $this->assertSame(((1715000000000 << 18) + ((1 << 18) - 2)), $range[63]);
+        // Monotonic and consecutive; walking back crosses into the
+        // previous physical millisecond (plain integer arithmetic).
         for ($i = 1; $i < 64; $i++) {
             $this->assertSame($range[$i - 1] + 1, $range[$i], "element $i");
         }
-        // Crossing the logical wrap lands in the next physical ms.
-        $this->assertSame(1715000000001 << 18, $range[2]);
-        $this->assertSame(((1715000000001 << 18) + 61), $range[63]);
+        $this->assertSame((((1715000000000 << 18) + ((1 << 18) - 2)) - 63), $range[0]);
+        $this->assertSame((((1715000000001 << 18)) - 65), $range[0]);
     }
 
     public function testGetTimestampBatchRejectsCountBelowOne(): void
@@ -415,8 +417,8 @@ class TimestampOracleTest extends TestCase
         $range = $oracle->getTimestampBatch(64);
 
         $this->assertCount(2, $range);
-        $this->assertSame(((1715000000000 << 18) + 7), $range[0]);
-        $this->assertSame(((1715000000000 << 18) + 8), $range[1]);
+        $this->assertSame(((1715000000000 << 18) + 6), $range[0]);
+        $this->assertSame(((1715000000000 << 18) + 7), $range[1]);
     }
 
     public function testGetTimestampDelegatesToBatchWithCountOne(): void
