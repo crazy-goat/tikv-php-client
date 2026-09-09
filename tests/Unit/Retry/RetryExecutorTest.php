@@ -127,6 +127,112 @@ class RetryExecutorTest extends TestCase
         }
     }
 
+    /**
+     * The backoff budget must reset on every execute() call (issue #243):
+     * Transaction memoizes a single RetryExecutor for its whole lifetime, so
+     * a budget carried across execute() calls would be exhausted permanently.
+     * The first call exhausts maxBackoffMs and throws; the second call must
+     * get a full budget and therefore succeed with the same retry schedule.
+     */
+    public function testBackoffBudgetResetsPerExecuteCall(): void
+    {
+        $executor = $this->createExecutor(
+            maxBackoffMs: 6, // RegionMiss backoff 2, 4: two retries fit (2+4=6), three do not
+            serverBusyBudgetMs: 10000,
+        );
+        $classifier = fn(TiKvException $e): BackoffType => BackoffType::RegionMiss;
+
+        $calls = 0;
+        // A fresh operation per execute() call: fails its first two attempts
+        // (RegionMiss backoff 2, then 4; 2+4=6 <= 6 allows both retries),
+        // then succeeds — so every call must exercise the full schedule.
+        // $alwaysFail makes the operation fail forever (budget exhaustion).
+        $operationFactory = function (bool $alwaysFail = false) use (&$calls): \Closure {
+            $failures = 0;
+            return function () use (&$calls, &$failures, $alwaysFail): string {
+                $calls++;
+                if ($alwaysFail || $failures < 2) {
+                    $failures++;
+                    throw new TiKvException('test error');
+                }
+                return 'success';
+            };
+        };
+
+        // First call: exhausts its budget (2+4+8=14 > 6) and rethrows.
+        try {
+            $executor->execute('test_key', $operationFactory(true), $classifier);
+            $this->fail('Expected first execute() to exhaust the budget');
+        } catch (TiKvException $e) {
+            $this->assertSame('test error', $e->getMessage());
+        }
+        $this->assertSame(3, $calls);
+
+        // Second call on the SAME executor: fresh budget, 2 retries, success.
+        // With a carried-over budget this would throw immediately.
+        $this->assertSame('success', $executor->execute('test_key', $operationFactory(), $classifier));
+        $this->assertSame(6, $calls);
+    }
+
+    /**
+     * The ServerBusy budget must also reset per execute() call (issue #243),
+     * for the same reason as the total backoff budget. ServerBusy sleep has
+     * jitter (1000 + random_int(0, 1000) ms), so the reset is asserted via
+     * the logged 'serverBusyBackoffMs' of each exhaustion: after a reset it
+     * is one sleep (1000–2000 ms), with a carried-over budget it would be
+     * the sum of two sleeps (2000–4000 ms). The two ranges touch at exactly
+     * 2000 ms (a fresh budget CAN be 2000 when both jitter draws are maximal),
+     * so a strict <2000 assertion would flake. Instead we run three
+     * executions and assert each logged budget is <= 2000: a carried-over
+     * budget (2000–4000 for the 2nd, 3000–6000 for the 3rd) exceeds 2000
+     * unless every jitter draw is maximal (~1e-9), while a fresh budget can
+     * never exceed it — no false failures, negligible false passes.
+     */
+    public function testServerBusyBudgetResetsPerExecuteCall(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $loggedBudgets = [];
+        $logger->method('error')->willReturnCallback(
+            function (string $message, array $context) use (&$loggedBudgets): void {
+                if ($message === 'ServerBusy budget exhausted') {
+                    $loggedBudgets[] = $context['serverBusyBackoffMs'];
+                }
+            },
+        );
+
+        $executor = $this->createExecutor(
+            maxBackoffMs: 10000,
+            serverBusyBudgetMs: 100, // below the minimum ServerBusy sleep (~1000ms)
+            logger: $logger,
+        );
+        $classifier = fn(TiKvException $e): BackoffType => BackoffType::ServerBusy;
+
+        $operation = function (): never {
+            throw new TiKvException('server busy');
+        };
+
+        for ($i = 0; $i < 3; $i++) {
+            try {
+                // The never-returning operation always throws; the budget
+                // check then rethrows it after one ServerBusy sleep.
+                $executor->execute('test_key', $operation, $classifier);
+            } catch (TiKvException $e) {
+                $this->assertSame('server busy', $e->getMessage());
+            }
+        }
+
+        // Each exhaustion must see a fresh (single-sleep) ServerBusy budget;
+        // see the docblock for why this is <= 2000 rather than < 2000.
+        $this->assertCount(3, $loggedBudgets);
+        foreach ($loggedBudgets as $serverBusyBackoffMs) {
+            $this->assertLessThanOrEqual(
+                2000,
+                $serverBusyBackoffMs,
+                'Later execute() calls must start the ServerBusy budget from 0, not carry over earlier sleeps',
+            );
+        }
+    }
+
     // ========================================================================
     // ServerBusy budget exhaustion
     // ========================================================================

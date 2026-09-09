@@ -678,3 +678,43 @@ constraints are unsatisfiable (`tests/Unit/Retry/RetryExecutorTest.php`
 `testReusedExecutorRetriesNormallyOnSecondCallAfterFirstConsumesBudget`,
 comment documents the math). Accept probabilistic detection: the
 no-carry-over invariant ("second call succeeds") still holds deterministically.
+
+## Issue duplication: a fix's refactor can silently close an older issue — grep the source before coding
+
+Issue #243 (REG-12) reported per-executor retry-budget fields surviving across
+`execute()` calls, exhausting a Transaction's budget permanently. The code fix
+had already shipped in ee4c0f6 (issue #271), which moved `totalBackoffMs` /
+`serverBusyBackoffMs` / `attempt` from instance fields to locals inside
+`execute()` (also for reentrancy) — #243's remaining value was only the
+missing regression tests (executor-level sequential-call budget reset, plus
+two sequential `Transaction::get()` calls each getting a usable budget, per
+the acceptance criteria). Lesson: read `git log <file>` for the issue's cited
+lines before implementing; an audit finding can be a duplicate of a later
+refactor that fixed it as a side effect. Also: when writing budget-reset
+tests, remember `maxBackoffMs` is an *upper bound on the accumulated total* —
+with RegionMiss backoff 2,4,8 a budget of N allows exactly ⌊N/2⌋-ish retries,
+so compute the attempt count from the exponential sequence (2+4=6 ≤ 6 allows
+two retries; 6+8=14 > 6 aborts the third), and an operation that "fails twice
+then succeeds" needs a per-call failure counter (a shared `$calls % 3`
+pattern silently gives the second execute() zero retries).
+
+## Equal-jitter randomness can collapse the separating boundary in budget assertions — assert `<=` over more iterations, never strict `<`
+
+`Backoff::exponential()` with equal jitter returns `half + random_int(0, half)`
+(inclusive), so a ServerBusy sleep is `1000–2000 ms` **inclusive of both ends**.
+When a test distinguishes "fresh budget" (one sleep: 1000–2000) from
+"carried-over budget" (sum of N sleeps: 2000–4000) via a threshold, the ranges
+touch at exactly 2000 ms — a strict `<2000` assertion flakes whenever all
+jitter draws are maximal (~1/1001 per draw, `random_int` is inclusive and not
+mockable; `RetryExecutor` is `final readonly`, so it can't be subclassed
+either). The robust pattern (used in `RetryExecutorTest::
+testServerBusyBudgetResetsPerExecuteCall` for issue #243): assert
+`assertLessThanOrEqual(2000)` across **three** sequential `execute()` calls —
+a fresh budget can never exceed 2000 (zero false failures), while a
+carried-over budget exceeds it unless *every* draw is maximal (~1e-9 false
+passes, vanishing with more iterations). General rule: with inclusive random
+ranges, prefer `<=` at the shared boundary plus more samples over a strict
+inequality that can reject a legal value. Bonus: these tests never actually
+sleep, because `RetryExecutor` checks the budget **before** `usleep()`
+(issue #237) — an over-budget ServerBusy error throws without sleeping, so
+budget-exhaustion tests are fast.

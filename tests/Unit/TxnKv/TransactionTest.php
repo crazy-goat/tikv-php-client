@@ -717,6 +717,48 @@ class TransactionTest extends TestCase
         $this->assertSame('recovered', $result);
     }
 
+    /**
+     * The retry budget must reset per execute() (issue #243): Transaction
+     * memoizes ONE RetryExecutor for its whole lifetime, so with a shared
+     * accumulator the first operation that exhausts maxBackoffMs would leave
+     * every later operation (including commit) unable to retry at all.
+     * maxBackoffMs=4 with StaleCmd backoff 2,4 → 2+4=6 > 4 exhausts a budget
+     * after exactly 2 attempts. Each get() must therefore be able to make its
+     * own 2 attempts: 4 gRPC calls in total, and both gets recover.
+     */
+    public function testRetryBudgetResetsBetweenOperationsOnSameTransaction(): void
+    {
+        $this->regionCache->method('getByKey')->willReturn($this->testRegion);
+        $this->regionCache->method('invalidate');
+        $this->regionCache->method('put');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($this->testRegion);
+
+        $response = new GetResponse();
+        $response->setNotFound(false);
+        $response->setValue('recovered');
+
+        $calls = 0;
+        $this->grpc->method('call')->willReturnCallback(function () use (&$calls, $response): GetResponse {
+            $calls++;
+            if ($calls % 3 !== 0) {
+                // 1st and 2nd call of each get() fail; the 3rd succeeds.
+                throw new TiKvException('StaleCommand');
+            }
+            return $response;
+        });
+
+        $txn = $this->createTransaction(['pessimistic' => false, 'maxBackoffMs' => 6]);
+
+        $this->assertSame('recovered', $txn->get('key1'));
+        $this->assertSame(3, $calls);
+
+        // Second operation on the SAME transaction: must get its own fresh
+        // budget (2 StaleCommand retries), not the exhausted one from get() #1.
+        $this->assertSame('recovered', $txn->get('key2'));
+        $this->assertSame(6, $calls);
+    }
+
     public function testGetWithDiskFullRetriesWithDiskFull(): void
     {
         $this->regionCache->method('getByKey')->willReturn($this->testRegion);
