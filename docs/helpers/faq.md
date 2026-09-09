@@ -20,6 +20,25 @@ original TiKvException**, not `RetryBudgetExhaustedException`, and that
 `Backoff::exponential(..., equalJitter: true)` returns `[base/2, base]` — so
 `sleepMs(100)` for a cap of 500 returns in `[250, 500]`, never exactly the cap.
 
+## Sizing a retry-budget regression test under equal jitter: do the min-cumulative-sleep math
+
+`BackoffType::sleepMs()` delegates to `Backoff::exponential()`, which takes
+`equalJitter` **per call site** — the enum's `equalJitter()` match decides it.
+Any NEW `BackoffType` case must opt into jitter explicitly or it silently
+gets full (non-jittered) exponential sleeps; there is no default jitter.
+
+When a regression test must prove "budget exhausts before the attempt cap",
+size `maxBackoffMs` from the worst case, not the happy path: with equal
+jitter on base `b`, attempt n sleeps in `[b·2^n/2, b·2^n]` (capped), so the
+**minimum** cumulative sleep after k retries is `b·(2^k − 1)` — for
+`EpochNotMatch` (b=2): 1, 3, 7, 15, 31, 63. A `maxBackoffMs: 50` budget
+therefore exhausts by retry ~6 under ANY jitter draw (63 > 50), which is what
+makes `assertLessThan(DEFAULT_MAX_ATTEMPTS, $attempts)` un-flakeable.
+Conversely a wall-clock `elapsedMs` lower bound must be provable from the
+sleeps alone (budget exhaustion implies > 50 ms of sleeps), not from
+scheduling overhead. The #241 tests in `RetryExecutorTest` are the reference
+implementation of this sizing.
+
 ## PHPStan: `$this->fail()` directly after a call whose closure always throws is dead code
 
 A test like `try { $executor->execute($k, fn () => throw …); $this->fail(...); } catch (TiKvException) {}`
