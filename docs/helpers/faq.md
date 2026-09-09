@@ -1016,3 +1016,12 @@ endpoint (`127.0.0.1:1`); the sends succeed, the waits fail, and the test assert
 peak in-flight count equals the window size while expecting
 `BatchPartialFailureException` (which also proves partial-failure semantics survive
 windowing). See `tests/Unit/RawKv/RawKvBatchConcurrencyCapTest.php`.
+## Rector's PrivatizeFinalClassMethodRector also demotes private static test helpers to instance methods
+
+While adding a private `static` helper to `ConnectionFactoryTest` (#304),
+rector's dry run demanded `private function` (non-static) and
+`$this->helper()` call sites — `PrivatizeFinalClassMethodRector` treats
+private static methods in final classes as removable indirection. Match the
+existing test-helper style (instance methods) instead of fighting rector.
+Also remember `composer lint` = phpcs + phpstan + rector dry-run: a lint
+failure in a test file can come from rector, not phpcs/phpstan.
