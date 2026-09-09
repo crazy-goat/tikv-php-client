@@ -678,7 +678,7 @@ constraints are unsatisfiable (`tests/Unit/Retry/RetryExecutorTest.php`
 `testReusedExecutorRetriesNormallyOnSecondCallAfterFirstConsumesBudget`,
 comment documents the math). Accept probabilistic detection: the
 no-carry-over invariant ("second call succeeds") still holds deterministically.
-=======
+
 ## Issue duplication: a fix's refactor can silently close an older issue — grep the source before coding
 
 Issue #243 (REG-12) reported per-executor retry-budget fields surviving across
