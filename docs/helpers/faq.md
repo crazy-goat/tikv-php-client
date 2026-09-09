@@ -597,3 +597,14 @@ not compare epochs (REG-18, still open) — an incoming *older-epoch* region
 will evict a newer one, same as before. When unit-testing the private
 `idToIndex`/`lruOrder` consistency by reflection, PHPStan level 9 needs
 `is_array`/`instanceof` asserts on the `getValue()` results — they are `mixed`.
+
+## A rebase can leave stray conflict markers in docs — grep before finishing
+
+All three of fix/216, fix/237 and fix/238 carried a leftover
+`>>>>>>> <sha> (...)` line right after the new CHANGELOG.md bullet after
+their rebase (and #238 also in `docs/helpers/faq.md`), silently committed
+by the follow-up fix. A squash/fixup during a rebase can resurrect markers
+from an earlier conflict that was "resolved" by keeping both sides. Before
+every push, grep the whole diff for conflict markers:
+`git diff master...HEAD | grep -n ">>>>>>>\|<<<<<<<"`. PHPCS/PHPStan do
+not catch these in Markdown files.
