@@ -883,3 +883,30 @@ tests then fail against master if the guard is removed (verify once by
 temporarily replacing the warning-early-return with `self::fail()`) and activate
 automatically when the fix merges — no env var to clean up later, and no
 duplicate tests alongside the fix PR's own coverage.
+
+## RawKvBatch hardcodes `new Call(...)` — region errors inside batch responses can only be tested at the wait-boundary composition
+
+`RawKvBatch::execute*ForRegionAsync()` constructs `\Grpc\Call` directly, so
+the transport cannot be injected with a mocked Call (which `GrpcFutureTest`
+does for the future itself). Consequently a `NotLeader`/`EpochNotMatch`
+returned inside a `RawBatchGetResponse` cannot be delivered end-to-end
+through `batchGet()` in unit tests. The pinned tests for issue #330
+(`RawKvBatchTest`) instead drive the **exact composition RawKvBatch builds**
+— `CheckedGrpcFuture::fromGrpcFuture(new GrpcFuture($mockCall, ...))` (fast
+path) or `fromCallable()` wrapping `RegionErrorHandler::check()` (multi-region
+waiter) — through `BatchAsyncExecutor::executeParallel()`, which is where the
+error is actually classified and reported. Split-limit tests count RPCs via
+the `GrpcClientInterface::getChannel` mock against a dead `127.0.0.1:1`
+channel and expect `BatchPartialFailureException` (issue #330).
+
+## Several legacy RawKvBatchTest TTL tests silently dispatch nothing
+
+`testBatchPutWithIntTtl` and friends mock `getByKey` but **not**
+`scanRegions`, so `batchResolveRegions()` returns an empty map, every key is
+silently skipped, `regionCalls` is empty, `executeParallel([])` returns
+immediately and the test passes without a single RPC. If you need such a
+test to actually dispatch, also mock
+`$this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()])`
+and `$this->pdClient->method('getStore')->willReturn($this->defaultStore())`
+(missing getStore makes dispatch fail early with "Store 1 not found in PD"
+before `getChannel()` is reached).
