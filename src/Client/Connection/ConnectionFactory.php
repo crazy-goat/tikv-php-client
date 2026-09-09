@@ -34,6 +34,26 @@ use Psr\Log\NullLogger;
 final class ConnectionFactory
 {
     /**
+     * TLS option keys recognised by buildTlsConfig(). Any other key inside
+     * options['tls'] is rejected with an InvalidArgumentException instead of
+     * being silently ignored (a silently ignored TLS key means a silently
+     * plaintext connection).
+     */
+    private const RECOGNISED_TLS_KEYS = [
+        'caCertFile',
+        'caCertBaseDir',
+        'caCertPem',
+        'caCert',
+        'clientCertFile',
+        'clientCertBaseDir',
+        'clientKeyFile',
+        'clientCertPem',
+        'clientKeyPem',
+        'clientCert',
+        'clientKey',
+    ];
+
+    /**
      * Build the shared connection layer from the given endpoints and options.
      *
      * @param string[] $pdEndpoints  PD cluster addresses
@@ -59,10 +79,12 @@ final class ConnectionFactory
         $tlsConfig = self::buildTlsConfig($options);
 
         $grpcArgs = self::resolveGrpcChannelArgs($options);
+        $allowInsecure = self::resolveAllowInsecure($options);
 
         $grpc = new GrpcClient(
             $resolvedLogger,
             $tlsConfig,
+            allowInsecure: $allowInsecure,
             metrics: $metrics,
             maxReceiveMessageBytes: $grpcArgs['maxReceiveMessageBytes'],
             maxSendMessageBytes: $grpcArgs['maxSendMessageBytes'],
@@ -252,54 +274,130 @@ final class ConnectionFactory
     }
 
     /**
-     * Build TLS configuration from the options array.
+     * Resolve options['allowInsecure'] (default true) and forward it to the
+     * GrpcClient. When set to false, the GrpcClient throws
+     * InvalidStateException on any attempt to open a channel without usable
+     * TLS credentials — TLS is then enforced through the public factory path
+     * (issue #304, SEC-01).
      *
      * @param array<string, mixed> $options
      */
+    private static function resolveAllowInsecure(array $options): bool
+    {
+        if (!array_key_exists('allowInsecure', $options)) {
+            return true;
+        }
+
+        $allowInsecure = $options['allowInsecure'];
+        if (!is_bool($allowInsecure)) {
+            throw new InvalidArgumentException(
+                "options['allowInsecure'] must be a boolean, got "
+                . get_debug_type($allowInsecure)
+            );
+        }
+
+        return $allowInsecure;
+    }
+
+    /**
+     * Build TLS configuration from the options array.
+     *
+     * @param array<string, mixed> $options
+     * @throws InvalidArgumentException when options['tls'] is present but not
+     *                                  an array (or null), or when it contains
+     *                                  unrecognised keys — both previously
+     *                                  degraded silently to plaintext
+     */
     private static function buildTlsConfig(array $options): ?\CrazyGoat\TiKV\Client\Tls\TlsConfig
     {
-        if (!isset($options['tls']) || !is_array($options['tls'])) {
+        if (!array_key_exists('tls', $options) || $options['tls'] === null) {
             return null;
         }
 
+        if (!is_array($options['tls'])) {
+            throw new InvalidArgumentException(
+                "options['tls'] must be an array, got "
+                . get_debug_type($options['tls'])
+            );
+        }
+
         $tlsOptions = $options['tls'];
+        $unknown = array_diff(array_keys($tlsOptions), self::RECOGNISED_TLS_KEYS);
+        if ($unknown !== []) {
+            throw new InvalidArgumentException(
+                "Unrecognised TLS option(s) in options['tls']: "
+                . implode(', ', $unknown)
+            );
+        }
+
+        // A recognised key with a non-string value would be silently dropped
+        // by the guards below (the key would simply not be set) — the
+        // connection would then go out in plaintext while the caller
+        // believes TLS is configured. Fail closed instead (issue #304).
+        // After this loop every value in $tlsOptions is a string.
+        foreach ($tlsOptions as $key => $value) {
+            if (!is_string($value)) {
+                throw new InvalidArgumentException(
+                    "options['tls'][{$key}] must be a string, got "
+                    . get_debug_type($value)
+                );
+            }
+        }
+
         $builder = new TlsConfigBuilder();
 
         // Explicit file-path options take priority
-        if (isset($tlsOptions['caCertFile']) && is_string($tlsOptions['caCertFile'])) {
-            $baseDir = isset($tlsOptions['caCertBaseDir']) && is_string($tlsOptions['caCertBaseDir'])
-                ? $tlsOptions['caCertBaseDir']
-                : null;
+        if (isset($tlsOptions['caCertFile'])) {
+            $baseDir = $tlsOptions['caCertBaseDir'] ?? null;
             $builder->withCaCertFile($tlsOptions['caCertFile'], $baseDir);
-        } elseif (isset($tlsOptions['caCertPem']) && is_string($tlsOptions['caCertPem'])) {
+        } elseif (isset($tlsOptions['caCertPem'])) {
             $builder->withCaCertPem($tlsOptions['caCertPem']);
-        } elseif (isset($tlsOptions['caCert']) && is_string($tlsOptions['caCert'])) {
+        } elseif (isset($tlsOptions['caCert'])) {
             // Backward compatibility: guess file path vs inline content
             $builder->withCaCert($tlsOptions['caCert']);
         }
 
-        $hasClientCertFile = isset($tlsOptions['clientCertFile']) && is_string($tlsOptions['clientCertFile']);
-        $hasClientKeyFile = isset($tlsOptions['clientKeyFile']) && is_string($tlsOptions['clientKeyFile']);
-        $hasClientCertPem = isset($tlsOptions['clientCertPem']) && is_string($tlsOptions['clientCertPem']);
-        $hasClientKeyPem = isset($tlsOptions['clientKeyPem']) && is_string($tlsOptions['clientKeyPem']);
+        $hasClientCertFile = isset($tlsOptions['clientCertFile']);
+        $hasClientKeyFile = isset($tlsOptions['clientKeyFile']);
+        $hasClientCertPem = isset($tlsOptions['clientCertPem']);
+        $hasClientKeyPem = isset($tlsOptions['clientKeyPem']);
 
+        $clientPairConfigured = false;
         if ($hasClientCertFile && $hasClientKeyFile) {
-            $baseDir = isset($tlsOptions['clientCertBaseDir']) && is_string($tlsOptions['clientCertBaseDir'])
-                ? $tlsOptions['clientCertBaseDir']
-                : null;
+            $baseDir = $tlsOptions['clientCertBaseDir'] ?? null;
             $builder->withClientCertFile(
                 $tlsOptions['clientCertFile'],
                 $tlsOptions['clientKeyFile'],
                 $baseDir,
             );
+            $clientPairConfigured = true;
         } elseif ($hasClientCertPem && $hasClientKeyPem) {
             $builder->withClientCertPem($tlsOptions['clientCertPem'], $tlsOptions['clientKeyPem']);
+            $clientPairConfigured = true;
         } elseif (
-            isset($tlsOptions['clientCert']) && is_string($tlsOptions['clientCert']) &&
-            isset($tlsOptions['clientKey']) && is_string($tlsOptions['clientKey'])
+            isset($tlsOptions['clientCert']) &&
+            isset($tlsOptions['clientKey'])
         ) {
             // Backward compatibility: guess file path vs inline content
             $builder->withClientCert($tlsOptions['clientCert'], $tlsOptions['clientKey']);
+            $clientPairConfigured = true;
+        }
+
+        // A half-specified client pair (e.g. clientCertFile without
+        // clientKeyFile) falls through every branch above and would silently
+        // connect in plaintext while the caller believes a client certificate
+        // is configured. Fail closed instead (issue #304).
+        if (
+            !$clientPairConfigured && ($hasClientCertFile || $hasClientKeyFile
+            || $hasClientCertPem || $hasClientKeyPem
+            || isset($tlsOptions['clientCert']) || isset($tlsOptions['clientKey']))
+        ) {
+            throw new InvalidArgumentException(
+                "Incomplete client certificate pair in options['tls']: client "
+                . 'cert/key options must be given as a complete pair '
+                . '(clientCertFile + clientKeyFile, clientCertPem + clientKeyPem, '
+                . 'or clientCert + clientKey)',
+            );
         }
 
         return $builder->build();

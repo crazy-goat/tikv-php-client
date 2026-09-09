@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Tests\Unit\Connection;
 
+use CrazyGoat\TiKV\Client\Connection\ConnectionBundle;
 use CrazyGoat\TiKV\Client\Connection\ConnectionFactory;
 use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
@@ -150,6 +151,109 @@ class ConnectionFactoryTest extends TestCase
         ConnectionFactory::create(
             ['127.0.0.1:2379'],
             options: ['allowedStorePorts' => [0]],
+        );
+    }
+
+    private function grpcAllowInsecure(ConnectionBundle $bundle): bool
+    {
+        $ref = new \ReflectionProperty($bundle->grpc, 'allowInsecure');
+        $value = $ref->getValue($bundle->grpc);
+        assert(is_bool($value));
+
+        return $value;
+    }
+
+    public function testAllowInsecureDefaultsToTrue(): void
+    {
+        $bundle = ConnectionFactory::create(['127.0.0.1:2379']);
+
+        $this->assertTrue($this->grpcAllowInsecure($bundle));
+    }
+
+    public function testAllowInsecureFalseIsForwardedToGrpcClient(): void
+    {
+        $bundle = ConnectionFactory::create(
+            ['127.0.0.1:2379'],
+            options: ['allowInsecure' => false],
+        );
+
+        $this->assertFalse($this->grpcAllowInsecure($bundle));
+    }
+
+    public function testAllowInsecureRejectsNonBoolValue(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        ConnectionFactory::create(
+            ['127.0.0.1:2379'],
+            options: ['allowInsecure' => 'false'],
+        );
+    }
+
+    public function testTlsNonArrayStringThrowsInsteadOfSilentPlaintext(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("options['tls'] must be an array, got string");
+
+        ConnectionFactory::create(
+            ['127.0.0.1:2379'],
+            options: ['tls' => '/etc/tikv/ca.pem'],
+        );
+    }
+
+    public function testTlsNonArrayBoolThrowsInsteadOfSilentPlaintext(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        ConnectionFactory::create(
+            ['127.0.0.1:2379'],
+            options: ['tls' => true],
+        );
+    }
+
+    public function testTlsExplicitNullMeansNoTls(): void
+    {
+        $bundle = ConnectionFactory::create(
+            ['127.0.0.1:2379'],
+            options: ['tls' => null],
+        );
+
+        $this->assertNull($bundle->tlsConfig);
+    }
+
+    public function testUnknownTlsKeyThrowsNamingTheKey(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unrecognised TLS option(s) in options[\'tls\']: ca_cert');
+
+        ConnectionFactory::create(
+            ['127.0.0.1:2379'],
+            options: ['tls' => ['ca_cert' => '/etc/tikv/ca.pem']],
+        );
+    }
+
+    public function testTlsKeyWithNonStringValueThrowsInsteadOfSilentPlaintext(): void
+    {
+        // A recognised key with a mistyped value would be silently dropped by
+        // the is_string() guards, producing a plaintext connection while the
+        // caller believes TLS is configured.
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("options['tls'][caCertFile] must be a string, got int");
+
+        ConnectionFactory::create(
+            ['127.0.0.1:2379'],
+            options: ['tls' => ['caCertFile' => 123]],
+        );
+    }
+
+    public function testIncompleteClientCertPairThrowsInsteadOfSilentPlaintext(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Incomplete client certificate pair');
+
+        ConnectionFactory::create(
+            ['127.0.0.1:2379'],
+            options: ['tls' => ['clientCertFile' => '/etc/tikv/client.crt']],
         );
     }
 }

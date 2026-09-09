@@ -389,10 +389,41 @@ use CrazyGoat\TiKV\Client\Grpc\GrpcClient;
 $grpc = new GrpcClient($logger, tlsConfig: $tlsConfig, allowInsecure: false);
 ```
 
-> **Note:** When using `RawKvClient::create()` or `TxnKvClient::create()`, the
-> underlying `GrpcClient` is constructed internally with `allowInsecure: true`.
-> To enforce TLS, use the manual construction path shown above.
+TLS can also be enforced through the documented `create()` construction path.
+When `options['allowInsecure']` is `false`, any attempt to open a gRPC channel
+without usable TLS credentials throws `InvalidStateException`:
+
+```php
+$client = RawKvClient::create(
+    ['tikv.example.com:2379'],
+    options: [
+        'tls' => ['caCertFile' => '/path/to/ca.crt'],
+        'allowInsecure' => false, // enforce TLS — fail closed
+    ],
+);
 ```
+
+To guard against TLS misconfiguration, the factory rejects:
+
+- a non-array `options['tls']` value (e.g. `'tls' => '/path/to/ca.crt'` or
+  `'tls' => true`) with `InvalidArgumentException` instead of silently
+  connecting in plaintext;
+- unrecognised keys inside `options['tls']` (e.g. the snake_case
+  `ca_cert` typo) with `InvalidArgumentException` naming the offending key;
+- a recognised key inside `options['tls']` with a non-string value (e.g.
+  `'caCertFile' => 123`), which would otherwise be silently dropped and the
+  connection would go out in plaintext;
+- an incomplete client certificate pair (e.g. `clientCertFile` without
+  `clientKeyFile`), which would otherwise be silently dropped the same way.
+
+Recognised `options['tls']` keys: `caCertFile`, `caCertBaseDir`, `caCertPem`,
+`caCert`, `clientCertFile`, `clientCertBaseDir`, `clientKeyFile`,
+`clientCertPem`, `clientKeyPem`, `clientCert`, `clientKey`.
+
+> **Note:** `allowInsecure` defaults to `true` (plaintext allowed) for
+> backward compatibility; setting it to `false` together with a valid `tls`
+> block is the recommended production configuration.
+
 
 ## Logging
 
