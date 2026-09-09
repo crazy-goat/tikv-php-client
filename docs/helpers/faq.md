@@ -846,3 +846,17 @@ Facts fixed by the implementation, worth not re-deriving:
   low-res cache lazily mutates state; readonly properties cannot be
   reassigned after construction. Cache-carrying services can't be
   `readonly` classes.
+
+## BatchPartialFailureException's array keys are sub-batch indices, not region IDs or user keys
+
+`BatchPartialFailureException::getRegionErrors()` is documented in several
+places as "regionId → exception", but the keys are actually indices into the
+internal list of sub-batch callables (`RawKvBatch` groups keys per region and
+splits each region into ≤512-key/16 KB sub-batches before dispatch, so the
+count of units is usually larger than the region count). There is no public
+mapping from a failed index back to the user keys it contained. Practical
+consequence for recovery advice: you cannot "re-drive only the affected keys"
+through the exception alone — for idempotent work retry the whole batch; for
+non-idempotent work re-read and recompute, or use a transaction. (Documented
+in docs/operations.md, issue #393; `docs/troubleshooting.md`'s "regionId →
+exception" wording is a candidate for the same correction.)
