@@ -233,6 +233,63 @@ class ErrorClassifierTest extends TestCase
         );
     }
 
+    // ========================================================================
+    // gRPC status code classification (issue #240, REG-09)
+    // ========================================================================
+
+    /** @return array<string, array{int, BackoffType|null}> */
+    public static function provideGrpcStatusCodes(): array
+    {
+        return [
+            // Retryable (transient / conservative)
+            'UNAVAILABLE'          => [14, BackoffType::TiKvRpc],
+            'ABORTED'              => [10, BackoffType::TiKvRpc],
+            'INTERNAL'             => [13, BackoffType::TiKvRpc],
+            'UNKNOWN'              => [2, BackoffType::TiKvRpc],
+            'DEADLINE_EXCEEDED'    => [4, BackoffType::TiKvRpc],
+            // Server-busy backoff
+            'RESOURCE_EXHAUSTED'   => [8, BackoffType::ServerBusy],
+            // Fatal (permanent for the request — must not be retried)
+            'CANCELLED'            => [1, null],
+            'INVALID_ARGUMENT'     => [3, null],
+            'NOT_FOUND'            => [5, null],
+            'PERMISSION_DENIED'    => [7, null],
+            'FAILED_PRECONDITION'  => [9, null],
+            'UNIMPLEMENTED'        => [12, null],
+            'UNAUTHENTICATED'      => [16, null],
+            'ALREADY_EXISTS'       => [6, null],
+            'OUT_OF_RANGE'         => [11, null],
+            'DATA_LOSS'            => [15, null],
+            // Unknown codes fail closed
+            'unknown code 99'      => [99, null],
+        ];
+    }
+
+    #[DataProvider('provideGrpcStatusCodes')]
+    public function testGrpcExceptionClassifiedByStatusCode(int $code, ?BackoffType $expected): void
+    {
+        $this->assertSame(
+            $expected,
+            ErrorClassifier::classify(new GrpcException('status details', $code)),
+        );
+    }
+
+    #[DataProvider('provideGrpcStatusCodes')]
+    public function testClassifyGrpcStatusDirectly(int $code, ?BackoffType $expected): void
+    {
+        $this->assertSame($expected, ErrorClassifier::classifyGrpcStatus($code));
+    }
+
+    public function testGrpcExceptionWithRetryKeywordInDetailsIsStillClassifiedByStatusCode(): void
+    {
+        // gRPC details text must not be able to smuggle a message-based
+        // classification: status-code classification runs first.
+        $this->assertSame(
+            null,
+            ErrorClassifier::classify(new GrpcException('NotLeader for UNAVAILABLE', 16)),
+        );
+    }
+
     public function testRegionExceptionWithoutKindReturnsRegionMiss(): void
     {
         $this->assertSame(

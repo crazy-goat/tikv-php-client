@@ -629,3 +629,25 @@ from an earlier conflict that was "resolved" by keeping both sides. Before
 every push, grep the whole diff for conflict markers:
 `git diff master...HEAD | grep -n ">>>>>>>\|<<<<<<<"`. PHPCS/PHPStan do
 not catch these in Markdown files.
+
+
+## gRPC status codes, not exception type, decide GrpcException retries — and detail text must not leak into classification
+
+`ErrorClassifier` used to return `BackoffType::TiKvRpc` for every
+`GrpcException`, so a permanent status (`UNAUTHENTICATED` after a bad TLS
+rollout, `CANCELLED`, `INVALID_ARGUMENT`) burned ~30 retries / ~30 s per
+request — a self-inflicted ~30x load multiplier exactly when everything was
+failing. Since issue #240 the `GrpcException::$grpcStatusCode` field drives
+the decision via `ErrorClassifier::classifyGrpcStatus()`: UNAVAILABLE,
+ABORTED, INTERNAL, UNKNOWN, DEADLINE_EXCEEDED → TiKvRpc;
+RESOURCE_EXHAUSTED → ServerBusy (its own budget); everything else
+(including unknown codes, fail-closed) → null. Two implementation lessons:
+(1) place the GrpcException branch BEFORE the message-text fallback in
+`classify()` — gRPC `details` strings are free text and must never be able
+to match `str_contains($message, 'NotLeader')`-style rules;
+(2) the codes are wrapped in the int-backed enum
+`GrpcStatusCode` (src/Client/Grpc/) declared locally, because the
+`\Grpc\STATUS_*` constants only exist with the extension loaded and unit
+tests run with `php -n` (no ext-grpc). Deadlines: DEADLINE_EXCEEDED stays
+retryable because the outcome is indeterminate; the idempotency split is
+REG-08's job, not the classifier's.
