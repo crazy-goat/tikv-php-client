@@ -816,9 +816,12 @@ an empty array is a no-op.
 > `finally` block switches all stores back to normal mode. Alternatively, issue
 > the ImportSST `SwitchMode(Normal)` RPC to every store directly (see the
 > `import_sstpb.ImportSST/SwitchMode` gRPC service); the client's
-> `switchStoresMode()` in `SstIngestor` shows the exact request shape. Stores
-> skipped for a rejected address (logged as `Failed to switch store to normal
-> mode`) must be restored manually on that store.
+> `switchStoresMode()` in `SstIngestor` shows the exact request shape. A store
+> whose `SwitchMode(Normal)` RPC fails during the switch-back is logged as
+> `Failed to switch store to normal mode` and must be restored manually on
+> that store. (Stores skipped for a rejected address never entered import
+> mode — the import path rejects them too, before any RPC — so they need no
+> restore.)
 
 **Operational notes:**
 
