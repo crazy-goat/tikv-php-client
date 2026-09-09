@@ -7,7 +7,6 @@ namespace CrazyGoat\TiKV\Tests\Unit\RawKv;
 use CrazyGoat\Proto\Errorpb\Error;
 use CrazyGoat\Proto\Errorpb\NotLeader;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
-use CrazyGoat\Proto\Kvrpcpb\RawBatchGetResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawCASResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawChecksumResponse;
 use CrazyGoat\Proto\Kvrpcpb\RawDeleteResponse;
@@ -553,47 +552,32 @@ class RawKvClientTest extends TestCase
         $this->assertSame([], $this->client->batchGet([]));
     }
 
-    public function testBatchGetReturnsOrderedResults(): void
+    public function testBatchGetDispatchesExactlyOneRpcForSameRegionKeys(): void
     {
         $this->requireGrpcExtension();
 
         $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
         $this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()]);
 
-        $pair1 = new KvPair();
-        $pair1->setKey('k1');
-        $pair1->setValue('v1');
-        $response = new RawBatchGetResponse();
-        $response->setPairs([$pair1]);
+        // Exactly one RawBatchGet RPC for the two-key single-region batch:
+        // guards against a regression that would silently drop keys before
+        // any RPC (issue #244). A *successful* batchGet response (ordered
+        // results, null for missing keys) cannot be driven end-to-end in
+        // unit tests because RawKvBatch hardcodes `new Call(...)` (see
+        // docs/helpers/faq.md) — that mapping is pinned by the E2E suite
+        // (RawKvE2ETest::testBatchPutAndBatchGet / testBatchGetReturnsKeysInOrder).
+        $this->grpc->expects($this->exactly(1))->method('getChannel')->willReturn(new \Grpc\Channel('127.0.0.1:1', [
+            'credentials' => \Grpc\ChannelCredentials::createInsecure(),
+        ]));
 
-        // Exactly one gRPC call for the single region: guards against a
-        // regression that would silently drop keys before any RPC (issue #244).
-        $this->grpc->expects($this->once())
-            ->method('call')
-            ->willReturn($response);
+        // No TiKV server in unit tests: the request reaches the transport
+        // layer and fails at connection time (issue #322 pattern).
+        $this->expectException(BatchPartialFailureException::class);
 
-        $this->assertSame(['k1' => 'v1', 'k2' => null], $this->client->batchGet(['k1', 'k2']));
-    }
-
-    public function testBatchGetReturnsNullForMissingKeys(): void
-    {
-        $this->requireGrpcExtension();
-
-        $this->regionCache->method('getByKey')->willReturn(null);
-        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
-        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
-        $this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()]);
-
-        // Empty response: the key exists in no pair, so batchGet maps it to
-        // null — indistinguishable from "key not present" only because the
-        // batch itself succeeded (issue #244 guarantees nothing is dropped).
-        $this->grpc->expects($this->once())
-            ->method('call')
-            ->willReturn(new RawBatchGetResponse());
-
-        $this->assertSame(['missing' => null], $this->client->batchGet(['missing']));
+        $this->client->batchGet(['k1', 'k2']);
     }
 
     public function testBatchGetAcceptsNumericStringKeys(): void
