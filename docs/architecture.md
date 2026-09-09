@@ -379,16 +379,28 @@ Transaction encounters lock on key
 - Track retry budgets
 - Handle special cases (ServerBusy)
 
-**Backoff Types**:
+**Backoff Types** — `src/Client/Retry/BackoffType.php` declares fourteen
+cases (no fabricated `Fast`/`Medium`/`Slow` buckets); base and cap below
+come from `BackoffType::baseMs()` / `BackoffType::capMs()`:
+
 ```php
 enum BackoffType
 {
-    case None;        // Immediate retry (e.g., DataIsNotReady replica lag)
-    case EpochNotMatch; // Small jittered backoff, 2–500 ms (issue #241)
-    case Fast;        // ~10ms (e.g., NotLeader)
-    case Medium;      // ~100ms (e.g., RegionNotFound)
-    case Slow;        // ~1s (e.g., general errors)
-    case ServerBusy;  // Progressive, separate budget
+    case None;                    // 0ms sleep — immediate retry (DataIsNotReady replica lag)
+    case EpochNotMatch;           // 2ms–500ms, equal jitter (client-go BoEpochNotMatch, issue #241)
+    case ServerBusy;              // 2000ms–10000ms, progressive, separate budget
+    case StaleCmd;                // 2ms–1000ms
+    case RegionMiss;              // 2ms–500ms (e.g., RegionNotFound)
+    case TiKvRpc;                 // 100ms–2000ms (transport/gRPC errors)
+    case NotLeader;               // 2ms–500ms (its own case, own cap)
+    case DiskFull;                // 500ms–5000ms
+    case RegionNotInitialized;    // 2ms–1000ms
+    case ReadIndexNotReady;       // 2ms–500ms
+    case ProposalInMergingMode;   // 2ms–500ms
+    case RecoveryInProgress;      // 100ms–10000ms
+    case IsWitness;               // 1000ms–10000ms
+    case MaxTimestampNotSynced;   // 2ms–500ms
+    case TxnLock;                 // 200ms–3000ms (transactional)
 }
 ```
 

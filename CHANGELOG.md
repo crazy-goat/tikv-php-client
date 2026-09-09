@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **[DOC-09]**: the fabricated `BackoffType` cases `Fast`/`Medium`/`Slow` in the docs are replaced with the real enum — `docs/architecture.md` now lists all fourteen cases from `src/Client/Retry/BackoffType.php` with their actual base/cap backoff values from `baseMs()`/`capMs()`, and `docs/development.md` points at `ErrorClassifier::classifyByKind()` as the single source of truth for the error-to-backoff mapping (previously `NotLeader` was described as a "~10ms fast" bucket instead of its own case with a 2–500 ms backoff). (#375)
+
 ### Fixed
 
 - **[REG-11]**: all `BackoffType` cases now use **equal jitter** — `BackoffType::equalJitter()` returns `true` for every type instead of only `ServerBusy`, `TiKvRpc`, `RecoveryInProgress`, `IsWitness` and `TxnLock`. Previously `NotLeader`, `RegionMiss` and `StaleCmd` (and the remaining types) produced deterministic delays of exactly `min(cap, base * 2^attempt)`; these errors are precisely the ones correlated across a fleet (a leader transfer or region split is observed by every client at nearly the same instant), so every client retried in lockstep at identical offsets against the node that most needed to be left alone. Delays are now drawn uniformly from `[expo/2, expo]`, matching client-go's randomized backoff for `BoRegionMiss`/`BoTiKVRPC`. Behavioural change: retry timing is observable — callers asserting exact sleep durations for previously non-jittered types must assert ranges. `Backoff::exponential()`'s explicit `$equalJitter` argument (default `false`) is unchanged for direct callers. (#242)
