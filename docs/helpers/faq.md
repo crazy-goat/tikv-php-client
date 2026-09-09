@@ -768,3 +768,15 @@ inequality that can reject a legal value. Bonus: these tests never actually
 sleep, because `RetryExecutor` checks the budget **before** `usleep()`
 (issue #237) — an over-budget ServerBusy error throws without sleeping, so
 budget-exhaustion tests are fast.
+
+## Doc enum/const lists drift — regenerate them from code, never hand-write
+
+Hand-written doc lists of enum cases drift: the docs described invented
+`BackoffType::Fast/Medium/Slow` cases while the real enum has fourteen
+different cases (issue #375). When documenting an enum or constant table,
+copy the cases and values straight from the source file (`baseMs()` /
+`capMs()` values) and link to the file as the source of truth, rather than
+paraphrasing. Related trap: `docs/configuration.md`'s custom-classifier
+example still returns a non-existent `BackoffType::Custom` case — doc
+examples that subclass and override must match the real class signatures
+(`classifyError()` lives on `ErrorClassifier`, not `RawKvClient`).

@@ -108,13 +108,19 @@ In-memory region metadata cache. Located at `src/Client/Cache/RegionCache.php`.
 Located in `src/Client/Retry/`.
 
 **BackoffType** (`BackoffType.php`):
-- Defines retry strategies
-- `None`, `Fast`, `Medium`, `Slow`
-- `ServerBusy` (separate budget)
+- Defines retry strategies — fourteen cases (see `docs/architecture.md`
+  for the full list with base/cap backoff values): `None`, `ServerBusy`,
+  `StaleCmd`, `RegionMiss`, `TiKvRpc`, `NotLeader`, `DiskFull`,
+  `RegionNotInitialized`, `ReadIndexNotReady`, `ProposalInMergingMode`,
+  `RecoveryInProgress`, `IsWitness`, `MaxTimestampNotSynced`, `TxnLock`
+- `ServerBusy` (separate budget, 60 s)
 
-**Error Classification** (in `RawKvClient.php`):
+**Error Classification** — `ErrorClassifier::classifyByKind()`
+(`src/Client/Retry/ErrorClassifier.php`) is the single source of truth for
+the error-to-backoff mapping; message-based fallbacks live in
+`ErrorClassifier` itself:
 ```php
-private function classifyError(TiKvException $e): ?BackoffType
+public static function classifyByKind(ErrorKind $kind): ?BackoffType
 ```
 
 ## Adding New Features
