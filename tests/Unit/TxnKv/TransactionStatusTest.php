@@ -14,5 +14,6 @@ class TransactionStatusTest extends TestCase
         $this->assertSame('Active', TransactionStatus::Active->name);
         $this->assertSame('Committed', TransactionStatus::Committed->name);
         $this->assertSame('RolledBack', TransactionStatus::RolledBack->name);
+        $this->assertSame('Undetermined', TransactionStatus::Undetermined->name);
     }
 }

@@ -23,6 +23,7 @@ use CrazyGoat\TiKV\Client\TxnKv\Exception\DeadlockException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\LockWaitTimeoutException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TransactionConflictException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TxnRetryableException;
+use CrazyGoat\TiKV\Client\TxnKv\Exception\UndeterminedCommitException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -281,6 +282,7 @@ final class Transaction
      * @throws TransactionConflictException
      * @throws DeadlockException
      * @throws LockWaitTimeoutException
+     * @throws UndeterminedCommitException
      * @throws RegionException
      * @throws GrpcException
      */
@@ -299,7 +301,6 @@ final class Transaction
             $this->retryExecutor(),
             $this->classifyError(...),
         );
-
         $this->state->setStatus(TransactionStatus::Committed);
         $this->state->close();
     }

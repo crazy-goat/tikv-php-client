@@ -14,7 +14,6 @@ stop with `make down`. If state gets corrupted: `make clean && make up`.
 - `composer test:unit` (`--testsuite Unit`) mocks gRPC calls — fast, no
   cluster, no `grpc` extension needed.
 - `composer test:grpc` (`--testsuite Grpc`) exercises real gRPC connections
-  and requires the `grpc` PHP extension; runs with `--fail-on-skipped`, so a
   missing extension fails the run locally.
 
 ## PHP coerces numeric-string array keys to int — string-cast at every typed consumption point
@@ -608,3 +607,19 @@ from an earlier conflict that was "resolved" by keeping both sides. Before
 every push, grep the whole diff for conflict markers:
 `git diff master...HEAD | grep -n ">>>>>>>\|<<<<<<<"`. PHPCS/PHPStan do
 not catch these in Markdown files.
+## A PdClientInterface mock auto-returns [] from scanRegions — grouping silently becomes empty
+
+`RegionResolver::batchResolveRegions()` calls `$pdClient->scanRegions()` (typed
+`array` return). A PHPUnit mock without an explicit stub auto-returns the type
+default — `[]` — so `RegionGrouper::groupKeysByRegionBatch()` returns `[]`,
+**no gRPC call is ever made**, and `commit()`/`rollback()` "succeed" doing
+nothing. A test that mocks only `getByKey`/`getRegion`/`getStore` and asserts
+`grpc->call()` behaviour can be silently vacuous: the existing
+`TransactionTest::testCommitPessimisticWithKeys()` and
+`testRollbackWithKeysCallsBatchRollback()` were passing without the grpc mock
+ever being reached (discovered in issue #216). Always stub
+`$pdClient->method('scanRegions')->willReturn([$region])` when a test must
+actually reach the RPC layer. Related latent bug: when a real `scanRegions()`
+returns nothing (or a key falls outside all returned regions),
+`TwoPhaseCommitter::commit()` / `rollback()` complete "successfully" without
+sending any RPC — no error is raised for keys that could not be grouped.

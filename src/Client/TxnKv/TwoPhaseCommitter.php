@@ -22,6 +22,7 @@ use CrazyGoat\Proto\Kvrpcpb\TxnHeartBeatRequest;
 use CrazyGoat\Proto\Kvrpcpb\TxnHeartBeatResponse;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
+use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Exception\InvalidStateException;
 use CrazyGoat\TiKV\Client\Exception\RegionException;
 use CrazyGoat\TiKV\Client\Exception\TiKvException;
@@ -39,6 +40,7 @@ use CrazyGoat\TiKV\Client\TxnKv\Exception\DeadlockException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\LockWaitTimeoutException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TransactionConflictException;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TxnRetryableException;
+use CrazyGoat\TiKV\Client\TxnKv\Exception\UndeterminedCommitException;
 use CrazyGoat\TiKV\Client\Util\KeyRedactor;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -411,12 +413,32 @@ final readonly class TwoPhaseCommitter
         // No RetryExecutor wraps this call, so commitForRegion must handle
         // NotLeader drops itself (issue #474 review round 3).
         $primaryRegionData = $keysByRegion[$primaryRegionId];
-        $this->commitForRegion(
-            $primaryRegionData['region'],
-            $primaryRegionData['keys'],
-            $state,
-            notLeaderOwnedByRetryExecutor: false,
-        );
+        try {
+            $this->commitForRegion(
+                $primaryRegionData['region'],
+                $primaryRegionData['keys'],
+                $state,
+                notLeaderOwnedByRetryExecutor: false,
+            );
+        } catch (GrpcException $e) {
+            // A transport-level failure on the primary commit leaves the
+            // outcome unknown: the write may already be applied with only
+            // the response lost. The transaction must never be rolled back
+            // in this state (client-go's ErrResultUndetermined, issue #216),
+            // so mark it Undetermined and close it — the destructor only
+            // rolls back Active, open transactions.
+            $state->setStatus(TransactionStatus::Undetermined);
+            $state->close();
+            $this->logger->error('Primary commit outcome undetermined (transport failure)', [
+                'regionId' => $primaryRegionData['region']->regionId,
+                'error' => $e->getMessage(),
+            ]);
+            throw new UndeterminedCommitException(
+                'Primary commit failed at the transport level; the transaction'
+                . ' outcome is undetermined and was not rolled back',
+                $e,
+            );
+        }
 
         // Commit point: once the primary key is committed the transaction is
         // durably committed in TiKV. Mark it now (issue #215, TXN-10) so a
@@ -466,6 +488,10 @@ final readonly class TwoPhaseCommitter
      *                                            the stale entry.
      *
      * @throws InvalidStateException if commitTs is null
+     * @throws \CrazyGoat\TiKV\Client\Exception\GrpcException on a transport
+     *                                           failure — for the primary-key
+     *                                           commit this leaves the outcome
+     *                                           undetermined (issue #216)
      */
     private function commitForRegion(
         RegionInfo $region,
