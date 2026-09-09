@@ -780,3 +780,14 @@ paraphrasing. Related trap: `docs/configuration.md`'s custom-classifier
 example still returns a non-existent `BackoffType::Custom` case — doc
 examples that subclass and override must match the real class signatures
 (`classifyError()` lives on `ErrorClassifier`, not `RawKvClient`).
+
+## `ingest()` silently drops keys that cannot be resolved to a region
+
+`SstIngestor::groupPairsByRegion()` skips pairs whose `batchResolveRegions()`
+entry is `null` (`continue`, no error) — an `ingest()` run can "succeed" while
+never writing some keys. Verify the imported key count when completeness
+matters; the same no-throw-on-unresolvable-keys class of bug exists in
+`TwoPhaseCommitter` (issue #216). Separately, `ingest()` is not retried at all:
+any region/transport error aborts the remaining regions (the `finally` still
+switches all stores back to normal mode), and a killed process leaves the
+cluster in import mode — see the [DOC-24] section in `docs/operations.md`.

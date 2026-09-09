@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **[DOC-24]**: `ingest()` (SST bulk import) is now documented. A new "Bulk Import (SST Ingest)" section in `docs/operations.md` (linked from the TOC) covers the full semantics verified against `src/Client/RawKv/SstIngestor.php`: client-side `ksort` sorting, per-region grouping, ImportSST `RawWrite` streaming (1024-pair chunks) + `Ingest` RPC, optional TTL (sent only when positive), key validation, and the absence of automatic retries. The cluster-wide import-mode side effect and the process-death hazard (OOM/deploy restart/`max_execution_time` leaves every store in import mode — the `finally` switch-back does not run) are called out prominently, with a concrete recovery procedure (re-run any successful `ingest()` to trigger the `SwitchMode(Normal)` fan-out, or issue `import_sstpb.ImportSST/SwitchMode` directly) and the fixed 60 s ingest deadline (`TimeoutConfig::ingestTimeoutMs`, not configurable via `create()` `options['timeout']`). The README gained a short "Bulk Import (SST Ingest)" section with the hazard warning, and `docs/troubleshooting.md` gained a "Cluster Stuck in Import Mode" entry (symptom, diagnosis, recovery, prevention). (#390)
+
 ### Changed
 
 - **[DOC-09]**: the fabricated `BackoffType` cases `Fast`/`Medium`/`Slow` in the docs are replaced with the real enum — `docs/architecture.md` now lists all fourteen cases from `src/Client/Retry/BackoffType.php` with their actual base/cap backoff values from `baseMs()`/`capMs()`, and `docs/development.md` points at `ErrorClassifier::classifyByKind()` as the single source of truth for the error-to-backoff mapping (previously `NotLeader` was described as a "~10ms fast" bucket instead of its own case with a 2–500 ms backoff). (#375)

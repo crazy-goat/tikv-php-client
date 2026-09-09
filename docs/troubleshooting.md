@@ -839,6 +839,43 @@ echo "Took: {$elapsed}s\n";
    $client->close();
    ```
 
+### Cluster Stuck in Import Mode
+
+**Symptom:** The whole TiKV cluster is degraded for **all** clients after a
+bulk-import job died — writes are slow or rejected, and TiKV logs show import
+mode still active.
+
+**Cause:** `RawKvClient::ingest()` switches every store into import mode for
+the duration of the call and switches back in a `finally` block. `finally`
+covers exceptions, but not process death: an OOM kill, a deployment restart, a
+`max_execution_time` hit or a fatal error between the two `SwitchMode` calls
+leaves every store in import mode. Import mode is cluster-wide state — it
+affects every client, not just the one that set it.
+
+**Diagnosis:**
+
+- Correlate the degradation with an `ingest()` run whose PHP process died
+  abnormally (check supervisor/systemd logs, OOM killer in `dmesg`, PHP-FPM
+  `max_execution_time` warnings).
+- The client logs `Switched store to import mode` / `Switched store to normal
+  mode` (debug level) per store; a run whose log ends after the import-mode
+  line without matching normal-mode lines is the culprit.
+
+**Recovery:**
+
+1. Re-run a successful `ingest()` call (any batch, even a tiny one) against
+   the same cluster — its `finally` block issues `SwitchMode(Normal)` to every
+   store PD reports, which restores normal mode.
+2. Alternatively, issue the ImportSST `SwitchMode(Normal)` RPC to every store
+   directly (the `import_sstpb.ImportSST/SwitchMode` gRPC service) — see
+   `SstIngestor::switchStoresMode()` in `src/Client/RawKv/SstIngestor.php` for
+   the exact request shape.
+
+**Prevention:** run `ingest()` only from a dedicated, supervised CLI process
+with no execution-time limit; keep batches small enough to re-run (`ingest()`
+is not retried automatically). See
+[Bulk Import (SST Ingest)](operations.md#bulk-import-sst-ingest).
+
 ## Data Issues
 
 ### Data Not Found
