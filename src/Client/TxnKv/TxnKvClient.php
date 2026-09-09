@@ -61,6 +61,22 @@ final class TxnKvClient
     public const OPT_GC_SAFE_POINT_REFRESH_MS = 'gcSafePointRefreshMs';
 
     /**
+     * begin() options[] key for one-phase commit (issue #419): a
+     * single-region transaction under the key limit commits in one
+     * prewrite round trip (try_one_pc). false (default): always two-phase.
+     */
+    public const OPT_ENABLE_1PC = 'enable1Pc';
+
+    /**
+     * begin() options[] key for async commit (issue #419): small
+     * transactions commit without the commit phase — the commit timestamp
+     * is derived from the prewrite's min_commit_ts and readers resolve the
+     * primary lock via CheckTxnStatus / CheckSecondaryLocks. false
+     * (default): always the full two-phase commit.
+     */
+    public const OPT_ENABLE_ASYNC_COMMIT = 'enableAsyncCommit';
+
+    /**
      * Default service ID used by {@see TxnKvClient::holdGcSafePoint()} and
      * {@see TxnKvClient::releaseGcSafePoint()}. Distinct per client instance
      * so two clients never overwrite each other's registration.
@@ -236,7 +252,7 @@ final class TxnKvClient
     }
 
     /**
-     * @param array{pessimistic?: bool, priority?: int} $options
+     * @param array{pessimistic?: bool, priority?: int, enable1Pc?: bool, enableAsyncCommit?: bool} $options
      */
     public function begin(array $options = []): Transaction
     {
@@ -244,6 +260,8 @@ final class TxnKvClient
 
         $pessimistic = (bool) ($options['pessimistic'] ?? true);
         $priority = (int) ($options['priority'] ?? 0);
+        $enable1Pc = $this->resolveEnableFlag($options, self::OPT_ENABLE_1PC);
+        $enableAsyncCommit = $this->resolveEnableFlag($options, self::OPT_ENABLE_ASYNC_COMMIT);
 
         $startTs = $this->pdClient->getTimestamp();
 
@@ -284,7 +302,33 @@ final class TxnKvClient
             metrics: $this->metrics,
             retryDeadlineMs: $this->retryDeadlineMs,
             replicaReadPolicy: $this->replicaReadPolicy,
+            enable1Pc: $enable1Pc,
+            enableAsyncCommit: $enableAsyncCommit,
         );
+    }
+
+    /**
+     * Resolve a boolean begin() option (enable1Pc / enableAsyncCommit,
+     * issue #419). Defaults to false; a non-bool value is rejected.
+     *
+     * @param array<string, mixed> $options
+     */
+    private function resolveEnableFlag(array $options, string $key): bool
+    {
+        if (!array_key_exists($key, $options)) {
+            return false;
+        }
+
+        $value = $options[$key];
+        if (!is_bool($value)) {
+            throw new InvalidArgumentException(sprintf(
+                "options['%s'] must be a bool, %s given",
+                $key,
+                get_debug_type($value),
+            ));
+        }
+
+        return $value;
     }
 
     /**

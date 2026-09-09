@@ -87,6 +87,10 @@ final class Transaction
         int $retryDeadlineMs = self::DEFAULT_RETRY_DEADLINE_MS,
         /** Read preference applied to this transaction's reads (issue #421). */
         private readonly ReplicaReadPolicy $replicaReadPolicy = new ReplicaReadPolicy(),
+        /** Whether this transaction may use one-phase commit (issue #419). */
+        private readonly bool $enable1Pc = false,
+        /** Whether this transaction may use async commit (issue #419). */
+        private readonly bool $enableAsyncCommit = false,
     ) {
         if ($retryDeadlineMs < 0) {
             throw new InvalidArgumentException('retryDeadlineMs must be >= 0');
@@ -116,6 +120,8 @@ final class Transaction
             lockResolver: $this->lockResolver,
             timeoutConfig: $this->timeoutConfig,
             maxBackoffMs: $this->maxBackoffMs,
+            enable1Pc: $this->enable1Pc,
+            enableAsyncCommit: $this->enableAsyncCommit,
             logger: $this->logger,
         );
     }

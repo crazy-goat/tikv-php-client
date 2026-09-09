@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CrazyGoat\TiKV\Client\TxnKv;
 
 use CrazyGoat\Proto\Kvrpcpb\Action;
+use CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksRequest;
+use CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksResponse;
 use CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusRequest;
 use CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusResponse;
 use CrazyGoat\Proto\Kvrpcpb\LockInfo;
@@ -12,11 +14,13 @@ use CrazyGoat\Proto\Kvrpcpb\ResolveLockRequest;
 use CrazyGoat\Proto\Kvrpcpb\ResolveLockResponse;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
+use CrazyGoat\TiKV\Client\Exception\RegionException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\Grpc\TimeoutConfig;
 use CrazyGoat\TiKV\Client\Region\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Region\RegionContextFactory;
 use CrazyGoat\TiKV\Client\Region\RegionErrorHandler;
+use CrazyGoat\TiKV\Client\Region\RegionGrouper;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
 use CrazyGoat\TiKV\Client\Util\KeyRedactor;
 use Psr\Log\LoggerInterface;
@@ -80,28 +84,43 @@ final readonly class LockResolver
         if ($commitTs !== null && $commitTs > 0) {
             $this->resolveLockCommitted($lock, $lockTs, $commitTs);
         } elseif ($commitTs === 0) {
-            $ttl = $status['lockTtl'] ?? 0;
-            if ($ttl > 0) {
-                // The wait used to be charged to no budget (issue #470): cap
-                // it by the caller's remaining retry deadline when provided.
-                $deadlineCap = $remainingDeadlineMs > 0 ? $remainingDeadlineMs : $this->maxBackoffMs;
-                $sleepMs = min($ttl, $deadlineCap);
-                $this->logger->debug('Lock still active, waiting', [
-                    'key' => KeyRedactor::redact((string) $lock->getKey()),
-                    'ttl' => $ttl,
-                    'sleepMs' => $sleepMs,
-                    'remainingDeadlineMs' => $remainingDeadlineMs,
-                ]);
-                usleep($sleepMs * 1000);
-            }
+            // Async-commit lock (issue #419): the primary lock carries the
+            // commit decision, so before spending the TTL wait ask the
+            // secondary regions for their state via KvCheckSecondaryLocks.
+            $secondaryCommitTs = $lock->getUseAsyncCommit()
+                ? $this->checkSecondaryLocks($lock, $notLeaderOwnedByRetryExecutor)
+                : null;
 
-            $status = $this->checkTxnStatus($primaryLock, $lockTs, $notLeaderOwnedByRetryExecutor);
-            $commitTs = $status['commitTs'] ?? null;
-
-            if ($commitTs !== null && $commitTs > 0) {
-                $this->resolveLockCommitted($lock, $lockTs, $commitTs);
-            } else {
+            if ($secondaryCommitTs !== null && $secondaryCommitTs > 0) {
+                $this->resolveLockCommitted($lock, $lockTs, $secondaryCommitTs);
+            } elseif ($secondaryCommitTs === 0) {
+                // All secondaries are resolved with commit_ts = 0: the
+                // transaction was rolled back.
                 $this->resolveLockRolledBack($lock, $lockTs);
+            } else {
+                $ttl = $status['lockTtl'] ?? 0;
+                if ($ttl > 0) {
+                    // The wait used to be charged to no budget (issue #470): cap
+                    // it by the caller's remaining retry deadline when provided.
+                    $deadlineCap = $remainingDeadlineMs > 0 ? $remainingDeadlineMs : $this->maxBackoffMs;
+                    $sleepMs = min($ttl, $deadlineCap);
+                    $this->logger->debug('Lock still active, waiting', [
+                        'key' => KeyRedactor::redact((string) $lock->getKey()),
+                        'ttl' => $ttl,
+                        'sleepMs' => $sleepMs,
+                        'remainingDeadlineMs' => $remainingDeadlineMs,
+                    ]);
+                    usleep($sleepMs * 1000);
+                }
+
+                $status = $this->checkTxnStatus($primaryLock, $lockTs, $notLeaderOwnedByRetryExecutor);
+                $commitTs = $status['commitTs'] ?? null;
+
+                if ($commitTs !== null && $commitTs > 0) {
+                    $this->resolveLockCommitted($lock, $lockTs, $commitTs);
+                } else {
+                    $this->resolveLockRolledBack($lock, $lockTs);
+                }
             }
         } else {
             $this->resolveLockRolledBack($lock, $lockTs);
@@ -179,6 +198,82 @@ final readonly class LockResolver
             'commitTs' => (int) $response->getCommitVersion(),
             'lockTtl' => $lockTtl,
         ];
+    }
+
+    /**
+     * Check the secondary locks of an async-commit transaction
+     * (KvCheckSecondaryLocks, issue #419).
+     *
+     * Returns the transaction's commit timestamp when every secondary is
+     * resolved: > 0 committed, 0 rolled back. Returns null when the lock
+     * is still active (some secondary is still locked), when the lock
+     * carries no secondaries, or when a region error occurs — in all
+     * three cases the caller falls back to the TTL-wait path.
+     */
+    private function checkSecondaryLocks(
+        LockInfo $lock,
+        bool $notLeaderOwnedByRetryExecutor,
+    ): ?int {
+        /** @var list<string> $secondaries */
+        $secondaries = array_map(
+            static fn (string $key): string => $key,
+            iterator_to_array($lock->getSecondaries()),
+        );
+        if ($secondaries === []) {
+            return null;
+        }
+
+        try {
+            $keysByRegion = RegionGrouper::groupKeysByRegionBatch(
+                $secondaries,
+                $this->regionResolver,
+            );
+        } catch (RegionException) {
+            return null;
+        }
+
+        $maxCommitTs = 0;
+        foreach ($keysByRegion as $regionData) {
+            $region = $regionData['region'];
+            $regionKeys = $regionData['keys'];
+            $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
+
+            $request = new CheckSecondaryLocksRequest();
+            $request->setContext(RegionContextFactory::fromRegionInfo($region));
+            $request->setKeys($regionKeys);
+            $request->setStartVersion((int) $lock->getLockVersion());
+
+            $this->logger->debug('CheckSecondaryLocks', [
+                'regionId' => $region->regionId,
+                'keyCount' => count($regionKeys),
+            ]);
+
+            /** @var CheckSecondaryLocksResponse $response */
+            $response = $this->grpc->call(
+                $address,
+                'tikvpb.Tikv',
+                'KvCheckSecondaryLocks',
+                $request,
+                CheckSecondaryLocksResponse::class,
+            );
+
+            RegionErrorHandler::check(
+                $response,
+                $this->regionCache,
+                $region->regionId,
+                notLeaderOwnedByRetryExecutor: $notLeaderOwnedByRetryExecutor,
+            );
+
+            if (count($response->getLocks()) > 0) {
+                // At least one secondary is still locked: the transaction
+                // is still active. Fall back to the TTL-wait path.
+                return null;
+            }
+
+            $maxCommitTs = max($maxCommitTs, (int) $response->getCommitTs());
+        }
+
+        return $maxCommitTs;
     }
 
     private function resolveLockCommitted(LockInfo $lock, int $lockTs, int $commitTs): void

@@ -152,7 +152,7 @@ final class TxnKvClient
     public static function create(array $pdEndpoints, ?LoggerInterface $logger = null, array $options = []): self;
     
     // Transaction lifecycle
-    public function begin(array $options = []): Transaction;  // options: pessimistic (bool), priority (int)
+    public function begin(array $options = []): Transaction;  // options: pessimistic (bool), priority (int), enable1Pc (bool), enableAsyncCommit (bool)
     public function close(): void;
 }
 

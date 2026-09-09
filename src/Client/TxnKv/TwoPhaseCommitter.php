@@ -63,6 +63,28 @@ final readonly class TwoPhaseCommitter
     private const PESSIMISTIC_LOCK_MAX_REGROUPS = 10;
     private const ROLLBACK_MAX_REGROUPS = 10;
 
+    /**
+     * Maximum number of keys for a transaction to stay eligible for one-phase
+     * commit (mirrors client-go's onePCKeysLimit). 1PC is additionally
+     * restricted to a single region.
+     */
+    private const ONE_PC_MAX_KEYS = 128;
+
+    /**
+     * Maximum number of keys for a transaction to stay eligible for async
+     * commit (mirrors client-go's asyncCommitCfg.KeysLimit default).
+     */
+    private const ASYNC_COMMIT_MAX_KEYS = 256;
+
+    /**
+     * TSO-tick gap used to derive max_commit_ts for async commit (mirrors
+     * client-rust's max_commit_ts_gap default of 15000). TiKV declines the
+     * async commit when the derived commit_ts would exceed this bound, so a
+     * too-large gap only weakens the guarantee that readers can always
+     * resolve the lock without waiting for the TTL.
+     */
+    private const ASYNC_COMMIT_MAX_COMMIT_TS_GAP = 15000;
+
     public function __construct(
         private int $startTs,
         private bool $pessimistic,
@@ -74,6 +96,8 @@ final readonly class TwoPhaseCommitter
         private LockResolver $lockResolver,
         private TimeoutConfig $timeoutConfig,
         private int $maxBackoffMs,
+        private bool $enable1Pc = false,
+        private bool $enableAsyncCommit = false,
         private LoggerInterface $logger = new NullLogger(),
     ) {
     }
@@ -117,10 +141,79 @@ final readonly class TwoPhaseCommitter
         $keysByRegion = $this->groupMutationsByRegion($mutations);
         $allKeys = $state->getWriteKeys();
 
+        // One-phase commit (issue #419): a single-region, small transaction
+        // can commit in one round trip — TiKV derives the commit timestamp
+        // itself and reports it in PrewriteResponse::one_pc_commit_ts.
+        $onePc = $this->enable1Pc
+            && count($keysByRegion) === 1
+            && count($allKeys) <= self::ONE_PC_MAX_KEYS;
+
+        // Async commit (issue #419): small transactions commit without the
+        // commit phase — the primary lock carries the decision, readers
+        // resolve it via CheckSecondaryLocks/CheckTxnStatus.
+        $async = !$onePc
+            && $this->enableAsyncCommit
+            && count($allKeys) <= self::ASYNC_COMMIT_MAX_KEYS;
+
+        $primaryMinCommitTs = 0;
+        $maxMinCommitTs = 0;
+        $onePcCommitTs = 0;
+        $asyncAccepted = true;
+        $secondaries = array_values(array_diff($allKeys, [$primary]));
+
         foreach ($keysByRegion as $regionData) {
             $region = $regionData['region'];
             $regionMutations = $regionData['mutations'];
-            $this->prewriteForRegion($region, $regionMutations, $primary, $state);
+            $isPrimaryRegion = false;
+            foreach ($regionMutations as $mutation) {
+                if ($mutation->getKey() === $primary) {
+                    $isPrimaryRegion = true;
+                    break;
+                }
+            }
+
+            $result = $this->prewriteForRegion(
+                $region,
+                $regionMutations,
+                $primary,
+                $state,
+                $isPrimaryRegion && $onePc,
+                $isPrimaryRegion && $async,
+                $isPrimaryRegion && $async ? $secondaries : [],
+            );
+            $maxMinCommitTs = max($maxMinCommitTs, $result['minCommitTs']);
+            if ($isPrimaryRegion) {
+                $primaryMinCommitTs = $result['minCommitTs'];
+                $onePcCommitTs = $result['onePcCommitTs'];
+                // TiKV declines async commit by answering the primary
+                // prewrite with min_commit_ts = 0.
+                $asyncAccepted = $result['minCommitTs'] > 0;
+            }
+        }
+
+        if ($onePc && $onePcCommitTs > 0) {
+            $state->setCommitTs($onePcCommitTs);
+            $state->setStatus(TransactionStatus::Committed);
+            $this->logger->debug('One-phase commit done', ['commitTs' => $onePcCommitTs]);
+            return;
+        }
+        if ($onePc) {
+            $this->logger->info('TiKV declined one-phase commit, falling back to two-phase');
+        }
+
+        if ($async && $asyncAccepted) {
+            // Derive the commit timestamp from the returned min_commit_ts
+            // values: the commit ts must not be below any region's
+            // min_commit_ts (client-go takes max of the secondaries' values
+            // plus one, and the primary's own value).
+            $commitTs = max($primaryMinCommitTs, $maxMinCommitTs + 1);
+            $state->setCommitTs($commitTs);
+            $state->setStatus(TransactionStatus::Committed);
+            $this->logger->debug('Async commit done', ['commitTs' => $commitTs]);
+            return;
+        }
+        if ($async) {
+            $this->logger->info('TiKV declined async commit, falling back to two-phase');
         }
 
         // Reuse an existing commit timestamp on retry: a second commit() after a failed
@@ -271,13 +364,20 @@ final readonly class TwoPhaseCommitter
 
     /**
      * @param Mutation[] $mutations
+     * @param string[] $secondaries Secondary keys carried on the primary
+     *                              region's prewrite when async commit is
+     *                              used (empty otherwise)
+     * @return array{minCommitTs: int, onePcCommitTs: int}
      */
     private function prewriteForRegion(
         RegionInfo $region,
         array $mutations,
         string $primary,
         TransactionState $state,
-    ): void {
+        bool $useOnePc = false,
+        bool $useAsyncCommit = false,
+        array $secondaries = [],
+    ): array {
         $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
 
         $request = new PrewriteRequest();
@@ -286,6 +386,16 @@ final readonly class TwoPhaseCommitter
         $request->setPrimaryLock($primary);
         $request->setStartVersion($this->startTs);
         $request->setLockTtl(self::OPTIMISTIC_LOCK_TTL_MS);
+
+        if ($useOnePc) {
+            $request->setTryOnePc(true);
+            $request->setMinCommitTs($this->startTs);
+        } elseif ($useAsyncCommit) {
+            $request->setUseAsyncCommit(true);
+            $request->setSecondaries($secondaries);
+            $request->setMinCommitTs($this->startTs);
+            $request->setMaxCommitTs($this->startTs + self::ASYNC_COMMIT_MAX_COMMIT_TS_GAP);
+        }
 
         if ($this->pessimistic) {
             $forUpdateTs = $state->getMaxForUpdateTs() ?? $this->startTs;
@@ -328,6 +438,11 @@ final readonly class TwoPhaseCommitter
         if (count($errors) > 0) {
             $this->handlePrewriteErrors($errors);
         }
+
+        return [
+            'minCommitTs' => (int) $response->getMinCommitTs(),
+            'onePcCommitTs' => (int) $response->getOnePcCommitTs(),
+        ];
     }
 
     /**

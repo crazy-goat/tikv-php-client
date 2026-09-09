@@ -9,10 +9,11 @@ Complete guide to configuring the TiKV PHP Client for development and production
 3. [TLS/SSL Configuration](#tlsssl-configuration)
 4. [Logging](#logging)
 5. [Replica Reads](#replica-reads)
-6. [Retry and Backoff](#retry-and-backoff)
-7. [Caching](#caching)
-8. [Timeouts](#timeouts)
-9. [Production Configuration](#production-configuration)
+6. [Fast Commit Modes (TxnKV)](#fast-commit-modes-txnkv)
+7. [Retry and Backoff](#retry-and-backoff)
+8. [Caching](#caching)
+9. [Timeouts](#timeouts)
+10. [Production Configuration](#production-configuration)
 
 ## Basic Configuration
 
@@ -449,6 +450,45 @@ Details:
 // Stale read: allow any replica with a sufficiently fresh safe_ts
 $policy = new ReplicaReadPolicy(ReplicaReadMode::Mixed, staleRead: true);
 ```
+
+## Fast Commit Modes (TxnKV)
+
+By default every transaction runs the full two-phase commit: prewrite, a PD
+round trip for the commit timestamp, then commit. Two opt-in modes (issue
+#419, both **off by default**, selected per transaction on
+`TxnKvClient::begin()`) remove round trips for small transactions:
+
+```php
+$txn = $client->begin([
+    'enable1Pc' => true,          // one-phase commit
+    'enableAsyncCommit' => true,  // async commit (ignored when 1PC applies)
+]);
+```
+
+| Mode               | When it applies                                                            | What it saves                                  |
+|--------------------|----------------------------------------------------------------------------|------------------------------------------------|
+| `enable1Pc`        | Transaction touches a **single region** and has ≤ 128 keys.                 | The commit phase and the PD `getTimestamp()` round trip. |
+| `enableAsyncCommit`| Transaction has ≤ 256 keys (any number of regions).                        | The commit phase (the PD round trip stays implicit in prewrite's `min_commit_ts`). |
+
+Details:
+
+- One-phase commit sets `try_one_pc` on the prewrite; TiKV commits the
+  transaction inside the prewrite and returns the commit timestamp in
+  `PrewriteResponse::one_pc_commit_ts`. When TiKV declines (e.g. the region
+  is already busy, or the transaction outgrew the limit between grouping and
+  prewrite), the client silently falls back to the normal two-phase path.
+- Async commit sets `use_async_commit`, the secondary keys and
+  `max_commit_ts` (start timestamp + a bounded TSO gap) on the primary
+  region's prewrite, and derives the commit timestamp from the returned
+  `min_commit_ts` values. The transaction is committed once the primary lock
+  carries the decision; readers resolve such locks via
+  `CheckTxnStatus`/`CheckSecondaryLocks`, which the client's lock resolver
+  understands. When TiKV declines, the client falls back to two-phase commit.
+- If both options are set, one-phase commit is tried first (single region
+  only); async commit covers multi-region small transactions.
+- Both modes remain safe under TiKV's own server-side guards — the server
+  never applies an unsafe fast commit, it just answers with a decline and the
+  client proceeds with two-phase commit.
 
 ## Retry and Backoff
 
