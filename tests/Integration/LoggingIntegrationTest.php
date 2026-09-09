@@ -278,8 +278,12 @@ class LoggingIntegrationTest extends TestCase
         $this->assertStringContainsString('bytes', $key);
         $this->assertStringNotContainsString('contextkey', $key);
         $this->assertSame(0, $record->context['attempt']);
-        $this->assertSame('None', $record->context['backoffType']);
-        $this->assertArrayHasKey('sleepMs', $record->context);
+        $this->assertSame('EpochNotMatch', $record->context['backoffType']);
+        $sleepMs = $record->context['sleepMs'];
+        $this->assertIsInt($sleepMs);
+        // Equal jitter on attempt 0: [base/2, base] = [1, 2] ms.
+        $this->assertGreaterThanOrEqual(1, $sleepMs);
+        $this->assertLessThanOrEqual(2, $sleepMs);
         $this->assertArrayHasKey('totalBackoffMs', $record->context);
     }
 
