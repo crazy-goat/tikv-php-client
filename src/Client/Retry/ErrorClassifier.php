@@ -8,6 +8,7 @@ use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Exception\InvalidStoreAddressException;
 use CrazyGoat\TiKV\Client\Exception\RegionException;
 use CrazyGoat\TiKV\Client\Exception\TiKvException;
+use CrazyGoat\TiKV\Client\Grpc\GrpcStatusCode;
 use CrazyGoat\TiKV\Client\Retry\ErrorKind;
 use CrazyGoat\TiKV\Client\TxnKv\Exception\TxnAbortedByGcException;
 
@@ -44,6 +45,25 @@ final class ErrorClassifier
         // message can never be misread as retryable (issue #422).
         if ($e instanceof TxnAbortedByGcException) {
             return null;
+        }
+
+        // === gRPC transport errors: classified by status code (issue #240, REG-09) ===
+        //
+        // Every GrpcException used to be retried with TiKvRpc backoff, so a
+        // permanent failure (e.g. UNAUTHENTICATED after a bad TLS rollout)
+        // was retried up to 30 times per operation — a ~30x load multiplier
+        // on the cluster at the worst possible moment. Retry decisions now
+        // follow the standard gRPC retry guidance:
+        //
+        //   retryable:        UNAVAILABLE, ABORTED, INTERNAL, UNKNOWN,
+        //                     DEADLINE_EXCEEDED (outcome indeterminate, REG-08),
+        //   server-busy:      RESOURCE_EXHAUSTED,
+        //   fatal (no retry): CANCELLED, INVALID_ARGUMENT, NOT_FOUND,
+        //                     PERMISSION_DENIED, UNAUTHENTICATED, UNIMPLEMENTED,
+        //                     FAILED_PRECONDITION, ALREADY_EXISTS, OUT_OF_RANGE,
+        //                     DATA_LOSS, and any unrecognised code.
+        if ($e instanceof GrpcException) {
+            return self::classifyGrpcStatus($e->grpcStatusCode);
         }
 
         // === Fallback: message-text matching for exceptions without a typed kind ===
@@ -106,10 +126,6 @@ final class ErrorClassifier
         }
 
         // Generic exception type checks
-        if ($e instanceof GrpcException) {
-            return BackoffType::TiKvRpc;
-        }
-
         if ($e instanceof RegionException) {
             return BackoffType::RegionMiss;
         }
@@ -160,6 +176,40 @@ final class ErrorClassifier
             // immediately; the read closure excludes the failing store and
             // falls back to another replica or the leader (issue #421).
             ErrorKind::DataIsNotReady => BackoffType::None,
+        };
+    }
+
+    /**
+     * Map a gRPC status code to a BackoffType (issue #240, REG-09).
+     *
+     * Retryable statuses follow the standard gRPC retry guidance:
+     * UNAVAILABLE and ABORTED are transient transport/concurrency errors,
+     * INTERNAL and UNKNOWN are retried conservatively (they may carry
+     * transient server failures), and DEADLINE_EXCEEDED leaves the outcome
+     * indeterminate so it is retried — the idempotency distinction for
+     * non-idempotent writes is REG-08's scope. RESOURCE_EXHAUSTED maps to
+     * the ServerBusy backoff (bounded by the ServerBusy budget).
+     * Everything else is permanent for the given request and must not be
+     * retried — notably UNAUTHENTICATED and PERMISSION_DENIED (bad TLS or
+     * credentials must fail fast, not 30x every request) and CANCELLED
+     * (the caller went away).
+     *
+     * Unknown codes are treated as fatal (fail closed), never retried.
+     */
+    public static function classifyGrpcStatus(int $code): ?BackoffType
+    {
+        $status = GrpcStatusCode::tryFrom($code);
+
+        return match ($status) {
+            GrpcStatusCode::Unavailable,
+            GrpcStatusCode::Aborted,
+            GrpcStatusCode::Internal,
+            GrpcStatusCode::Unknown,
+            GrpcStatusCode::DeadlineExceeded => BackoffType::TiKvRpc,
+
+            GrpcStatusCode::ResourceExhausted => BackoffType::ServerBusy,
+
+            default => null,
         };
     }
 }
