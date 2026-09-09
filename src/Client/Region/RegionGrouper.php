@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CrazyGoat\TiKV\Client\Region;
 
+use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Region\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
 
@@ -45,7 +46,13 @@ final class RegionGrouper
         foreach ($keys as $key) {
             $region = $resolved[$key] ?? null;
             if ($region === null) {
-                continue;
+                // Defense in depth: batchResolveRegions() already fails
+                // closed, so this is unreachable unless the resolver
+                // contract changes (issue #244).
+                throw new TiKvException(sprintf(
+                    'Region could not be resolved for key "%s"; refusing to silently drop it from the batch',
+                    $key,
+                ));
             }
             $regionId = $region->regionId;
             $grouped[$regionId] ??= ['region' => $region, 'keys' => []];
@@ -59,9 +66,9 @@ final class RegionGrouper
      * Group arbitrary items by region using a key-extractor callable.
      *
      * This is the generalised version of {@see groupKeysByRegionBatch} for
-     * callers that hold non-string items (e.g. Mutation objects). Items
-     * whose key could not be resolved are silently skipped (caller should
-     * have validated all keys beforehand).
+     * callers that hold non-string items (e.g. Mutation objects). Every key
+     * must resolve to a region — an unresolvable key throws a
+     * {@see TiKvException} naming the key (issue #244), it is never skipped.
      *
      * Example:
      * <code>
@@ -94,7 +101,13 @@ final class RegionGrouper
             $key = $keyExtractor($item);
             $region = $resolved[$key] ?? null;
             if ($region === null) {
-                continue;
+                // Defense in depth: batchResolveRegions() already fails
+                // closed, so this is unreachable unless the resolver
+                // contract changes (issue #244).
+                throw new TiKvException(sprintf(
+                    'Region could not be resolved for key "%s"; refusing to silently drop it from the batch',
+                    $key,
+                ));
             }
             $regionId = $region->regionId;
             $grouped[$regionId] ??= ['region' => $region, 'items' => []];

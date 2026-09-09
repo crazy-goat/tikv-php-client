@@ -302,9 +302,11 @@ class TransactionTest extends TestCase
         $store->setAddress('127.0.0.1:20160');
         $this->pdClient->method('getStore')->willReturn($store);
         $this->pdClient->method('getRegion')->willReturn($this->testRegion);
+        // Without this the batch grouper previously dropped every key
+        // silently and rollback "succeeded" without any RPC (issue #244).
+        $this->pdClient->method('scanRegions')->willReturn([$this->testRegion]);
 
         $rollbackResponse = new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse();
-
         $this->grpc->method('call')->willReturn($rollbackResponse);
 
         $txn = $this->createTransaction(['pessimistic' => false]);
@@ -1671,6 +1673,9 @@ class TransactionTest extends TestCase
         $store->setAddress('127.0.0.1:20160');
         $this->pdClient->method('getStore')->willReturn($store);
         $this->pdClient->method('getRegion')->willReturn($this->testRegion);
+        // Without this the batch grouper previously dropped every key
+        // silently and the commit "succeeded" without any RPC (issue #244).
+        $this->pdClient->method('scanRegions')->willReturn([$this->testRegion]);
         $this->pdClient->method('getTimestamp')->willReturn(3000);
 
         $prewriteResponse = new \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse();
@@ -2299,6 +2304,7 @@ class TransactionTest extends TestCase
         $this->regionCache->method('put');
         $this->pdClient->method('getStore')->willReturn($this->makeStore());
         $this->pdClient->method('getRegion')->willReturn($this->testRegion);
+        $this->pdClient->method('scanRegions')->willReturn([$this->testRegion]);
         $this->pdClient->method('getTimestamp')->willReturn(2000);
 
         $lockResponse = new PessimisticLockResponse();
@@ -2335,6 +2341,7 @@ class TransactionTest extends TestCase
         $this->pdClient->method('getRegion')->willReturnCallback(
             fn(string $key): \CrazyGoat\TiKV\Client\Region\Dto\RegionInfo => $key < 'k3' ? $region1 : $region2,
         );
+        $this->pdClient->method('scanRegions')->willReturn([$region1, $region2]);
         $this->pdClient->method('getTimestamp')->willReturn(3000);
 
         $lockResponse = new PessimisticLockResponse();

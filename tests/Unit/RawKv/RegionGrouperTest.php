@@ -6,6 +6,7 @@ namespace CrazyGoat\TiKV\Tests\Unit\RawKv;
 
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
+use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Region\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Region\RegionGrouper;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
@@ -161,5 +162,65 @@ class RegionGrouperTest extends TestCase
         $this->assertCount(2, $result);
         $this->assertSame(['a', 'c'], $result[1]['keys']);
         $this->assertSame(['m', 'y', 'z'], $result[2]['keys']);
+    }
+
+    /**
+     * Issue #244: a key that batchResolveRegions() cannot map to a region
+     * must fail the call, never be skipped (a skipped key in a batchPut
+     * batch means the write is silently lost; in a batchGet it reads back
+     * as null, indistinguishable from "key not present").
+     */
+    public function testGroupKeysByRegionBatchThrowsOnUnresolvedKey(): void
+    {
+        $region = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: 'a',
+            endKey: 'm',
+        );
+
+        $pdClient = $this->createMock(PdClientInterface::class);
+        $pdClient->method('scanRegions')->willReturn([$region]);
+
+        $regionCache = $this->createMock(RegionCacheInterface::class);
+        $regionCache->method('put');
+
+        $resolver = new RegionResolver($pdClient, $regionCache);
+
+        $this->expectException(TiKvException::class);
+        $this->expectExceptionMessage('"z"');
+        RegionGrouper::groupKeysByRegionBatch(['a', 'z'], $resolver);
+    }
+
+    public function testGroupItemsByRegionThrowsOnUnresolvedKey(): void
+    {
+        $region = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: 'a',
+            endKey: 'm',
+        );
+
+        $pdClient = $this->createMock(PdClientInterface::class);
+        $pdClient->method('scanRegions')->willReturn([$region]);
+
+        $regionCache = $this->createMock(RegionCacheInterface::class);
+        $regionCache->method('put');
+
+        $resolver = new RegionResolver($pdClient, $regionCache);
+
+        $this->expectException(TiKvException::class);
+        $this->expectExceptionMessage('"z"');
+        RegionGrouper::groupItemsByRegion(
+            [(object) ['key' => 'a'], (object) ['key' => 'z']],
+            fn (object $item): string => $item->key,
+            $resolver,
+        );
     }
 }
