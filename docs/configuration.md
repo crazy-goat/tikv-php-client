@@ -518,7 +518,7 @@ The client retries on these errors:
 
 | Error Type | Backoff Strategy | Description |
 |------------|------------------|-------------|
-| `EpochNotMatch` | No delay | Region epoch mismatch, immediate retry |
+| `EpochNotMatch` | Jittered (2–500 ms) | Region epoch mismatch, small backoff (like client-go's `BoEpochNotMatch`) |
 | `NotLeader` | Fast | Leader changed, quick retry |
 | `ServerIsBusy` | Progressive | Server overloaded, increasing delays |
 | `RegionNotFound` | Medium | Region not found, moderate delay |
@@ -536,8 +536,10 @@ These errors are not retried:
 ### Retry Bounds
 
 Every retry loop is bounded by **two independent safety nets** to prevent
-infinite busy loops when the underlying error has zero backoff delay
-(e.g. `EpochNotMatch` is classified as `BackoffType::None` with `sleepMs=0`):
+infinite loops when the underlying error has zero backoff delay (the only
+remaining zero-sleep class, `BackoffType::None`, is the `DataIsNotReady`
+replica-lag signal — `EpochNotMatch` gets a small jittered 2–500 ms backoff
+since issue #241):
 
 | Bound | Default | Description |
 |-------|---------|-------------|

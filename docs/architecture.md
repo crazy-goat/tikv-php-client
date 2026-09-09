@@ -383,7 +383,8 @@ Transaction encounters lock on key
 ```php
 enum BackoffType
 {
-    case None;        // Immediate retry (e.g., EpochNotMatch)
+    case None;        // Immediate retry (e.g., DataIsNotReady replica lag)
+    case EpochNotMatch; // Small jittered backoff, 2–500 ms (issue #241)
     case Fast;        // ~10ms (e.g., NotLeader)
     case Medium;      // ~100ms (e.g., RegionNotFound)
     case Slow;        // ~1s (e.g., general errors)
@@ -727,7 +728,7 @@ while (true) {
 ```
 TiKvException
 ├── RegionException
-│   ├── EpochNotMatch → Retry immediately
+│   ├── EpochNotMatch → Retry with small jittered backoff (2–500 ms)
 │   ├── NotLeader → Retry with fast backoff
 │   ├── RegionNotFound → Retry with medium backoff
 │   └── ServerIsBusy → Retry with slow backoff (separate budget)
@@ -780,7 +781,7 @@ Operation Failed
 // 1. Invalidate cache
 $regionCache->invalidate($regionId);
 
-// 2. Retry immediately (no backoff)
+// 2. Retry with a small jittered backoff (2–500 ms, issue #241)
 // New region info fetched from PD
 ```
 

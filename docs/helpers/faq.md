@@ -3,6 +3,56 @@
 Frequently asked questions and recurring pitfalls in crazy-goat/tikv-php.
 Ordered roughly by how often they bite.
 
+## RetryExecutor unit tests that need zero-sleep retries: use DataIsNotReady or an explicit classifier
+
+Since issue #241 (REG-10) `EpochNotMatch` classifies as `BackoffType::EpochNotMatch`
+(2 ms base, 500 ms cap, equal jitter) instead of `None` — so a test that threw
+`TiKvException('EpochNotMatch …')` 29 times to hit the attempt cap now sleeps
+~10 s of real wall clock and burns ~11 s of budget. To keep a retry test fast
+and deterministic: (a) throw `DataIsNotReady` — still the only zero-sleep class,
+so the attempt cap fires in milliseconds; (b) pass an explicit
+`fn () => BackoffType::None` classifier; or (c) when you WANT the new behavior,
+use a small `maxBackoffMs` (e.g. 50) so the sleep budget exhausts after a
+handful of 2/4/8/16 ms retries — a regression test can then assert
+`attempts < DEFAULT_MAX_ATTEMPTS` and a minimum wall-clock elapsed time.
+Remember that budget exhaustion for sleep-budget classes **rethrows the
+original TiKvException**, not `RetryBudgetExhaustedException`, and that
+`Backoff::exponential(..., equalJitter: true)` returns `[base/2, base]` — so
+`sleepMs(100)` for a cap of 500 returns in `[250, 500]`, never exactly the cap.
+
+## Sizing a retry-budget regression test under equal jitter: do the min-cumulative-sleep math
+
+`BackoffType::sleepMs()` delegates to `Backoff::exponential()`, which takes
+`equalJitter` **per call site** — the enum's `equalJitter()` match decides it.
+Any NEW `BackoffType` case must opt into jitter explicitly or it silently
+gets full (non-jittered) exponential sleeps; there is no default jitter.
+
+When a regression test must prove "budget exhausts before the attempt cap",
+size `maxBackoffMs` from the worst case, not the happy path: with equal
+jitter on base `b`, attempt n sleeps in `[b·2^n/2, b·2^n]` (capped), so the
+**minimum** cumulative sleep after k retries is `b·(2^k − 1)` — for
+`EpochNotMatch` (b=2): 1, 3, 7, 15, 31, 63. A `maxBackoffMs: 50` budget
+therefore exhausts by retry ~6 under ANY jitter draw (63 > 50), which is what
+makes `assertLessThan(DEFAULT_MAX_ATTEMPTS, $attempts)` un-flakeable.
+Conversely a wall-clock `elapsedMs` lower bound must be provable from the
+sleeps alone (budget exhaustion implies > 50 ms of sleeps), not from
+scheduling overhead. The #241 tests in `RetryExecutorTest` are the reference
+implementation of this sizing.
+
+## PHPStan: `$this->fail()` directly after a call whose closure always throws is dead code
+
+A test like `try { $executor->execute($k, fn () => throw …); $this->fail(...); } catch (TiKvException) {}`
+gets `deadCode.unreachable` at PHPStan L9: the closure's unconditional `throw`
+makes `execute()`'s success path unreachable, so PHPStan proves the statement
+after the call never runs. Do NOT "fix" it with a by-ref `$exhausted = false`
+flag set in the catch and `assertTrue($exhausted)` after — that trips the
+other trap (`method.alreadyNarrowedType`: PHPStan proves the flag is always
+true, the exact escape hatch documented for #503 does not apply here because
+the flag is set in a catch, not a sibling closure). Just drop the flag and the
+`fail()`: keep the empty catch with a comment, and assert on observable state
+after the try/catch (attempt counts, elapsed time) — those assertions fail
+anyway if the code under test misbehaves (issue #241).
+
 ## E2E tests need a running TiKV cluster (Docker)
 
 The `E2E-RawKV` and `E2E-TxnKV` testsuites require real TiKV nodes. Start

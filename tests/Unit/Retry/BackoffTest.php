@@ -102,4 +102,41 @@ class BackoffTest extends TestCase
             $this->assertGreaterThan(1, count(array_unique($values)), "{$type->name} is deterministic");
         }
     }
+
+    // Issue #241 (REG-10): EpochNotMatch must sleep a non-zero, jittered
+    // interval — the same values as client-go's BoEpochNotMatch.
+
+    public function testEpochNotMatchHasNonZeroBaseAndCap(): void
+    {
+        $this->assertSame(2, BackoffType::EpochNotMatch->baseMs());
+        $this->assertSame(500, BackoffType::EpochNotMatch->capMs());
+        $this->assertTrue(BackoffType::EpochNotMatch->equalJitter());
+    }
+
+    public function testEpochNotMatchSleepIsNonZeroAndJittered(): void
+    {
+        for ($attempt = 0; $attempt < 12; $attempt++) {
+            $sleep = BackoffType::EpochNotMatch->sleepMs($attempt);
+            $this->assertGreaterThan(0, $sleep, "attempt $attempt must sleep > 0 ms");
+        }
+
+        // Attempt 0 with equal jitter sleeps in [base/2, base] = [1, 2] ms.
+        $seen = [];
+        for ($i = 0; $i < 50; $i++) {
+            $seen[BackoffType::EpochNotMatch->sleepMs(0)] = true;
+        }
+        foreach ($seen as $value => $_) {
+            $this->assertGreaterThanOrEqual(1, $value);
+            $this->assertLessThanOrEqual(2, $value);
+        }
+        $this->assertGreaterThan(1, count($seen), 'equal jitter must produce more than one value');
+    }
+
+    public function testEpochNotMatchSleepCapsAtCapMs(): void
+    {
+        $sleep = BackoffType::EpochNotMatch->sleepMs(100);
+        // equal jitter: [cap/2, cap]
+        $this->assertGreaterThanOrEqual(250, $sleep);
+        $this->assertLessThanOrEqual(500, $sleep);
+    }
 }

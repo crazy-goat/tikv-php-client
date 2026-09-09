@@ -7,6 +7,7 @@ namespace CrazyGoat\TiKV\Client\Retry;
 enum BackoffType
 {
     case None;
+    case EpochNotMatch;
     case ServerBusy;
     case StaleCmd;
     case RegionMiss;
@@ -29,6 +30,12 @@ enum BackoffType
     {
         return match ($this) {
             self::None => 0,
+            // EpochNotMatch: same values as client-go's BoEpochNotMatch —
+            // small (2 ms base) but NON-zero and jittered, so a burst of
+            // region-split errors cannot drive a zero-delay request storm
+            // against PD/TiKV (issue #241, REG-10). The sleep also feeds
+            // totalBackoffMs, so repeated errors exhaust the backoff budget.
+            self::EpochNotMatch => 2,
             self::ServerBusy => 2000,
             self::StaleCmd => 2,
             self::RegionMiss => 2,
@@ -51,6 +58,7 @@ enum BackoffType
     {
         return match ($this) {
             self::None => 0,
+            self::EpochNotMatch => 500,
             self::ServerBusy => 10000,
             self::StaleCmd => 1000,
             self::RegionMiss => 500,

@@ -77,9 +77,16 @@ final class ErrorClassifier
             return null;
         }
 
-        // Immediate retry (no backoff)
-        if (str_contains($message, 'EpochNotMatch') || str_contains($message, 'epoch not match')) {
+        // Immediate retry is reserved for DataIsNotReady (replica-lag
+        // signal, issue #421). EpochNotMatch deliberately does NOT use
+        // BackoffType::None: a zero-sleep classification drove a
+        // zero-delay request storm against PD/TiKV during region churn
+        // (issue #241, REG-10) — it now gets a small jittered backoff.
+        if (str_contains($message, 'DataIsNotReady')) {
             return BackoffType::None;
+        }
+        if (str_contains($message, 'EpochNotMatch') || str_contains($message, 'epoch not match')) {
+            return BackoffType::EpochNotMatch;
         }
 
         // Region errors with specific backoff
@@ -150,7 +157,11 @@ final class ErrorClassifier
             ErrorKind::FlashbackInProgress,
             ErrorKind::FlashbackNotPrepared => null,
 
-            ErrorKind::EpochNotMatch => BackoffType::None,
+            // EpochNotMatch gets a small jittered backoff (2–500 ms, like
+            // client-go's BoEpochNotMatch) instead of zero — a zero-delay
+            // classification drove a request storm against PD/TiKV during
+            // region churn (issue #241, REG-10).
+            ErrorKind::EpochNotMatch => BackoffType::EpochNotMatch,
 
             ErrorKind::ServerIsBusy => BackoffType::ServerBusy,
             ErrorKind::StaleCommand => BackoffType::StaleCmd,

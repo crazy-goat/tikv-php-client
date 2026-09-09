@@ -31,8 +31,8 @@ class ErrorClassifierTest extends TestCase
             'FlashbackInProgress'      => [ErrorKind::FlashbackInProgress, null],
             'FlashbackNotPrepared'     => [ErrorKind::FlashbackNotPrepared, null],
 
-            // Immediate retry (no delay)
-            'EpochNotMatch'            => [ErrorKind::EpochNotMatch, BackoffType::None],
+            // Small jittered backoff (no longer zero-delay, issue #241)
+            'EpochNotMatch'            => [ErrorKind::EpochNotMatch, BackoffType::EpochNotMatch],
 
             // Region errors with specific backoff
             'ServerIsBusy'             => [ErrorKind::ServerIsBusy, BackoffType::ServerBusy],
@@ -138,14 +138,19 @@ class ErrorClassifierTest extends TestCase
         $this->assertNull(ErrorClassifier::classify(new TiKvException('FlashbackNotPrepared')));
     }
 
-    public function testEpochNotMatchReturnsNoneViaMessage(): void
+    public function testEpochNotMatchReturnsEpochNotMatchViaMessage(): void
     {
-        $this->assertSame(BackoffType::None, ErrorClassifier::classify(new TiKvException('EpochNotMatch')));
+        $this->assertSame(BackoffType::EpochNotMatch, ErrorClassifier::classify(new TiKvException('EpochNotMatch')));
     }
 
-    public function testEpochNotMatchLowercaseReturnsNoneViaMessage(): void
+    public function testEpochNotMatchLowercaseReturnsEpochNotMatchViaMessage(): void
     {
-        $this->assertSame(BackoffType::None, ErrorClassifier::classify(new TiKvException('epoch not match')));
+        $this->assertSame(BackoffType::EpochNotMatch, ErrorClassifier::classify(new TiKvException('epoch not match')));
+    }
+
+    public function testDataIsNotReadyStaysNoneViaMessage(): void
+    {
+        $this->assertSame(BackoffType::None, ErrorClassifier::classify(new TiKvException('DataIsNotReady')));
     }
 
     public function testServerIsBusyReturnsServerBusyViaMessage(): void
