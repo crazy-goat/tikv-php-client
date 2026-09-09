@@ -4044,7 +4044,6 @@ class TransactionTest extends TestCase
     public function testRollbackEncounteringLockResolvesItAndRetries(): void
     {
         $this->setUpRollbackRegionMocking();
-        $this->pdClient->method('getTimestamp')->willReturn(3000);
 
         $lockInfo = new LockInfo();
         $lockInfo->setKey('key1');
@@ -4139,8 +4138,6 @@ class TransactionTest extends TestCase
         // The Retryable branch throws TxnRetryableException, which the retry
         // executor backs off on and then re-runs the rollback.
         $txn->rollback();
-        var_dump($batchRollbackCalls);
-
         $this->assertSame(TransactionStatus::RolledBack, $txn->getStatus());
         $this->assertSame(2, $batchRollbackCalls);
     }
