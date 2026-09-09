@@ -485,6 +485,19 @@ attempt cap. The async batchScan path likewise never tracked exclusions: it
 declared `$excludedStore` with no `DataIsNotReady` catch inside its retry
 closure, so the unused plumbing was removed there too.
 
+## TxnKV E2E can flake with a one-off empty scan on a fresh CI cluster
+
+PR #506's CI failed once with `TxnKvE2ETest::testScanWithLimitOneReturnsSingleKey`
+asserting `actual size 0` for keys committed moments earlier — no exception, just
+an empty `KvScan` answer. The PR's replica-read changes are no-ops in leader mode
+(`RegionContextFactory::resolveTarget()` returns the identical leader context), and
+the suite passes repeatedly on a fresh local cluster (full suite ×3, targeted
+test ×10). Re-running the failed CI job went green. Diagnosis: transient infra
+flake, not a code regression. If it recurs, suspect the scan loop in
+`TxnReader::executeScanForRegion()` — an empty batch with `$pending > 0` and no
+split exits silently (see `while (true)` loop, `break` conditions); a one-off
+empty answer for non-empty data is never retried.
+
 E2E note: `docker-compose run --rm php-test …` recreates the tikv
 containers it depends on; if the cluster was just (re)started the run
 container's DNS can fail with "Name does not resolve tikv1:20160" and the
