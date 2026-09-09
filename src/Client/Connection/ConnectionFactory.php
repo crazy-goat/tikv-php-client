@@ -203,6 +203,7 @@ final class ConnectionFactory
                 throw new InvalidArgumentException(
                     "options['grpc'][{$key}] must be an int >= 1, "
                     . 'got ' . get_debug_type($value)
+                    . (is_int($value) ? " ({$value})" : ''),
                 );
             }
             $args[$key] = $value;
