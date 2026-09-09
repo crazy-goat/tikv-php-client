@@ -389,11 +389,13 @@ final readonly class TwoPhaseCommitter
 
         if ($useOnePc) {
             $request->setTryOnePc(true);
-            $request->setMinCommitTs($this->startTs);
+            $request->setMinCommitTs($this->startTs + 1);
         } elseif ($useAsyncCommit) {
             $request->setUseAsyncCommit(true);
             $request->setSecondaries($secondaries);
-            $request->setMinCommitTs($this->startTs);
+            // start_ts + 1, as in client-go/client-rust: the commit ts must
+            // be strictly greater than the transaction's start ts.
+            $request->setMinCommitTs($this->startTs + 1);
             $request->setMaxCommitTs($this->startTs + self::ASYNC_COMMIT_MAX_COMMIT_TS_GAP);
         }
 

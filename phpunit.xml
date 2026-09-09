@@ -44,6 +44,7 @@
         <testsuite name="E2E-TxnKV">
             <file>tests/E2E/TxnKvE2ETest.php</file>
             <file>tests/E2E/GcSafePointE2ETest.php</file>
+            <file>tests/E2E/FastCommitModesE2ETest.php</file>
         </testsuite>
     </testsuites>
     <source>

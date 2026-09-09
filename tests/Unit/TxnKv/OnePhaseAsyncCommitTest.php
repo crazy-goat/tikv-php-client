@@ -165,7 +165,7 @@ class OnePhaseAsyncCommitTest extends TestCase
         $this->assertCount(1, $this->prewriteRequests);
         $this->assertTrue($this->prewriteRequests[0]->getTryOnePc());
         $this->assertFalse($this->prewriteRequests[0]->getUseAsyncCommit());
-        $this->assertSame(self::START_TS, (int) $this->prewriteRequests[0]->getMinCommitTs());
+        $this->assertSame(self::START_TS + 1, (int) $this->prewriteRequests[0]->getMinCommitTs());
     }
 
     public function testOnePhaseCommitDeclinedFallsBackToTwoPhase(): void
@@ -255,7 +255,7 @@ class OnePhaseAsyncCommitTest extends TestCase
         $this->assertTrue($request->getUseAsyncCommit());
         $this->assertFalse($request->getTryOnePc());
         $this->assertSame(['k2'], iterator_to_array($request->getSecondaries()));
-        $this->assertSame(self::START_TS, (int) $request->getMinCommitTs());
+        $this->assertSame(self::START_TS + 1, (int) $request->getMinCommitTs());
         $this->assertSame(self::START_TS + 15000, (int) $request->getMaxCommitTs());
     }
 
