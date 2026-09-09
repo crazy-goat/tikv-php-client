@@ -479,11 +479,20 @@ Details:
   prewrite), the client silently falls back to the normal two-phase path.
 - Async commit sets `use_async_commit`, the secondary keys and
   `max_commit_ts` (start timestamp + a bounded TSO gap) on the primary
-  region's prewrite, and derives the commit timestamp from the returned
-  `min_commit_ts` values. The transaction is committed once the primary lock
+  region's prewrite, and derives the commit timestamp as the maximum of the
+  returned `min_commit_ts` values (no extra increment — TiKV writes the data
+  at `min_commit_ts`, so a reader whose snapshot ts equals it must see the
+  write). The transaction is committed once the primary lock
   carries the decision; readers resolve such locks via
   `CheckTxnStatus`/`CheckSecondaryLocks`, which the client's lock resolver
-  understands. When TiKV declines, the client falls back to two-phase commit.
+  understands — it finalizes the whole transaction (all secondaries + the
+  primary) with `KvResolveLock` at the commit ts derived from the
+  `min_commit_ts` values (client-go's recovery protocol: an undecided
+  transaction whose secondaries are all still locked is help-committed at
+  `max(min_commit_ts)` rather than stalled until the lock TTL expires).
+  The prewrite loop prewrites the primary region last (the commit-decision
+  barrier, client-go parity). When TiKV declines, the client falls back to
+  two-phase commit.
 - If both options are set, one-phase commit is tried first (single region
   only); async commit covers multi-region small transactions.
 - Both modes remain safe under TiKV's own server-side guards — the server

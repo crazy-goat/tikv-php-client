@@ -161,6 +161,28 @@ final readonly class TwoPhaseCommitter
         $asyncAccepted = true;
         $secondaries = array_values(array_diff($allKeys, [$primary]));
 
+        // Async commit (client-go parity): the primary region must be
+        // prewritten LAST — the primary's prewrite is the commit-decision
+        // barrier, and prewriting it first would let a concurrent reader
+        // observe a decided-looking primary while a secondary region's
+        // prewrite is still in flight.
+        if ($async && count($keysByRegion) > 1) {
+            $primaryRegionIndex = null;
+            foreach ($keysByRegion as $index => $regionData) {
+                foreach ($regionData['mutations'] as $mutation) {
+                    if ($mutation->getKey() === $primary) {
+                        $primaryRegionIndex = $index;
+                        break 2;
+                    }
+                }
+            }
+            if ($primaryRegionIndex !== null) {
+                $primaryRegionData = $keysByRegion[$primaryRegionIndex];
+                unset($keysByRegion[$primaryRegionIndex]);
+                $keysByRegion[] = $primaryRegionData;
+            }
+        }
+
         foreach ($keysByRegion as $regionData) {
             $region = $regionData['region'];
             $regionMutations = $regionData['mutations'];
@@ -203,10 +225,17 @@ final readonly class TwoPhaseCommitter
 
         if ($async && $asyncAccepted) {
             // Derive the commit timestamp from the returned min_commit_ts
-            // values: the commit ts must not be below any region's
-            // min_commit_ts (client-go takes max of the secondaries' values
-            // plus one, and the primary's own value).
-            $commitTs = max($primaryMinCommitTs, $maxMinCommitTs + 1);
+            // values: TiKV writes async-commit data at the chosen
+            // min_commit_ts, so the commit ts is the maximum over the
+            // primary's and every secondary's min_commit_ts — with NO
+            // extra +1. A reader whose start ts equals the data's commit
+            // ts must see the write: PD can hand out exactly the
+            // min_commit_ts value to the next reader, so deriving
+            // max(min_commit_ts) + 1 makes the write invisible to that
+            // reader (the minCommitTSPrevail "+1" in client-go applies to
+            // other transactions' locks, not to this transaction's own
+            // prewrite responses).
+            $commitTs = max($primaryMinCommitTs, $maxMinCommitTs);
             $state->setCommitTs($commitTs);
             $state->setStatus(TransactionStatus::Committed);
             $this->logger->debug('Async commit done', ['commitTs' => $commitTs]);

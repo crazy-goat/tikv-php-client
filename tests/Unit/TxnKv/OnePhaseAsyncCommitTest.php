@@ -12,6 +12,7 @@ use CrazyGoat\Proto\Kvrpcpb\CommitResponse;
 use CrazyGoat\Proto\Kvrpcpb\LockInfo;
 use CrazyGoat\Proto\Kvrpcpb\PrewriteRequest;
 use CrazyGoat\Proto\Kvrpcpb\PrewriteResponse;
+use CrazyGoat\Proto\Kvrpcpb\ResolveLockRequest;
 use CrazyGoat\Proto\Kvrpcpb\ResolveLockResponse;
 use CrazyGoat\Proto\Metapb\Store;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
@@ -247,8 +248,10 @@ class OnePhaseAsyncCommitTest extends TestCase
         $txn->commit();
 
         $this->assertSame(TransactionStatus::Committed, $txn->getStatus());
-        // Derived: max(primary min_commit_ts = 4500, max min_commit_ts + 1).
-        $this->assertSame(4501, $txn->getCommitTs());
+        // Derived: max over the prewrite responses' min_commit_ts (no +1 —
+        // TiKV writes the data at min_commit_ts, and a reader may be
+        // granted exactly that timestamp by PD).
+        $this->assertSame(4500, $txn->getCommitTs());
         $this->assertCount(0, $this->commitRequests);
 
         $request = $this->prewriteRequests[0];
@@ -355,7 +358,7 @@ class OnePhaseAsyncCommitTest extends TestCase
         $this->assertSame(self::START_TS, (int) $captured[0]->getStartVersion());
     }
 
-    public function testResolveAsyncCommitLockStillActiveFallsBackToTtlWait(): void
+    public function testResolveAsyncCommitLockStillActiveHelpCommits(): void
     {
         $region = $this->makeRegion(1, '', '');
         $this->regionCache->method('getByKey')->willReturn($region);
@@ -366,21 +369,24 @@ class OnePhaseAsyncCommitTest extends TestCase
 
         $status1 = new CheckTxnStatusResponse();
         $status1->setCommitVersion(0);
-        $status1->setLockTtl(1);
+        $status1->setLockTtl(3000);
+        // A secondary is still locked: the transaction is undecided, but
+        // the reader may help-commit it at max(min_commit_ts) — exactly
+        // client-go's resolveAsyncResolveData() after checkAllSecondaries().
+        $secondaryLock = new LockInfo();
+        $secondaryLock->setKey('s2');
+        $secondaryLock->setLockVersion(self::START_TS);
+        $secondaryLock->setUseAsyncCommit(true);
+        $secondaryLock->setMinCommitTs(4600);
         $locked = new CheckSecondaryLocksResponse();
-        // A secondary is still locked: the transaction is still active.
-        $locked->setLocks([new LockInfo()]);
-        $status2 = new CheckTxnStatusResponse();
-        // After the (tiny) TTL wait the transaction resolved as rolled back.
-        $status2->setCommitVersion(0);
+        $locked->setLocks([$secondaryLock]);
         $resolved = new ResolveLockResponse();
 
-        /** @var list<CheckSecondaryLocksRequest> $captured */
+        /** @var list<CheckSecondaryLocksRequest|ResolveLockRequest> $captured */
         $captured = [];
         $queue = [
             ['method' => 'KvCheckTxnStatus', 'response' => $status1],
             ['method' => 'KvCheckSecondaryLocks', 'response' => $locked],
-            ['method' => 'KvCheckTxnStatus', 'response' => $status2],
             ['method' => 'KvResolveLock', 'response' => $resolved],
         ];
         $index = 0;
@@ -394,7 +400,10 @@ class OnePhaseAsyncCommitTest extends TestCase
             &$queue,
             &$index
 ): object {
-            if ($request instanceof CheckSecondaryLocksRequest) {
+            if (
+                $request instanceof CheckSecondaryLocksRequest
+                || $request instanceof ResolveLockRequest
+            ) {
                 $captured[] = $request;
             }
             $call = $queue[$index++] ?? null;
@@ -413,8 +422,14 @@ class OnePhaseAsyncCommitTest extends TestCase
         );
         $resolver->resolveLock('p', $this->makeAsyncLock());
 
-        // The fallback ran CheckSecondaryLocks exactly once and then fell
-        // through to the TTL wait instead of hanging on a long TTL.
-        $this->assertCount(1, $captured);
+        // CheckSecondaryLocks ran, then the help-commit ResolveLock finalized
+        // the transaction at max(primary 4500, secondary 4600) = 4600 — no
+        // TTL wait, no second CheckTxnStatus.
+        $this->assertCount(2, $captured);
+        $this->assertSame(['s2'], iterator_to_array($captured[0]->getKeys()));
+        $this->assertSame(self::START_TS, (int) $captured[0]->getStartVersion());
+        $this->assertInstanceOf(ResolveLockRequest::class, $captured[1]);
+        $this->assertSame(self::START_TS, (int) $captured[1]->getStartVersion());
+        $this->assertSame(4600, (int) $captured[1]->getCommitVersion());
     }
 }
