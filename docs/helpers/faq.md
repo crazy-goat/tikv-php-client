@@ -528,3 +528,17 @@ E2E note: `docker-compose run --rm php-test …` recreates the tikv
 containers it depends on; if the cluster was just (re)started the run
 container's DNS can fail with "Name does not resolve tikv1:20160" and the
 whole suite errors — wait ~20 s after `make up` before running E2E.
+
+## Service safe-point E2E tests must assert invariants, never exact values
+
+PD registers its own `gc_worker` service safe point and advances the GC
+safe point at a rate limited by `gc_life_time`, so exact-value assertions
+in a `holdGcSafePoint → getGCSafePoint → release` round-trip flake against
+a real cluster. Assert only invariants (learned in issue #499,
+`tests/E2E/GcSafePointE2ETest.php`): (1) `updateServiceGCSafePoint()`
+returns the min across all services, which can never exceed *our* held
+point; (2) `getGCSafePoint()` (cluster GC safe point) is capped by the min
+service safe point, so while held at a fresh TSO it must be ≤ that TSO;
+(3) the GC safe point is monotonic — release must not move it backwards.
+Also: wrap the release in `try`/`finally` — a leaked registration with a
+600 s TTL keeps holding back GC on the test cluster after the run.
