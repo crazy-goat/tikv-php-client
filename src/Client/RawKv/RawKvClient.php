@@ -553,11 +553,23 @@ final class RawKvClient
     // ========================================================================
 
     /**
+     * Atomically compare-and-swap a raw value.
+     *
+     * NOT IDEMPOTENT: if the server applies the CAS but the response is lost
+     * (transport error), the outcome is indeterminate — the swap may have
+     * succeeded even though this call throws. Transport-level gRPC errors
+     * (e.g. DEADLINE_EXCEEDED, UNAVAILABLE) are therefore NOT retried and
+     * propagate to the caller, which should re-read the key to determine
+     * the actual outcome (issue #239). Region errors (NotLeader,
+     * EpochNotMatch, …) are rejected before the write is proposed and are
+     * still retried automatically.
+     *
      * @throws ClientClosedException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
      * @throws RegionException
-     * @throws GrpcException
+     * @throws GrpcException NOT retried — transport errors leave the result
+     *                       indeterminate for this non-idempotent operation
      */
     public function compareAndSwap(string $key, ?string $expectedValue, string $newValue, int $ttl = 0): CasResult
     {
@@ -581,11 +593,23 @@ final class RawKvClient
     }
 
     /**
+     * Put a value only if the key does not already exist (via CAS).
+     *
+     * NOT IDEMPOTENT — see compareAndSwap() for the indeterminate-outcome
+     * contract: a thrown GrpcException means the outcome is unknown (the
+     * write may have been applied); re-read the key to decide. Distributed
+     * lock users must treat a throw as indeterminate, never as
+     * "not acquired" (issue #239).
+     *
+     * @return null if the key did not exist and the value was stored; the
+     *              existing value otherwise
+     *
      * @throws ClientClosedException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
      * @throws RegionException
-     * @throws GrpcException
+     * @throws GrpcException NOT retried — transport errors leave the result
+     *                       indeterminate for this non-idempotent operation
      */
     public function putIfAbsent(string $key, string $value, int $ttl = 0): ?string
     {

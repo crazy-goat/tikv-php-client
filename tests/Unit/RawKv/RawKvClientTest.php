@@ -1106,6 +1106,66 @@ class RawKvClientTest extends TestCase
         $this->assertSame('actual', $result->previousValue);
     }
 
+    public function testCompareAndSwapDoesNotRetryOnGrpcException(): void
+    {
+        $this->client->setAtomicForCAS(true);
+
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        // A CAS is not idempotent: a transport error means the outcome is
+        // indeterminate (the write may have been applied server-side), so it
+        // must propagate to the caller instead of being retried (issue #239).
+        $this->grpc->expects($this->once())
+            ->method('call')
+            ->willThrowException(new GrpcException('Deadline Exceeded', 4));
+
+        $this->expectException(GrpcException::class);
+
+        $this->client->compareAndSwap('key', 'old', 'new');
+    }
+
+    public function testCompareAndSwapStillRetriesRegionErrors(): void
+    {
+        $this->client->setAtomicForCAS(true);
+
+        $region = $this->regionWithPeers();
+        $this->regionCache->method('getByKey')->willReturn($region);
+        $this->regionCache->method('invalidate');
+        $this->regionCache->method('switchLeader')->willReturn(true);
+        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+
+        $leader = new Peer();
+        $leader->setId(30);
+        $leader->setStoreId(3);
+
+        $notLeader = new NotLeader();
+        $notLeader->setRegionId(1);
+        $notLeader->setLeader($leader);
+
+        $error = new Error();
+        $error->setMessage('not leader');
+        $error->setNotLeader($notLeader);
+
+        $errorResponse = new RawCASResponse();
+        $errorResponse->setRegionError($error);
+
+        $successResponse = new RawCASResponse();
+        $successResponse->setSucceed(true);
+        $successResponse->setPreviousNotExist(true);
+
+        $this->grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturnOnConsecutiveCalls($errorResponse, $successResponse);
+
+        $result = $this->client->compareAndSwap('key', null, 'new');
+
+        $this->assertTrue($result->swapped);
+        $this->assertNull($result->previousValue);
+    }
+
     // ========================================================================
     // putIfAbsent()
     // ========================================================================
