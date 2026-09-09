@@ -59,6 +59,15 @@ The `E2E-RawKV` and `E2E-TxnKV` testsuites require real TiKV nodes. Start
 the cluster with `make up` (PD on 2379, tikv1/2/3 on 20160/20161/20162),
 stop with `make down`. If state gets corrupted: `make clean && make up`.
 
+## Protobuf `RepeatedField` is not a PHP array — `iterator_to_array()` before `array_map()`
+
+Proto getters returning repeated fields (`PrewriteRequest::getMutations()`,
+`BatchGetResponse` pairs, …) return a `Google\Protobuf\Internal\RepeatedField`
+which is iterable but not an `array`: `array_map()`/`array_keys()` on it
+throw a `TypeError` under `declare(strict_types=1)`. Wrap with
+`iterator_to_array()` first (or index into it / foreach), and remember PHP
+coerces numeric-string keys, so `(string)`-cast keys taken from proto fields.
+
 ## Unit tests don't need TiKV — gRPC tests do
 
 - `composer test:unit` (`--testsuite Unit`) mocks gRPC calls — fast, no
