@@ -542,3 +542,18 @@ service safe point, so while held at a fresh TSO it must be ≤ that TSO;
 (3) the GC safe point is monotonic — release must not move it backwards.
 Also: wrap the release in `try`/`finally` — a leaked registration with a
 600 s TTL keeps holding back GC on the test cluster after the run.
+
+## The commit-point guard for rollback() must be on the status, not commitTs (TXN-10)
+
+Issue #215's suggested fix guards `TwoPhaseCommitter::rollback()` on
+`$state->getCommitTs() !== null`, but `commitTs` is set in `commit()` *before*
+the primary region is committed — a failed primary commit leaves a transaction
+that is not committed in TiKV and is legitimately still rollback-able. Guard on
+`$state->getStatus() === TransactionStatus::Committed` instead; the status is
+set to Committed right after the primary commit returns (the commit point) and
+secondary commit failures are logged and swallowed there. Related expiry: the
+#217 test (`testCommitRetryReusesCommitTimestampAfterSecondaryFailure`) was
+written when a secondary commit failure threw out of `commit()` and left the
+status Active so a second `commit()` could reuse the timestamp — that premise
+expired with #215, and the test now asserts the failure is swallowed and
+exactly one timestamp is minted.

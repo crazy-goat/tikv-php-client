@@ -1258,6 +1258,92 @@ class TransactionTest extends TestCase
         $this->assertSame(['KvPrewrite', 'KvCommit'], $methodSequence);
     }
 
+    public function testSecondaryCommitFailureDoesNotFailCommittedTransaction(): void
+    {
+        // Issue #215 (TXN-10): once the primary region is committed the
+        // transaction is durable in TiKV. A fatal error while committing a
+        // secondary region must be logged and swallowed — commit() must not
+        // throw, the status must be Committed, and no rollback may be issued.
+        $region1 = $this->makeRegion(1, '', 'k2'); // holds the primary 'k1'
+        $region2 = $this->makeRegion(2, 'k2', ''); // holds the secondary 'k2'
+        $this->pdClient->method('scanRegions')->willReturn([$region1, $region2]);
+        $this->stubScanRegionLookup([$region1, $region2]);
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getTimestamp')->willReturn(2000);
+
+        $prewriteResponse = new \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse();
+        $commitResponse = new \CrazyGoat\Proto\Kvrpcpb\CommitResponse();
+
+        $methodSequence = [];
+        $commitCalls = 0;
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+            ) use (
+                &$methodSequence,
+                &$commitCalls,
+                $prewriteResponse,
+                $commitResponse,
+            ): object {
+                $methodSequence[] = $method;
+                if ($method === 'KvCommit') {
+                    $commitCalls++;
+                    if ($commitCalls > 1) {
+                        // Fatal, non-retryable failure on the secondary region.
+                        throw new TiKvException('KeyExists');
+                    }
+                }
+                return match ($method) {
+                    'KvPrewrite' => $prewriteResponse,
+                    'KvCommit' => $commitResponse,
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('k1', 'v1'); // primary — region 1
+        $txn->set('k3', 'v3'); // secondary — region 2
+
+        $txn->commit(); // must not throw
+
+        $this->assertSame(TransactionStatus::Committed, $txn->getStatus());
+        $this->assertSame(2000, $txn->getCommitTs());
+        $this->assertSame(
+            ['KvPrewrite', 'KvPrewrite', 'KvCommit', 'KvCommit'],
+            $methodSequence,
+        );
+        // No rollback of the committed transaction may be attempted — not
+        // even via __destruct().
+        $this->assertNotContains('KvBatchRollback', $methodSequence);
+    }
+
+    public function testRollbackAfterCommitThrows(): void
+    {
+        $this->regionCache->method('getByKey')->willReturn($this->testRegion);
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($this->testRegion);
+        $this->pdClient->method('scanRegions')->willReturn([$this->testRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(2000);
+
+        $this->grpc->method('call')->willReturnCallback(
+            fn(string $addr, string $svc, string $method): object => match ($method) {
+                'KvPrewrite' => new \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse(),
+                'KvCommit' => new \CrazyGoat\Proto\Kvrpcpb\CommitResponse(),
+                default => throw new \RuntimeException("Unexpected method: $method"),
+            },
+        );
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('k1', 'v1');
+        $txn->commit();
+
+        $this->expectException(InvalidStateException::class);
+        $this->expectExceptionMessage('Transaction is not active');
+        $txn->rollback();
+    }
+
     public function testCommitWithNumericStringKeySucceeds(): void
     {
         $this->regionCache->method('getByKey')->willReturn($this->testRegion);
@@ -2387,9 +2473,12 @@ class TransactionTest extends TestCase
         $prewriteResponse = new \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse();
         $commitResponse = new \CrazyGoat\Proto\Kvrpcpb\CommitResponse();
 
-        // First commit of the secondary region fails with a commit-phase
-        // key error; the retry commit succeeds.
-        $firstSecondaryCommit = true;
+        // The secondary region commit fails with a commit-phase key error.
+        // Issue #215 (TXN-10): this must NOT fail commit() — the primary is
+        // already committed, so the transaction is durable. The single
+        // timestamp minted for the primary commit must still be the commit
+        // version on the wire for every region.
+        $secondaryCommitFailed = false;
         $commitVersions = [];
         $this->grpc->method('call')
             ->willReturnCallback(function (
@@ -2398,7 +2487,7 @@ class TransactionTest extends TestCase
                 string $method,
                 mixed $request,
             ) use (
-                &$firstSecondaryCommit,
+                &$secondaryCommitFailed,
                 &$commitVersions,
                 $prewriteResponse,
                 $commitResponse,
@@ -2406,9 +2495,9 @@ class TransactionTest extends TestCase
                 if ($method === 'KvCommit' && $request instanceof \CrazyGoat\Proto\Kvrpcpb\CommitRequest) {
                     $context = $request->getContext();
                     $regionId = $context !== null ? $context->getRegionId() : -1;
-                    $commitVersions[] = $request->getCommitVersion();
-                    if ($regionId === 2 && $firstSecondaryCommit) {
-                        $firstSecondaryCommit = false;
+                    $commitVersions[$regionId] = $request->getCommitVersion();
+                    if ($regionId === 2 && !$secondaryCommitFailed) {
+                        $secondaryCommitFailed = true;
                         $errorResponse = new \CrazyGoat\Proto\Kvrpcpb\CommitResponse();
                         $keyError = new KeyError();
                         $keyError->setRetryable('simulated commit failure');
@@ -2427,25 +2516,16 @@ class TransactionTest extends TestCase
         $txn->set('k1', 'v1');
         $txn->set('k4', 'v4');
 
-        try {
-            $txn->commit();
-            $this->fail('First commit should fail on the secondary region');
-        } catch (TransactionConflictException) {
-            // Expected: secondary commit failed after the primary committed.
-        }
-
-        $this->assertSame(TransactionStatus::Active, $txn->getStatus());
-        $this->assertSame(9001, $txn->getCommitTs());
-
+        // The secondary commit failure is logged and swallowed (issue #215).
         $txn->commit();
 
         $this->assertSame(TransactionStatus::Committed, $txn->getStatus());
-        $this->assertSame(9001, $txn->getCommitTs());
-        // Exactly one PD timestamp for the whole transaction: the retried
-        // commit() must not mint a new one.
+        // Exactly one PD timestamp for the whole transaction: the failed
+        // secondary region did not trigger a re-mint.
         $this->assertSame(1, $timestampCalls);
-        // Every commit request across both attempts used the same ts.
-        $this->assertNotEmpty($commitVersions);
+        $this->assertSame(9001, $txn->getCommitTs());
+        // The primary used the same ts (the secondary request that failed is
+        // recorded here too, proving no retry re-minted the timestamp).
         foreach ($commitVersions as $commitTs) {
             $this->assertSame(9001, $commitTs);
         }

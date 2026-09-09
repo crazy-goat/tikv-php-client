@@ -122,8 +122,9 @@ final readonly class TwoPhaseCommitter
         }
 
         // Reuse an existing commit timestamp on retry: a second commit() after a failed
-        // commit phase must never allocate a new ts (issue #217). Once TXN-10 makes the
-        // status Committed at the commit point, a second commit() will be rejected here.
+        // commit phase must never allocate a new ts (issue #217). With TXN-10 the
+        // status is Committed at the commit point, so a second commit() is rejected
+        // by ensureActive() before reaching this line.
         $commitTs = $state->getCommitTs() ?? $this->pdClient->getTimestamp();
         $state->setCommitTs($commitTs);
 
@@ -147,6 +148,17 @@ final readonly class TwoPhaseCommitter
         RetryExecutor $retryExecutor,
         callable $classifier,
     ): void {
+        // A transaction that reached the commit phase is committed in TiKV
+        // and must never be rolled back (issue #215, TXN-10). The guard is
+        // on the status, not on commitTs: commitTs is already set when the
+        // primary commit is attempted, and a FAILED primary commit leaves a
+        // transaction that is legitimately still rollback-able.
+        if ($state->getStatus() === TransactionStatus::Committed) {
+            throw new InvalidStateException(
+                'Cannot roll back a transaction that reached the commit phase',
+            );
+        }
+
         if ($this->pessimistic) {
             $this->pessimisticRollbackAll($state, $retryExecutor, $classifier);
         }
@@ -406,19 +418,36 @@ final readonly class TwoPhaseCommitter
             notLeaderOwnedByRetryExecutor: false,
         );
 
+        // Commit point: once the primary key is committed the transaction is
+        // durably committed in TiKV. Mark it now (issue #215, TXN-10) so a
+        // secondary commit failure can never leave the status Active and
+        // trigger a rollback of a committed transaction.
+        $state->setStatus(TransactionStatus::Committed);
+
         // Remove the primary region from outstanding work; commit remaining
         // secondary regions under the retry executor.
         unset($keysByRegion[$primaryRegionId]);
 
-        foreach ($keysByRegion as $regionData) {
+        foreach ($keysByRegion as $regionId => $regionData) {
             $region = $regionData['region'];
             $regionKeys = $regionData['keys'];
             $firstKey = $regionKeys[0] ?? '';
 
-            $retryExecutor->execute($firstKey, function () use ($region, $regionKeys, $state): null {
-                $this->commitForRegion($region, $regionKeys, $state);
-                return null;
-            }, $classifier);
+            try {
+                $retryExecutor->execute($firstKey, function () use ($region, $regionKeys, $state): null {
+                    $this->commitForRegion($region, $regionKeys, $state);
+                    return null;
+                }, $classifier);
+            } catch (\Throwable $e) {
+                // Secondary commit failures do NOT fail the transaction: the
+                // primary is already committed, so the data is durable. The
+                // leftover locks are resolved by other readers through the
+                // lock resolver (same policy as client-go, issue #215).
+                $this->logger->error('Secondary commit failed; locks will be resolved by readers', [
+                    'regionId' => $regionId,
+                    'exception' => $e,
+                ]);
+            }
         }
     }
 

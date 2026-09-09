@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **[TXN-10]**: a committed transaction is no longer reported as failed when a **secondary** region commit fails. The transaction status is set to `Committed` immediately after the primary region's commit returns (the commit point), and any failure while committing secondary regions — including `RetryBudgetExhaustedException` and fatal key errors — is logged and swallowed instead of propagating out of `Transaction::commit()`; leftover locks on secondary regions are resolved by other readers, matching client-go. `TwoPhaseCommitter::rollback()` now refuses to run when the status is already `Committed`, so no path can issue `KvBatchRollback` for a committed transaction (the guard is on the status, not `commitTs`: the commit timestamp is already set while the primary commit is attempted, and a failed primary commit leaves a legitimately rollback-able transaction). Behavioural change: callers that previously observed an exception from `commit()` after the primary had committed now see success. (#215)
+
 ## [v0.4.0] - 2026-09-09
 
 ### Added
