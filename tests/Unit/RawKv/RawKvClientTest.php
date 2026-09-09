@@ -1744,8 +1744,11 @@ class RawKvClientTest extends TestCase
     {
         $this->assertSame(2, \CrazyGoat\TiKV\Client\Retry\BackoffType::NotLeader->baseMs());
         $this->assertSame(500, \CrazyGoat\TiKV\Client\Retry\BackoffType::NotLeader->capMs());
-        $this->assertFalse(\CrazyGoat\TiKV\Client\Retry\BackoffType::NotLeader->equalJitter());
-        $this->assertSame(2, \CrazyGoat\TiKV\Client\Retry\BackoffType::NotLeader->sleepMs(0));
+        $this->assertTrue(\CrazyGoat\TiKV\Client\Retry\BackoffType::NotLeader->equalJitter());
+        $sleep = \CrazyGoat\TiKV\Client\Retry\BackoffType::NotLeader->sleepMs(0);
+        // Equal jitter on base 2 ms: delay is in [1, 2] (issue #242).
+        $this->assertGreaterThanOrEqual(1, $sleep);
+        $this->assertLessThanOrEqual(2, $sleep);
     }
 
     // ========================================================================

@@ -84,13 +84,13 @@ class RetryExecutorTest extends TestCase
             serverBusyBudgetMs: 10000,
         );
 
-        // Use a custom classifier to ensure deterministic backoff (no jitter)
         $classifier = fn(TiKvException $e): BackoffType => BackoffType::RegionMiss;
 
-        // RegionMiss: baseMs=2, capMs=500, equalJitter=false
-        // attempt 0: sleepMs=2, totalBackoffMs=0+2=2, 2<=10 → retry
-        // attempt 1: sleepMs=4, totalBackoffMs=2+4=6, 6<=10 → retry
-        // attempt 2: sleepMs=8, totalBackoffMs=6+8=14, 14>10 → throw
+        // RegionMiss: baseMs=2, capMs=500, equal jitter (issue #242), so each
+        // sleep is drawn from [expo/2, expo]: 1-2, 2-4, 4-8 ms.
+        // Worst-case spend 2+4+8=14 > 10 exhausts the budget; even in the
+        // best case (1+2+4=7) the next attempt adds 8-16 ms and crosses 10,
+        // so the budget is always exhausted and the original error rethrown.
         $operation = function (): void {
             throw new TiKvException('test error');
         };
@@ -413,12 +413,15 @@ class RetryExecutorTest extends TestCase
             serverBusyBudgetMs: 10000,
         );
 
-        // RegionMiss: baseMs=2, capMs=500, equalJitter=false, so the n-th
-        // retry sleeps 2^(n+1) ms and a call's running contribution is
-        // 2+4+...+2^k = 2^(k+1)-2. maxBackoffMs=63 lets the first call
-        // accumulate 2+4+8+16+32 = 62 ms (most of the budget) and still
-        // succeed. The second call's single retry (+2) then crosses 63 only
-        // if the budget were carried over between calls (62+2=64 > 63).
+        // RegionMiss: baseMs=2, capMs=500, equal jitter (issue #242), so the
+        // n-th retry sleeps in [2^n, 2^(n+1)] ms and a call's worst-case
+        // contribution is 2+4+...+2^(k+1) = 2^(k+2)-2. maxBackoffMs=63 lets
+        // the first call accumulate its worst case 2+4+8+16+32 = 62 ms and
+        // still succeed (best case 1+2+4+8+16=31). The second call's single
+        // retry then crosses 63 only if the budget were carried over between
+        // calls (worst case 62+2=64 > 63), so this detects carry-over
+        // probabilistically while the "second call succeeds" invariant below
+        // holds deterministically.
         $classifier = fn(TiKvException $e): BackoffType => BackoffType::RegionMiss;
 
         $firstCalls = 0;

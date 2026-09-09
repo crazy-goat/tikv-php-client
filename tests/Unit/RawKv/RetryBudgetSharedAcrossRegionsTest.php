@@ -186,10 +186,14 @@ class RetryBudgetSharedAcrossRegionsTest extends TestCase
         } catch (BatchPartialFailureException $e) {
             // Both regions fail together as a partial failure, but each one
             // still burns its OWN retry budget first: with maxBackoffMs=10
-            // StaleCmd backoff 2+4+8=14 > 10 exhausts a region after exactly
-            // 3 attempts (issue #271 semantics preserved per region).
+            // StaleCmd backoff exhausts a region after at least 3 attempts
+            // (issue #271 semantics preserved per region). With jitter
+            // (issue #242) the sleeps are randomly halved, so a region can
+            // fit a 4th attempt into the budget (retryCount 6..8); a shared
+            // budget would land below 6.
             $this->assertCount(2, $e->getRegionErrors());
-            $this->assertSame(6, $retryCount, 'Each region exhausts its own 3-attempt budget');
+            $this->assertGreaterThanOrEqual(6, $retryCount, 'Each region exhausts its own 3-attempt budget');
+            $this->assertLessThanOrEqual(8, $retryCount);
         }
     }
 
@@ -236,9 +240,15 @@ class RetryBudgetSharedAcrossRegionsTest extends TestCase
             $rangeOps->checksum('a', 'z');
             $this->fail('Expected BatchPartialFailureException');
         } catch (BatchPartialFailureException $e) {
-            // Same per-region budget semantics: 3 attempts x 2 regions.
+            // Same per-region budget semantics: each region gets at least its
+            // 3 attempts (2 regions >= 6 calls). With jitter (issue #242) the
+            // StaleCmd sleeps are halved at random, so a region can squeeze a
+            // 4th attempt into the maxBackoffMs=10 budget (3 regions worth of
+            // calls max: 6 + 2 = 8). Shared-budget semantics would still land
+            // below 6, so the lower bound is the invariant under test.
             $this->assertCount(2, $e->getRegionErrors());
-            $this->assertSame(6, $retryCount, 'Each region exhausts its own 3-attempt budget');
+            $this->assertGreaterThanOrEqual(6, $retryCount, 'Each region exhausts its own 3-attempt budget');
+            $this->assertLessThanOrEqual(8, $retryCount);
         }
     }
 
