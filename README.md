@@ -56,6 +56,16 @@ $results = $client->scan('start', 'end', limit: 100);
 // Prefix scanning
 $results = $client->scanPrefix('user:');
 
+// Lazy scan iterators — constant memory, auto-paginating (page of
+// $batchSize rows at a time; batchSize must be 1..10240, default 256)
+foreach ($client->scanPrefixIterator('user:', batchSize: 500) as $key => $value) {
+    process($key, $value);
+}
+// $value is null when keyOnly is true
+foreach ($client->scanIterator('a', 'b', batchSize: 256, keyOnly: true) as $key => $_) {
+    // ...
+}
+
 // Reverse scan (descending order)
 // Note: startKey = upper bound (exclusive), endKey = lower bound (inclusive)
 $results = $client->reverseScan('end', 'start', limit: 100);
@@ -286,6 +296,7 @@ try {
 - ✅ **Scan** — Range scan `[startKey, endKey)` with limit and keyOnly options
 - ✅ **ReverseScan** — Reverse range scan (native `reverse=true`)
 - ✅ **ScanPrefix** — Prefix-based scanning
+- ✅ **ScanIterator / ScanPrefixIterator** — Lazy auto-paginating scan iterators (`ScanIterator`), constant memory for large ranges
 - ✅ **BatchScan** — Multiple non-contiguous range scanning
 
 ### Range Operations

@@ -576,7 +576,7 @@ same failure deterministically). Real messages include:
 - `Key must not be empty in <method>`
 - `Key size (<len>) exceeds maximum allowed size (<max>) in <method>`
 - `Value size (<len>) exceeds maximum allowed size (<max>) in <method>`
-- `Scan limit must be 0 or greater` / `Scan limit (<n>) exceeds maximum allowed scan limit of <max>` (max 10240)
+- `Scan limit must be 0 or greater` / `Scan limit (<n>) exceeds maximum allowed scan limit of <max>` (max 10240; to read more than 10240 keys, use the lazy [scan iterators](operations.md#iterating-large-ranges) instead of one big `scan()` call)
 - `eachLimit must be greater than 0`
 - `Prefix must not be empty -- refusing to delete all keys`
 - `PD endpoints array must not be empty`
