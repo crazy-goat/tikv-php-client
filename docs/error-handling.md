@@ -126,7 +126,7 @@ Verdict legend:
 | `RegionException` | **Retry if idempotent** — same reasoning; the client already invalidated the region cache and retried |
 | `GrpcException` | **Retry if idempotent** — same reasoning; transport-level errors were already retried with backoff |
 | `StoreNotFoundException` | **Do not retry blindly** — transient only after the stale cache entry expires (TTL/LRU sweep) or PD restores the store; the retry executor does *not* invalidate the region cache for it (it is not classified as a region error). A short caller-side delay-then-retry is reasonable for idempotent ops, but inspect the exception's public `$storeId` property first |
-| `BatchPartialFailureException` | **Do not retry blindly** — the operation is *partially applied*: some regions succeeded, others failed. Inspect `getRegionErrors()` and re-drive only the affected keys/ranges |
+| `BatchPartialFailureException` | **Do not retry blindly** — the operation is *partially applied*: some sub-batches succeeded, others failed. `getRegionErrors()` is keyed by internal sub-batch indices (not region IDs, not user keys), so the affected keys are unknown; treat the batch as partially applied and re-check per key (see [Batch operations are not atomic](operations.md)) |
 | `BatchDeadlineExceededException` | **Do not retry blindly** — also partially applied; check `getContext()` for pending regions |
 
 ### Transaction::commit() and double-apply
@@ -272,8 +272,10 @@ try {
     //    NEW one (fresh begin()), optionally with bounded attempts and
     //    jittered delay between rounds.
 } catch (BatchPartialFailureException $e) {
-    // 4. Partially applied batch. Inspect getRegionErrors(), collect the
-    //    affected keys/ranges, and re-drive just those.
+    // 4. Partially applied batch. getRegionErrors() is keyed by internal
+    //    sub-batch indices (not region IDs, not user keys), so the affected
+    //    keys are unknown — re-check per key instead of re-driving "just
+    //    those"; idempotent operations can be retried whole (see operations.md).
 } catch (RetryBudgetExhaustedException $e) {
     // 5. The client already retried to its budget. For idempotent work a
     //    single delayed retry is acceptable; otherwise fail the request.
