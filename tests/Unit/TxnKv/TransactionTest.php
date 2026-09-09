@@ -1344,6 +1344,41 @@ class TransactionTest extends TestCase
         $txn->rollback();
     }
 
+    public function testCommitterRollbackRejectsCommittedState(): void
+    {
+        // The Transaction::rollback() path is blocked by ensureActive()
+        // before the committer is reached; the committer-level guard is
+        // defense-in-depth for direct TwoPhaseCommitter users. Exercise it
+        // directly on a Committed state (issue #215).
+        $state = new TransactionState();
+        $state->setStatus(TransactionStatus::Committed);
+
+        $committer = new \CrazyGoat\TiKV\Client\TxnKv\TwoPhaseCommitter(
+            startTs: 1000,
+            pessimistic: false,
+            priority: 0,
+            pdClient: $this->pdClient,
+            grpc: $this->grpc,
+            regionCache: $this->regionCache,
+            regionResolver: $this->regionResolver,
+            lockResolver: $this->lockResolver,
+            timeoutConfig: new \CrazyGoat\TiKV\Client\Grpc\TimeoutConfig(),
+            maxBackoffMs: 20000,
+        );
+
+        $this->expectException(InvalidStateException::class);
+        $this->expectExceptionMessage('commit phase');
+        $retryExecutor = new \CrazyGoat\TiKV\Client\Retry\RetryExecutor(
+            maxBackoffMs: 20000,
+            serverBusyBudgetMs: 60000,
+            regionCache: $this->regionCache,
+            grpc: $this->grpc,
+            regionResolver: $this->regionResolver,
+            logger: new \Psr\Log\NullLogger(),
+        );
+        $committer->rollback($state, $retryExecutor, static fn (): ?BackoffType => null);
+    }
+
     public function testCommitWithNumericStringKeySucceeds(): void
     {
         $this->regionCache->method('getByKey')->willReturn($this->testRegion);

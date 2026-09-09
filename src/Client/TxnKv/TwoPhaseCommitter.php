@@ -438,12 +438,15 @@ final readonly class TwoPhaseCommitter
                     $this->commitForRegion($region, $regionKeys, $state);
                     return null;
                 }, $classifier);
-            } catch (\Throwable $e) {
+            } catch (\Exception $e) {
                 // Secondary commit failures do NOT fail the transaction: the
                 // primary is already committed, so the data is durable. The
                 // leftover locks are resolved by other readers through the
                 // lock resolver (same policy as client-go, issue #215).
-                $this->logger->error('Secondary commit failed; locks will be resolved by readers', [
+                // Only \Exception is swallowed (retryable/fatal TiKV errors);
+                // \Error subclasses (TypeError, AssertionError, ...) still
+                // propagate because they indicate genuine defects.
+                $this->logger->warning('Secondary commit failed; locks will be resolved by readers', [
                     'regionId' => $regionId,
                     'exception' => $e,
                 ]);
