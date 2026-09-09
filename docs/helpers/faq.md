@@ -498,6 +498,19 @@ site (single-pass narrowing) → `identical.alwaysFalse` / `alwaysFalse`.
 Workaround: collect regroups into an array and test
 `count($regroups) >= CAP` (same escape hatch as the by-ref-flag lesson above).
 
+## Escaping a RetryExecutor retry loop for control flow: throw a non-TiKvException
+
+The rollback regroup fix (#505) needed to break out of
+`RetryExecutor::execute()` when the re-resolved region no longer covers the
+key group — but `execute()` catches `TiKvException` and retries it, so a
+region-style signal would be swallowed. The trick: throw an exception that
+extends plain `\RuntimeException`, not `TiKvException` (`RollbackRegroupSignal`,
+`src/Client/TxnKv/RollbackRegroupSignal.php`) — it escapes the executor and is
+caught in `TwoPhaseCommitter`'s new `while ($pendingKeys !== [])` loop, which
+re-groups this group's keys plus all not-yet-processed groups' keys. The
+signal is a deliberate control-flow exception, marked `@internal`; keep it out
+of the `TiKvException` hierarchy or the executor will retry it forever.
+
 ## TxnKV E2E can flake with a one-off empty scan on a fresh CI cluster
 
 PR #506's CI failed once with `TxnKvE2ETest::testScanWithLimitOneReturnsSingleKey`
