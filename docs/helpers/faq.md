@@ -931,7 +931,7 @@ at that key, and `findRegionForKey()` returns null for it — the classic bounda
 Any new caller of `scanRegions()` used for batch resolution must remember this; client-go resolves the
 last key inclusively for the same reason. Note `TxnReader::scan()` is different: there `$endKey` is the
 scan range's exclusive end by definition, and `RegionRangeClipper` handles the clipping.
-## Byte order for TiKV key ordering## Byte order for TiKV key ordering — never PHP's default `sort()` or loose `<`/`>=`
+## Byte order for TiKV key ordering — never PHP's default `sort()` or loose `<`/`>=`
 
 TiKV orders keys bytewise, but PHP's default `sort()` (`SORT_REGULAR`) compares
 numeric strings numerically (`sort(["b","a","10","9"])` → `["9","10","a","b"]`)
@@ -949,3 +949,25 @@ Note also that `Transaction::__destruct()` fires a `KvBatchRollback` via the
 gRPC mock when a test leaves a non-empty write set — `expects($this->once())`
 on `call()` then fails with "called 2 times"; use `method()` without an
 invocation count or expect one extra rollback call.
+## Stubbing rollback tests: batchResolveRegions() goes through PD scanRegions, not the region cache
+
+When a `TransactionTest` mock sets up `regionCache->getByKey()` but NOT
+`pdClient->scanRegions()`, `TwoPhaseCommitter::batchRollback()` /
+`pessimisticRollbackAll()` silently group the write-set keys into **zero**
+regions: `RegionResolver::batchResolveRegions()` calls
+`pdClient->scanRegions($minKey, $maxKey)` (a PHPUnit array-typed mock
+returns `[]`) and skips unresolved keys, so `RetryExecutor::execute()` never
+runs, no `KvBatchRollback`/`KVPessimisticRollback` RPC is issued, and
+`rollback()` returns `RolledBack` having done nothing — the test "passes"
+its status assertion and fails only on the RPC-count assertion (issue
+#333 debugging). Any test that drives rollback/commit grouping must stub
+`pdClient->scanRegions()` to return the test region (plus
+`regionCache->put()`), not only `getByKey()`. The same silent-drop
+behaviour is the subject of issue #244/#329 for writes; for mocks it just
+means: stub scanRegions.
+
+Also: `LockResolver::resolveLock()` on a `CheckTxnStatusResponse` with
+`commitVersion=0` runs CheckTxnStatus **twice** (it re-checks after the
+lock-TTL wait, even with `lockTtl=0` and no actual sleep) before issuing
+`KvResolveLock` — assert the full method sequence, not a single
+CheckTxnStatus.
