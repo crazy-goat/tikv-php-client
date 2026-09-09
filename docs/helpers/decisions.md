@@ -59,10 +59,15 @@ Two review decisions on the #238 fix (REG-07) that should not be "corrected" lat
    update, not an error invalidation — the `invalidate()` / "single emission
    point" rule from issue #474 covers error-driven drops only. Emitting here
    would double-count eviction-style reasons.
-2. **The overlap scan is a full O(n) loop over `entries` per `put()`** (up to
-   `maxEntries` = 10 000 `strcmp` calls), not the issue's suggested
-   binary-search walk from the insert position. Accepted for simplicity; only
-   revisit if profiling shows `put()` on a full cache is hot.
+2. **The overlap scan is a sorted left/right walk from the insert position,
+   not a full O(n) loop over `entries`.** Because the cache maintains a
+   sorted, non-overlapping invariant, every overlapping entry must be
+   adjacent to `findInsertPosition($startKey)`: the walk goes right while the
+   entry's `startKey < $endKey` and left while the entry's `endKey >
+   $startKey`, stopping at the first merely-touching entry on each side —
+   O(log n + k) per `put()` (first review accepted an O(n) scan; commit
+   bbb4ec8 replaced it after the invariant was verified). Only revisit if
+   profiling shows `put()` on a full cache is hot.
 
 ## Tests are delegated / E2E needs Docker
 
