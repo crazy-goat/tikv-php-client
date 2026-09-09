@@ -2866,6 +2866,120 @@ class TransactionTest extends TestCase
         }
     }
 
+    public function testPessimisticLockRegroupsKeysAfterRegionSplit(): void
+    {
+        // Issue #503: if the region splits while the pessimistic lock is
+        // being retried, the re-resolved region no longer covers the whole
+        // key group. Before the fix the server kept returning region errors
+        // until the retry budget was exhausted and the transaction failed
+        // with the last RegionException. The group must instead be
+        // re-grouped against the fresh region layout and locked per-region.
+        $staleRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+        // After the split: region 1 covers ['', 'k2'), region 2 ['k2', '']
+        $splitRegion1 = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: '',
+            endKey: 'k2',
+            peers: [],
+        );
+        $splitRegion2 = new RegionInfo(
+            regionId: 2,
+            leaderPeerId: 2,
+            leaderStoreId: 2,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: 'k2',
+            endKey: '',
+            peers: [],
+        );
+
+        // Always miss the cache: every re-resolve goes to PD.
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturnCallback(
+            static fn(string $key): RegionInfo => $key >= 'k2' ? $splitRegion2 : $splitRegion1,
+        );
+        // First scanRegions (initial grouping): pre-split region covering
+        // both keys. Second scanRegions (re-group after the split): the
+        // two split regions.
+        $this->pdClient->method('scanRegions')
+            ->willReturnOnConsecutiveCalls(
+                [$staleRegion],
+                [$splitRegion1, $splitRegion2],
+                [$splitRegion1, $splitRegion2],
+                [$splitRegion1, $splitRegion2],
+            );
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $regionError = new \CrazyGoat\Proto\Errorpb\Error();
+        $regionError->setMessage('EpochNotMatch');
+        $regionError->setEpochNotMatch(new \CrazyGoat\Proto\Errorpb\EpochNotMatch());
+
+        $staleResponse = new PessimisticLockResponse();
+        $staleResponse->setRegionError($regionError);
+        $okResponse = new PessimisticLockResponse();
+
+        $lockRequests = [];
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+                object $request,
+            ) use (
+                &$lockRequests,
+                $staleResponse,
+                $okResponse,
+            ): object {
+                if ($method === 'KvPessimisticLock') {
+                    $lockRequests[] = $request;
+                    return count($lockRequests) === 1 ? $staleResponse : $okResponse;
+                }
+                return match ($method) {
+                    'KvPrewrite' => new \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse(),
+                    'KvCommit' => new \CrazyGoat\Proto\Kvrpcpb\CommitResponse(),
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => true]);
+        $txn->set('k1', 'v1');
+        $txn->set('k2', 'v2');
+        $txn->commit();
+
+        $this->assertSame(TransactionStatus::Committed, $txn->getStatus());
+        // 3 lock RPCs: the failed pre-split attempt (both keys in region 1),
+        // then one per split region after the re-group.
+        $this->assertCount(3, $lockRequests);
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\PessimisticLockRequest::class, $lockRequests[0]);
+        $this->assertCount(2, $lockRequests[0]->getMutations());
+
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\PessimisticLockRequest::class, $lockRequests[1]);
+        $this->assertSame(1, $lockRequests[1]->getContext()?->getRegionId());
+        $this->assertCount(1, $lockRequests[1]->getMutations());
+        $this->assertSame('k1', $lockRequests[1]->getMutations()[0]->getKey());
+
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\PessimisticLockRequest::class, $lockRequests[2]);
+        $this->assertSame(2, $lockRequests[2]->getContext()?->getRegionId());
+        $this->assertCount(1, $lockRequests[2]->getMutations());
+        $this->assertSame('k2', $lockRequests[2]->getMutations()[0]->getKey());
+    }
+
     public function testBatchRollbackRetriesEpochNotMatchWithReResolvedRegion(): void
     {
         // Issue #502: a RegionException (EpochNotMatch) from KvBatchRollback
