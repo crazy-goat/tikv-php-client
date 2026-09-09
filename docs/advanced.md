@@ -450,63 +450,59 @@ $buffer->flush();  // Ensure all writes are persisted
 
 #### Pagination
 
+For reading ranges larger than one scan page, **do not hand-roll a paginator** —
+the client ships a lazy, auto-paginating scan iterator that does the paging for
+you with constant memory (one page of `$batchSize` rows at a time):
+
 ```php
-class ScanPaginator
-{
-    private RawKvClient $client;
-    private int $pageSize;
-    
-    public function __construct(RawKvClient $client, int $pageSize = 100)
-    {
-        $this->client = $client;
-        $this->pageSize = $pageSize;
-    }
-    
-    public function paginate(string $prefix): Generator
-    {
-        $startKey = $prefix;
-        $endKey = $this->incrementKey($prefix);
-        
-        while (true) {
-            $page = $this->client->scan($startKey, $endKey, limit: $this->pageSize);
-            
-            if (empty($page)) {
-                break;
-            }
-            
-            yield $page;
-            
-            // Next page starts after the last key
-            $lastKey = $page[count($page) - 1]['key'];
-            $startKey = $lastKey . "\x00";
-            
-            if (count($page) < $this->pageSize) {
-                break;  // Last page
-            }
-        }
-    }
-    
-    private function incrementKey(string $key): string
-    {
-        // Calculate next possible key after prefix
-        $lastByte = ord($key[strlen($key) - 1]);
-        if ($lastByte === 255) {
-            return substr($key, 0, -1) . chr(0);
-        }
-        return substr($key, 0, -1) . chr($lastByte + 1);
-    }
+// Range iterator: [startKey, endKey)
+foreach ($client->scanIterator('user:', 'user;', batchSize: 500) as $key => $value) {
+    processUser($key, $value);
 }
 
-// Usage
-$paginator = new ScanPaginator($client, pageSize: 50);
-
-foreach ($paginator->paginate('user:') as $page) {
-    echo "Processing page with " . count($page) . " users\n";
-    foreach ($page as $item) {
-        processUser($item['key'], $item['value']);
-    }
+// Prefix iterator (end key calculated automatically)
+foreach ($client->scanPrefixIterator('log:2024-01-', batchSize: 1000, keyOnly: true) as $key => $_) {
+    countLogEntry($key); // $value is null when keyOnly is true
 }
 ```
+
+The iterator fetches a page of up to `batchSize` rows (default `256`, bounds
+`1 <= batchSize <= 10240`) per underlying `scan()` call and continues from
+after the page's last key until the range is exhausted. `batchSize` is
+validated immediately; scan RPCs (and their `RegionException` / `GrpcException`
+failures) happen lazily during iteration. The iterator is rewindable —
+`rewind()` re-scans from the original start key — and there is no reverse
+variant. Full semantics: [Iterating Large Ranges](operations.md#iterating-large-ranges).
+
+If you need whole pages rather than row-by-row iteration (e.g. for a worker
+queue), iterate and buffer rows yourself instead of computing "next key"
+arithmetic by hand:
+
+```php
+$page = [];
+$flush = function (array $page): void {
+    handlePage($page);
+};
+
+foreach ($client->scanPrefixIterator('user:', batchSize: 1000) as $row) {
+    $page[] = $row;
+    if (count($page) >= 1000) {
+        $flush($page);
+        $page = [];
+    }
+}
+if ($page !== []) {
+    $flush($page);
+}
+```
+
+> **Note:** an end key for a prefix is **not** obtained by incrementing the
+> prefix's last byte when it is `0xFF` — the correct rule
+> (`RawKvSplitter::calculatePrefixEndKey()`, used by `scanPrefix()` and
+> `scanPrefixIterator()`) trims trailing `0xFF` bytes and increments the
+> preceding byte. Hand-rolled `chr($lastByte + 1)` paginators silently produce
+> a *smaller* end key for `0xFF`-terminated prefixes and yield empty scans.
+> Another reason to prefer the built-in iterators.
 
 #### Parallel Scanning
 

@@ -225,25 +225,12 @@ foreach ($users as $user) {
 $keys = $client->scan('log:2024-01-', 'log:2024-02-', keyOnly: true);
 echo "Found " . count($keys) . " log entries\n";
 
-// Pagination pattern
-$pageSize = 50;
+// Need to read more than one page? Don't hand-roll a pagination loop —
+// use the built-in lazy scan iterator (see
+// [Iterating Large Ranges](#iterating-large-ranges) below):
 $allResults = [];
-$startKey = 'user:';
-
-while (true) {
-    $page = $client->scan($startKey, 'user;', limit: $pageSize);
-    if (empty($page)) {
-        break;
-    }
-    $allResults = array_merge($allResults, $page);
-    
-    // Next page starts after the last key
-    $lastKey = $page[count($page) - 1]['key'];
-    $startKey = $lastKey . "\x00";  // Next possible key
-    
-    if (count($page) < $pageSize) {
-        break;  // Last page
-    }
+foreach ($client->scanIterator('user:', 'user;') as $row) {
+    $allResults[] = $row;
 }
 ```
 
@@ -277,6 +264,67 @@ $activeSessions = count($keys);
 ```
 
 **Implementation Note:** ScanPrefix is a convenience method that calculates the end key automatically by incrementing the last byte of the prefix.
+
+### Iterating Large Ranges
+
+A single `scan()` call can return at most **10240** keys (the client-side scan
+limit, `RawKvClient::MAX_SCAN_LIMIT`), and even that amount is held in a PHP
+array at once. To read a range larger than that — or to keep memory flat at all
+— use the built-in **lazy scan iterator** instead of paging manually:
+
+```php
+// scanIterator(string $startKey, string $endKey, int $batchSize = 256, bool $keyOnly = false): ScanIterator
+// Constant memory: one page of $batchSize rows is held at a time.
+foreach ($client->scanPrefixIterator('user:', batchSize: 500) as $key => $value) {
+    process($key, $value);
+}
+
+foreach ($client->scanIterator('a', 'b', batchSize: 256, keyOnly: true) as $key => $_) {
+    // $value is null when keyOnly is true
+}
+```
+
+```php
+// scanPrefixIterator(string $prefix, int $batchSize = 256, bool $keyOnly = false): ScanIterator
+// End key computed automatically (same prefix-end logic as scanPrefix()).
+foreach ($client->scanPrefixIterator('session:') as $key => $value) {
+    expire($key, $value);
+}
+```
+
+Both methods return a `CrazyGoat\TiKV\Client\RawKv\ScanIterator` that
+implements PHP's `Iterator` (so it works directly in `foreach`) and behaves as
+follows:
+
+- **Signatures** — `scanIterator($startKey, $endKey, $batchSize = 256, $keyOnly = false)`
+  and `scanPrefixIterator($prefix, $batchSize = 256, $keyOnly = false)`. The
+  range is `[startKey, endKey)` (empty `endKey` = unbounded); the prefix
+  variant derives the end key via the same prefix-end calculation as
+  `scanPrefix()`.
+- **Prefetching** — each page fetches up to `batchSize` rows (the underlying
+  `scan()` call). `batchSize` must satisfy `1 <= batchSize <= 10240`; out of
+  range it throws `InvalidArgumentException` immediately when the iterator is
+  created. Larger pages mean fewer RPCs; only one page is ever held in memory.
+- **Continuation** — after consuming a page, the next fetch starts after the
+  page's last key (`lastKey . "\x00"`), the same continuation rule as manual
+  pagination. The scan is exhausted when a page returns fewer than `batchSize`
+  rows.
+- **keyOnly** — with `keyOnly: true` values are not transferred; `current()`
+  returns `null` for every entry.
+- **Rewindable** — calling `rewind()` (e.g. running the same `foreach` twice)
+  restarts the iteration from the original start key and re-scans from the
+  beginning; it does not cache results.
+- **Exceptions** — `batchSize` is validated synchronously in the factory call
+  (plus `ClientClosedException` if the client is closed), but the actual scan
+  RPCs happen lazily during iteration: `RegionException` and `GrpcException`
+  can be thrown mid-`foreach`, and the underlying scans use the same automatic
+  retry logic as `scan()`.
+- **No reverse iterator** — there is no descending counterpart; for reverse
+  reads use `reverseScan()` with a limit (see [Reverse Scan](#reverse-scan)).
+
+**See also:** [Scan Optimization](advanced.md#scan-optimization) in Advanced
+Features, and [docs/error-handling.md](error-handling.md) for the full
+exception table.
 
 ### Reverse Scan
 
