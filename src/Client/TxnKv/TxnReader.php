@@ -584,12 +584,20 @@ final readonly class TxnReader
         // lookups and output records use strings (issue #322).
         $allKeys = array_map(strval(...), array_keys($tikvMap));
         foreach ($state->getWriteKeys() as $key) {
-            if ($key >= $startKey && ($endKey === '' || $key < $endKey)) {
+            // Byte-order comparison: numeric strings must never be compared
+            // numerically ("9" >= "10" is true under PHP's loose comparison
+            // but false in TiKV's byte order) (issue #331).
+            if (strcmp($key, $startKey) >= 0 && ($endKey === '' || strcmp($key, $endKey) < 0)) {
                 $allKeys[] = $key;
             }
         }
         $allKeys = array_unique($allKeys);
-        sort($allKeys);
+        // Byte-order sort (SORT_STRING), never SORT_REGULAR: PHP compares
+        // numeric strings numerically ("9" sorts before "10"), while TiKV
+        // orders keys bytewise — pagination resumes from the last returned
+        // key, so a numeric-order sort silently skips in-between keys
+        // (issue #331).
+        sort($allKeys, SORT_STRING);
 
         $merged = [];
         foreach ($allKeys as $key) {
