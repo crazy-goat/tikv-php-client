@@ -155,12 +155,13 @@ composer run lint
 
 ### 6. Create a Branch
 
-Never commit directly to `main`:
+Never commit directly to `master` (see [`workflow.md`](../workflow.md) for the
+canonical branching and PR process):
 
 ```bash
-# Update your local main
-git checkout main
-git pull upstream main
+# Update your local master
+git checkout master
+git pull upstream master
 
 # Create feature branch
 git checkout -b feature/my-feature-name
@@ -515,7 +516,7 @@ public function getKeyTTL(string $key): ?int;
 4. **Code Review**:
    - Address reviewer comments
    - Keep commits clean (squash if needed)
-   - Rebase on main if there are conflicts
+   - Rebase on master if there are conflicts
 
 5. **Merge**:
    - Maintainers will merge when approved
