@@ -547,10 +547,11 @@ gh issue create \
 ```
 
 - Assign `--label bug` for confirmed bugs, `enhancement` for feature
-  requests, or `documentation` for doc improvements. Assign a milestone with
-  `--milestone "v<n>"` — by default the **current working milestone** (the
-  lowest open version); use a higher one only when the fix clearly targets a
-  later release. One issue per distinct finding keeps them actionable.
+  requests, or `documentation` for doc improvements. **Do not assign a
+  milestone** — new issues stay milestone-less so the working milestone's
+  scope stays frozen; the user periodically re-balances milestone-less issues
+  into milestones by hand. Only assign a milestone when the user explicitly
+  asks for it. One issue per distinct finding keeps them actionable.
 - If the user declines or the findings are already tracked, just record the
   outcome and finish.
 
