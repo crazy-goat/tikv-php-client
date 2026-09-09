@@ -971,3 +971,22 @@ Also: `LockResolver::resolveLock()` on a `CheckTxnStatusResponse` with
 lock-TTL wait, even with `lockTtl=0` and no actual sleep) before issuing
 `KvResolveLock` — assert the full method sequence, not a single
 CheckTxnStatus.
+## Bounding a fan-out: reuse executeParallelCapped() before building a new windowed executor
+
+Issue #264 asked for a windowed dispatch loop inside `BatchAsyncExecutor`, but the
+`executeParallelCapped()` windowed executor already existed since #295 — the actual gap was
+that `RawKvBatch` (batchGet/batchPut/batchDelete) still called the unbounded
+`executeParallel()` and was never wired to `RawKvClient`'s `options['maxConcurrency']`
+(the #295 option covered only range ops/SstIngestor). Lesson: before implementing an
+executor-level mechanism from an audit issue, grep for existing capped paths — wiring a
+stray call site to the existing knob is the whole fix. When an audit issue also asks for
+"reject batches above a documented key-count maximum", that is a separate, breaking API
+decision (needs a chosen cap + semver note) — do not silently fold it into a concurrency fix.
+
+Testing the cap through `RawKvBatch` (Grpc suite only — the wire path constructs real
+`\Grpc\Call` objects from `GrpcClientInterface::getChannel()`, so no ext-grpc = no test):
+mock `getChannel()` to count concurrent dispatches and return a real channel to a dead
+endpoint (`127.0.0.1:1`); the sends succeed, the waits fail, and the test asserts the
+peak in-flight count equals the window size while expecting
+`BatchPartialFailureException` (which also proves partial-failure semantics survive
+windowing). See `tests/Unit/RawKv/RawKvBatchConcurrencyCapTest.php`.

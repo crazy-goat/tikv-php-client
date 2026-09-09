@@ -11,6 +11,7 @@
             <exclude>tests/Unit/Grpc/GrpcClientTest.php</exclude>
             <exclude>tests/Unit/Batch/GrpcFutureTest.php</exclude>
             <exclude>tests/Unit/RawKv/RawKvBatchTest.php</exclude>
+            <exclude>tests/Unit/RawKv/RawKvBatchConcurrencyCapTest.php</exclude>
             <exclude>tests/Unit/RawKv/RawKvClientTest.php</exclude>
             <exclude>tests/Unit/Batch/BatchAsyncExecutorTest.php</exclude>
             <exclude>tests/Unit/Batch/CheckedGrpcFutureTest.php</exclude>
@@ -27,6 +28,7 @@
             <file>tests/Unit/Grpc/GrpcClientTest.php</file>
             <file>tests/Unit/Batch/GrpcFutureTest.php</file>
             <file>tests/Unit/RawKv/RawKvBatchTest.php</file>
+            <file>tests/Unit/RawKv/RawKvBatchConcurrencyCapTest.php</file>
             <file>tests/Unit/RawKv/RawKvClientTest.php</file>
             <file>tests/Unit/Batch/BatchAsyncExecutorTest.php</file>
             <file>tests/Unit/Batch/CheckedGrpcFutureTest.php</file>
