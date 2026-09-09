@@ -81,6 +81,12 @@ class RegionCache implements RegionCacheInterface
     {
         $this->removeById($region->regionId);
 
+        // Any cached entry whose range overlaps the incoming region's range is
+        // superseded (issue #238): after a split or merge PD reports the new
+        // region for the full range, so keeping the stale entry would make the
+        // binary search resolve keys to a region that no longer owns them.
+        $this->removeOverlapping($region->startKey, $region->endKey);
+
         $position = $this->findInsertPosition($region->startKey);
         $entry = new RegionEntry($region, $this->now() + $this->ttlSeconds + $this->jitter());
 
@@ -234,6 +240,41 @@ class RegionCache implements RegionCacheInterface
                 $this->idToIndex[$regionId] = $index + $delta;
             }
         }
+    }
+
+    /**
+     * Remove every cached entry whose [startKey, endKey) range overlaps the
+     * incoming [startKey, endKey) range. Ranges that merely touch (an entry's
+     * endKey equals the incoming startKey, or vice versa) do not overlap.
+     * An empty endKey means unbounded (issue #238, REG-07).
+     */
+    private function removeOverlapping(string $startKey, string $endKey): void
+    {
+        $toRemove = [];
+        foreach ($this->entries as $index => $entry) {
+            if ($this->rangesOverlap($entry->region->startKey, $entry->region->endKey, $startKey, $endKey)) {
+                $toRemove[] = $index;
+            }
+        }
+
+        // Remove in reverse order to preserve indices
+        for ($i = count($toRemove) - 1; $i >= 0; $i--) {
+            $this->logger->debug('Removing superseded overlapping region from cache', [
+                'regionId' => $this->entries[$toRemove[$i]]->region->regionId,
+            ]);
+            $this->removeByIndex($toRemove[$i]);
+        }
+    }
+
+    private function rangesOverlap(string $aStart, string $aEnd, string $bStart, string $bEnd): bool
+    {
+        // An empty endKey means the range is unbounded. Ranges that merely
+        // touch (one endKey equals the other startKey) do not overlap.
+        if ($aEnd !== '' && strcmp($aEnd, $bStart) <= 0) {
+            return false;
+        }
+
+        return $bEnd === '' || strcmp($bEnd, $aStart) > 0;
     }
 
     private function binarySearch(string $key): ?int
