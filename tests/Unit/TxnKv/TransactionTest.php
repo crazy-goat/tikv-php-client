@@ -3030,7 +3030,10 @@ class TransactionTest extends TestCase
                 string $addr,
                 string $svc,
                 string $method,
-            ) use (&$lockAttempts, $staleResponse): object {
+            ) use (
+                &$lockAttempts,
+                $staleResponse
+): object {
                 if ($method === 'KvPessimisticLock') {
                     $lockAttempts++;
                     return $staleResponse;
