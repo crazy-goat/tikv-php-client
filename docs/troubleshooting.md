@@ -667,11 +667,15 @@ first failure.
 **Likely cause:** Region-level problems on a subset of TiKV nodes
 (overload, restarts, network partition).
 
-**Solution:** Do not retry the whole batch blindly. Inspect
-`getRegionErrors()` (regionId → exception) and re-drive only the failing
-keys/ranges — deleteRange/checksum are idempotent and safe to retry whole;
-batchPut/batchDelete are idempotent per key too, but re-check which regions
-actually failed first.
+**Solution:** Do not retry the whole batch blindly. `getRegionErrors()` maps
+internal sub-batch indices (not TiKV region IDs, not user keys — the client
+does not expose which keys belonged to a failed sub-batch) to exceptions, so
+you cannot re-drive "only the failing keys": treat the batch as partially
+applied with unknown affected keys and re-check per key. deleteRange and
+checksum are idempotent and safe to retry whole; batchGet/batchDelete are
+idempotent per key; a batchPut whose key/value set is fixed is safe to
+re-issue as a whole — but non-idempotent values must not be retried blind
+(see [Batch Operations](operations.md#batch-operations)).
 
 #### Store Not Found
 
@@ -1200,7 +1204,7 @@ If issues persist:
 | TxnKV fails on TTL cluster | Use a V1-mode cluster (no `enable-ttl`) for TxnKV — see [TxnKV Fails on a TTL-Enabled Cluster](#txnkv-fails-on-a-ttl-enabled-cluster) |
 | Data not found | Check key format, TTL, cluster |
 | Write conflict / deadlock | New transaction, jittered backoff ([Transaction Failures](#transaction-failures)) |
-| Batch partial failure | Re-drive only failed regions ([Batch Partial Failure](#batch-partial-failure)) |
+| Batch partial failure | Re-check affected keys — sub-batch indices are not user keys ([Batch Partial Failure](#batch-partial-failure)) |
 
 ## See Also
 

@@ -97,6 +97,16 @@ if ($client->get('lock:resource') !== null) {
 
 ## Batch Operations
 
+> **Batch operations are not atomic.** Keys are grouped by region and each
+> region's keys are split further into sub-batches (at most 512 keys or 16 KB
+> per RPC), then all sub-batches are dispatched concurrently. If any
+> sub-batch fails — after the client's own per-sub-batch retry budget is
+> exhausted — the client throws
+> [`BatchPartialFailureException`](error-handling.md): an **unknown subset**
+> of the batch has already been applied. Do not assume the exception means
+> "nothing happened", and do not assume it means "everything happened".
+> See [Partial Failure and Recovery](#partial-failure-and-recovery) below.
+
 ### Batch Get
 
 Retrieve multiple keys efficiently:
@@ -110,6 +120,8 @@ $values = $client->batchGet(['key1', 'key2', 'key3']);
 - `keys` (string[]): Array of keys to retrieve
 
 **Returns:** `array<string, ?string>` - Associative array of key => value (null for missing keys)
+
+**Throws:** [`BatchPartialFailureException`](error-handling.md) if any region's sub-batch fails. The call is read-only, so a full retry is always safe. Note that **no results are returned** on partial failure — keys served by regions that succeeded are discarded and must be fetched again.
 
 **Example:**
 
@@ -142,6 +154,17 @@ $client->batchPut(['key1' => 'value1', 'key2' => 'value2']);
 - `ttl` (int, optional): TTL applied to all keys (0 = no expiration)
 
 **Returns:** `void`
+
+**Throws:** [`BatchPartialFailureException`](error-handling.md) if any region's sub-batch fails.
+
+> **Non-atomic write.** Like `deleteRange`, `batchPut` is not atomic across
+> regions: when the exception is thrown an unknown subset of the key-value
+> pairs has already been written. For a *fixed* key/value set a full retry
+> is safe — puts are idempotent — but if your application layers
+> non-idempotent logic on top (counters, appends), a blind whole-batch
+> retry may double-apply work. In that case the failed sub-batch's keys
+> are not identifiable through the exception — recompute or issue keys
+> individually (see [Partial Failure and Recovery](#partial-failure-and-recovery)).
 
 **Example:**
 
@@ -178,6 +201,13 @@ $client->batchDelete(['key1', 'key2', 'key3']);
 
 **Returns:** `void`
 
+**Throws:** [`BatchPartialFailureException`](error-handling.md) if any region's sub-batch fails.
+
+> **Non-atomic write.** As with `batchPut`, an unknown subset of the keys may
+> already be deleted when the exception is thrown. Deletes are idempotent
+> (deleting a missing key is not an error), so a full retry of the same key
+> list is safe.
+
 **Example:**
 
 ```php
@@ -192,6 +222,76 @@ if (!empty($keysToDelete)) {
     $client->batchDelete($keysToDelete);
 }
 ```
+
+### Partial Failure and Recovery
+
+All three batch operations share the same execution model
+(`BatchAsyncExecutor`):
+
+1. Keys are grouped by TiKV region; each region's keys are split into
+   sub-batches of at most 512 keys / 16 KB (one gRPC RPC each).
+2. Each sub-batch is wrapped in the client's retry executor — transient
+   region/transport errors are retried automatically within the configured
+   `options['retryDeadlineMs']` budget (default 30 s) before it is counted
+   as a failure.
+3. All sub-batches are dispatched concurrently and awaited in order. Errors
+   are accumulated rather than aborting the loop; on the first wait-phase
+   failure the remaining in-flight futures are cancelled and are **not**
+   awaited.
+4. If any sub-batch failed, `BatchPartialFailureException` is thrown — even
+   if most regions succeeded.
+
+**The exception's diagnostics:** `getRegionErrors()` returns
+`array<int, TiKvException>` (failed sub-batch index → exception) and
+`getTotalRegions()` returns the number of sub-batch units in the batch. The
+message summarises both: `Batch operation partially failed: <n> of <total>
+regions failed. First error: ...`.
+
+> **Note:** the array keys in `getRegionErrors()` are internal sub-batch
+> indices, *not* TiKV region IDs and not your keys — the client does not
+> expose which user keys belonged to a failed sub-batch. In practice, treat
+> the batch as "partially applied with unknown affected keys".
+
+**Recovery patterns:**
+
+```php
+use CrazyGoat\TiKV\Client\Exception\BatchPartialFailureException;
+
+try {
+    $client->batchPut($pairs);
+} catch (BatchPartialFailureException $e) {
+    printf(
+        "%d of %d sub-batches failed\n",
+        count($e->getRegionErrors()),
+        $e->getTotalRegions(),
+    );
+
+    // Idempotent work (fixed key/value set): a full retry is safe and
+    // simplest — already-written keys are simply written again.
+    $client->batchPut($pairs);
+}
+```
+
+If your batch carries non-idempotent logic (counters, appends), you cannot
+retry blind — the failed sub-batch's keys are not identifiable through the
+exception. Either:
+
+- issue each key as an individual `put()` (each with its own read-decide-write
+  or CAS guard), or
+- design the operation as one that can be re-derived: e.g. re-read the state
+  and recompute the whole batch, or wrap the update in a transaction
+  (`$tikv->transaction()`) which *is* atomic.
+
+`batchGet` is read-only: after a partial failure simply re-run the whole
+call. `batchDelete` with a fixed key list is idempotent (missing keys are
+not an error) and may be retried whole.
+
+**Deadline variant:** `BatchDeadlineExceededException` is thrown by
+`BatchAsyncExecutor` when an explicit wall-clock deadline (the
+`$deadlineMs` argument) expires; in-flight futures are cancelled, so the
+applied subset is likewise unknown. No shipped client option currently
+wires a batch deadline — built-in batch operations run without one — so you
+will only see this exception if you drive `BatchAsyncExecutor` directly.
 
 ## Scanning Operations
 
@@ -433,7 +533,7 @@ $client->deleteRange('log:2023-01-01', 'log:2024-01-01');
 $client->deleteRange('data:user:123:', 'data:user:123;');
 ```
 
-**Warning:** This operation is not atomic across regions. If it fails partway through, some keys may be deleted and others not.
+**Warning:** This operation is not atomic across regions. If it fails partway through, some keys may be deleted and others not. The same partial-failure rules as the [batch operations](#partial-failure-and-recovery) apply: `deleteRange` also throws `BatchPartialFailureException`, and because deletes are idempotent the whole range operation may simply be re-issued.
 
 ### Delete Prefix
 
@@ -740,6 +840,9 @@ if ($before->checksum === $after->checksum &&
 
 All operations throw exceptions derived from `TiKvException` (plus the
 standalone `InvalidArgumentException`, which is outside that hierarchy).
+Batch operations (`batchGet`/`batchPut`/`batchDelete`) additionally throw
+`BatchPartialFailureException` — a *partially applied* batch, not a clean
+failure; see [Partial Failure and Recovery](#partial-failure-and-recovery).
 The full class hierarchy, a per-operation exception table for every
 `RawKvClient` and `Transaction` method, caller-retryability guidance and a
 recommended catch order live in the dedicated
