@@ -861,3 +861,25 @@ through the exception alone — for idempotent work retry the whole batch; for
 non-idempotent work re-read and recompute, or use a transaction. (Documented
 in docs/operations.md, issue #393; `docs/troubleshooting.md`'s "regionId →
 exception" wording is a candidate for the same correction.)
+
+## Capturing gRPC requests in a helper-scoped PHPUnit mock callback — closure must take `$requests` by reference
+
+When a test helper builds the mocked `GrpcClientInterface` and returns the
+captured requests array, two PHP semantics bite: destructuring `[$txn,
+$requests] = helper()` copies the array at destructure time (before the RPCs
+happen, so the copy is empty), and arrow functions (`fn () => $requests`)
+capture by value. Return `[$txn, static function () use (&$requests): array {
+return $requests; }]` and call the getter after the operation
+(used in `CommitPrewriteKeyCoverageTest`, issue #329).
+
+## Tests pinning a not-yet-merged fail-closed contract — guard with a behavior probe, not an env flag
+
+When an audit issue's tests assert behavior another (open) PR implements
+(e.g. #329's tests assert the fail-closed contract of unmerged #244/PR #531),
+CI must stay green without weakening the pin: probe the contract at runtime
+(call the resolver with an unresolvable key; if it doesn't throw, the fix is
+absent) and `markTestSkipped()` with a message naming the blocking PR. The
+tests then fail against master if the guard is removed (verify once by
+temporarily replacing the skip with `self::fail()`) and activate
+automatically when the fix merges — no env var to clean up later, and no
+duplicate tests alongside the fix PR's own coverage.
