@@ -681,6 +681,7 @@ every push, grep the whole diff for conflict markers:
 not catch these in Markdown files.
 
 
+
 ## gRPC status codes, not exception type, decide GrpcException retries — and detail text must not leak into classification
 
 `ErrorClassifier` used to return `BackoffType::TiKvRpc` for every
@@ -769,6 +770,17 @@ sleep, because `RetryExecutor` checks the budget **before** `usleep()`
 (issue #237) — an over-budget ServerBusy error throws without sleeping, so
 budget-exhaustion tests are fast.
 
+## `ingest()` silently drops keys that cannot be resolved to a region
+
+`SstIngestor::groupPairsByRegion()` skips pairs whose `batchResolveRegions()`
+entry is `null` (`continue`, no error) — an `ingest()` run can "succeed" while
+never writing some keys. Verify the imported key count when completeness
+matters; the same no-throw-on-unresolvable-keys class of bug exists in
+`TwoPhaseCommitter` (issue #216). Separately, `ingest()` is not retried at all:
+any region/transport error aborts the remaining regions (the `finally` still
+switches all stores back to normal mode), and a killed process leaves the
+cluster in import mode — see the [DOC-24] section in `docs/operations.md`.
+
 ## Doc enum/const lists drift — regenerate them from code, never hand-write
 
 Hand-written doc lists of enum cases drift: the docs described invented
@@ -781,13 +793,15 @@ example still returns a non-existent `BackoffType::Custom` case — doc
 examples that subclass and override must match the real class signatures
 (`classifyError()` lives on `ErrorClassifier`, not `RawKvClient`).
 
-## `ingest()` silently drops keys that cannot be resolved to a region
+## PHPUnit mock `willReturnCallback` closures on PHP 8.5 must use explicit `use` — implicit capture yields null
 
-`SstIngestor::groupPairsByRegion()` skips pairs whose `batchResolveRegions()`
-entry is `null` (`continue`, no error) — an `ingest()` run can "succeed" while
-never writing some keys. Verify the imported key count when completeness
-matters; the same no-throw-on-unresolvable-keys class of bug exists in
-`TwoPhaseCommitter` (issue #216). Separately, `ingest()` is not retried at all:
-any region/transport error aborts the remaining regions (the `finally` still
-switches all stores back to normal mode), and a killed process leaves the
-cluster in import mode — see the [DOC-24] section in `docs/operations.md`.
+A callback passed to `willReturnCallback()` that relies on implicit
+(auto-bound) variable capture can read captured variables as `null` on
+PHP 8.5 with PHPUnit 11.5.56: `match ($method) { 'KvPrewrite' => $resp, … }`
+silently returned `null` and surfaced as a baffling
+"Return value must be of type object, null returned" TypeError pointing into
+`ReturnCallback.php`, with the real value (`$resp`) non-null at the call
+site. Explicit `use ($resp)` (by value) or `use (&$queue, &$index)` (by
+reference) behaves correctly. Every existing test in this repo already
+passes captured variables explicitly — keep that style; found while writing
+the #419 one-phase/async-commit tests (see `OnePhaseAsyncCommitTest`).

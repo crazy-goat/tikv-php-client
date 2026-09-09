@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CrazyGoat\TiKV\Client\TxnKv;
 
 use CrazyGoat\Proto\Kvrpcpb\Action;
+use CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksRequest;
+use CrazyGoat\Proto\Kvrpcpb\CheckSecondaryLocksResponse;
 use CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusRequest;
 use CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusResponse;
 use CrazyGoat\Proto\Kvrpcpb\LockInfo;
@@ -12,11 +14,13 @@ use CrazyGoat\Proto\Kvrpcpb\ResolveLockRequest;
 use CrazyGoat\Proto\Kvrpcpb\ResolveLockResponse;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
+use CrazyGoat\TiKV\Client\Exception\RegionException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use CrazyGoat\TiKV\Client\Grpc\TimeoutConfig;
 use CrazyGoat\TiKV\Client\Region\Dto\RegionInfo;
 use CrazyGoat\TiKV\Client\Region\RegionContextFactory;
 use CrazyGoat\TiKV\Client\Region\RegionErrorHandler;
+use CrazyGoat\TiKV\Client\Region\RegionGrouper;
 use CrazyGoat\TiKV\Client\Region\RegionResolver;
 use CrazyGoat\TiKV\Client\Util\KeyRedactor;
 use Psr\Log\LoggerInterface;
@@ -80,6 +84,28 @@ final readonly class LockResolver
         if ($commitTs !== null && $commitTs > 0) {
             $this->resolveLockCommitted($lock, $lockTs, $commitTs);
         } elseif ($commitTs === 0) {
+            // Async-commit lock (issue #419): the primary lock carries the
+            // commit decision, so before spending the TTL wait ask the
+            // secondary regions for their state via KvCheckSecondaryLocks.
+            /** @var list<string> $asyncSecondaries */
+            $asyncSecondaries = iterator_to_array($lock->getSecondaries());
+            $secondary = $lock->getUseAsyncCommit() && $asyncSecondaries !== []
+                ? $this->checkSecondaryLocks($lock, $notLeaderOwnedByRetryExecutor)
+                : null;
+
+            if ($secondary !== null) {
+                // Determined (committed/rolled back) or undecided-but-
+                // help-committable: finalize every lock of the transaction.
+                $this->resolveAsyncCommitLocks(
+                    $lock,
+                    $lockTs,
+                    $secondary['commitTs'],
+                    $asyncSecondaries,
+                );
+                $this->invalidateRegionFor((string) $lock->getKey());
+                return;
+            }
+
             $ttl = $status['lockTtl'] ?? 0;
             if ($ttl > 0) {
                 // The wait used to be charged to no budget (issue #470): cap
@@ -150,6 +176,7 @@ final readonly class LockResolver
             CheckTxnStatusResponse::class,
         );
 
+
         RegionErrorHandler::check(
             $response,
             $this->regionCache,
@@ -179,6 +206,169 @@ final readonly class LockResolver
             'commitTs' => (int) $response->getCommitVersion(),
             'lockTtl' => $lockTtl,
         ];
+    }
+
+    /**
+     * Check the secondary locks of an async-commit transaction
+     * (KvCheckSecondaryLocks, issue #419).
+     *
+     * Mirrors client-go's checkAllSecondaries()/addKeys() recovery protocol:
+     * - Some secondary already determined (its lock is gone) → the response's
+     *   commit_ts is the transaction's final commit_ts (0 = rolled back).
+     * - Every secondary is still locked → the transaction is undecided but
+     *   the reader may help-commit it: the commit ts is max() over the
+     *   primary lock's and all secondary locks' min_commit_ts, and ALL keys
+     *   (secondaries + primary) are resolved with ResolveLock at that ts.
+     *
+     * @return array{state: 'committed'|'rolledback'|'undecided', commitTs: int}|null
+     *         null when the lock carries no secondaries or a region error
+     *         occurs (caller falls back to the TTL-wait path).
+     */
+    private function checkSecondaryLocks(
+        LockInfo $lock,
+        bool $notLeaderOwnedByRetryExecutor,
+    ): ?array {
+        /** @var list<string> $secondaries */
+        $secondaries = array_map(
+            static fn (string $key): string => $key,
+            iterator_to_array($lock->getSecondaries()),
+        );
+        if ($secondaries === []) {
+            return null;
+        }
+
+        try {
+            $keysByRegion = RegionGrouper::groupKeysByRegionBatch(
+                $secondaries,
+                $this->regionResolver,
+            );
+        } catch (RegionException) {
+            return null;
+        }
+
+        $lockTs = (int) $lock->getLockVersion();
+        // client-go initializes the derived commit ts with the primary
+        // lock's min_commit_ts.
+        $maxMinCommitTs = (int) $lock->getMinCommitTs();
+        $maxCommitTs = 0;
+        $undecided = true;
+        foreach ($keysByRegion as $regionData) {
+            $region = $regionData['region'];
+            $regionKeys = $regionData['keys'];
+            $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
+
+            $request = new CheckSecondaryLocksRequest();
+            $request->setContext(RegionContextFactory::fromRegionInfo($region));
+            $request->setKeys($regionKeys);
+            $request->setStartVersion((int) $lock->getLockVersion());
+
+            $this->logger->debug('CheckSecondaryLocks', [
+                'regionId' => $region->regionId,
+                'keyCount' => count($regionKeys),
+            ]);
+
+            /** @var CheckSecondaryLocksResponse $response */
+            $response = $this->grpc->call(
+                $address,
+                'tikvpb.Tikv',
+                'KvCheckSecondaryLocks',
+                $request,
+                CheckSecondaryLocksResponse::class,
+            );
+
+            RegionErrorHandler::check(
+                $response,
+                $this->regionCache,
+                $region->regionId,
+                notLeaderOwnedByRetryExecutor: $notLeaderOwnedByRetryExecutor,
+            );
+
+            $responseLocks = $response->getLocks();
+            if (count($responseLocks) < count($regionKeys)) {
+                // A secondary lock is missing: the transaction has been
+                // determined (committed or rolled back) — the response's
+                // commit_ts is the final decision.
+                $undecided = false;
+                $maxCommitTs = max($maxCommitTs, (int) $response->getCommitTs());
+            } else {
+                // All secondaries of this region still locked: collect
+                // their min_commit_ts for the help-commit derivation.
+                foreach ($responseLocks as $secondaryLock) {
+                    if ((int) $secondaryLock->getLockVersion() !== $lockTs) {
+                        continue;
+                    }
+                    $maxMinCommitTs = max($maxMinCommitTs, (int) $secondaryLock->getMinCommitTs());
+                }
+            }
+        }
+
+        if ($undecided) {
+            // The transaction is still undecided, but the reader may
+            // help-commit it at max(min_commit_ts) — exactly what client-go
+            // does in resolveAsyncResolveData() after checkAllSecondaries().
+            return ['state' => 'undecided', 'commitTs' => $maxMinCommitTs];
+        }
+        return [
+            'state' => $maxCommitTs > 0 ? 'committed' : 'rolledback',
+            'commitTs' => $maxCommitTs,
+        ];
+    }
+
+    /**
+     * Finalize an async-commit transaction's locks: resolve every key
+     * (all secondaries + the primary) with ResolveLock at the derived
+     * commit ts (0 rolls the transaction back).
+     *
+     * @param list<string> $secondaries
+     */
+    private function resolveAsyncCommitLocks(LockInfo $lock, int $lockTs, int $commitTs, array $secondaries): void
+    {
+        $keys = [...$secondaries, (string) $lock->getKey()];
+
+        try {
+            $keysByRegion = RegionGrouper::groupKeysByRegionBatch($keys, $this->regionResolver);
+        } catch (RegionException $e) {
+            $this->logger->warning('Async-commit resolve failed to group keys', [
+                'key' => KeyRedactor::redact((string) $lock->getKey()),
+                'lockTs' => $lockTs,
+                'commitTs' => $commitTs,
+                'error' => $e->getMessage(),
+            ]);
+            return;
+        }
+
+        foreach ($keysByRegion as $regionData) {
+            $region = $regionData['region'];
+            $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
+
+            $request = new ResolveLockRequest();
+            $request->setContext(RegionContextFactory::fromRegionInfo($region));
+            $request->setStartVersion($lockTs);
+            $request->setCommitVersion($commitTs);
+
+            $this->logger->debug('Async-commit resolve locks', [
+                'regionId' => $region->regionId,
+                'keyCount' => count($regionData['keys']),
+                'lockTs' => $lockTs,
+                'commitTs' => $commitTs,
+            ]);
+
+            /** @var ResolveLockResponse $response */
+            $response = $this->grpc->call(
+                $address,
+                'tikvpb.Tikv',
+                'KvResolveLock',
+                $request,
+                ResolveLockResponse::class,
+            );
+
+            RegionErrorHandler::check(
+                $response,
+                $this->regionCache,
+                $region->regionId,
+                notLeaderOwnedByRetryExecutor: false,
+            );
+        }
     }
 
     private function resolveLockCommitted(LockInfo $lock, int $lockTs, int $commitTs): void
