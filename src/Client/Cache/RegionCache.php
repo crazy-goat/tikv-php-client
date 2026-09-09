@@ -85,7 +85,11 @@ class RegionCache implements RegionCacheInterface
         // superseded (issue #238): after a split or merge PD reports the new
         // region for the full range, so keeping the stale entry would make the
         // binary search resolve keys to a region that no longer owns them.
-        $this->removeOverlapping($region->startKey, $region->endKey);
+        // Superseded entries are NOT counted as invalidations — the
+        // regionInvalidated() metric is reserved for error-driven drops
+        // (issue #474); a fresh insert supersedes them, it does not
+        // invalidate them.
+        $this->removeOverlapping($region);
 
         $position = $this->findInsertPosition($region->startKey);
         $entry = new RegionEntry($region, $this->now() + $this->ttlSeconds + $this->jitter());
@@ -244,37 +248,54 @@ class RegionCache implements RegionCacheInterface
 
     /**
      * Remove every cached entry whose [startKey, endKey) range overlaps the
-     * incoming [startKey, endKey) range. Ranges that merely touch (an entry's
-     * endKey equals the incoming startKey, or vice versa) do not overlap.
-     * An empty endKey means unbounded (issue #238, REG-07).
+     * incoming region's range. Ranges that merely touch (an entry's endKey
+     * equals the incoming startKey, or vice versa) do not overlap. An empty
+     * endKey means unbounded (issue #238, REG-07).
+     *
+     * Exploits the sorted, non-overlapping invariant of $this->entries: the
+     * candidate positions are bounded by $position (the insert position of
+     * the incoming region), so the scan is O(log n + k) instead of a full
+     * O(n) pass over up to maxEntries entries on every put().
      */
-    private function removeOverlapping(string $startKey, string $endKey): void
+    private function removeOverlapping(RegionInfo $region): void
     {
+        $startKey = $region->startKey;
+        $endKey = $region->endKey;
+        $position = $this->findInsertPosition($startKey);
         $toRemove = [];
-        foreach ($this->entries as $index => $entry) {
-            if ($this->rangesOverlap($entry->region->startKey, $entry->region->endKey, $startKey, $endKey)) {
-                $toRemove[] = $index;
+
+        // Walk right from the insert position: entries there have
+        // startKey >= $startKey, so they overlap whenever their startKey
+        // lies before the incoming endKey (or the incoming range is
+        // unbounded). Stop at the first touching entry — sorted entries
+        // cannot overlap, so no further entry can overlap either.
+        for ($i = $position, $count = count($this->entries); $i < $count; $i++) {
+            if ($endKey !== '' && strcmp($endKey, $this->entries[$i]->region->startKey) <= 0) {
+                break;
             }
+            $toRemove[] = $i;
+        }
+
+        // Walk left from the insert position: entries there have
+        // startKey <= $startKey, so they overlap whenever their endKey lies
+        // past the incoming startKey (or they are unbounded). Stop at the
+        // first touching entry for the same sortedness reason.
+        for ($i = $position - 1; $i >= 0; $i--) {
+            $entryEnd = $this->entries[$i]->region->endKey;
+            if ($entryEnd !== '' && strcmp($entryEnd, $startKey) <= 0) {
+                break;
+            }
+            $toRemove[] = $i;
         }
 
         // Remove in reverse order to preserve indices
+        sort($toRemove, SORT_NUMERIC);
         for ($i = count($toRemove) - 1; $i >= 0; $i--) {
             $this->logger->debug('Removing superseded overlapping region from cache', [
                 'regionId' => $this->entries[$toRemove[$i]]->region->regionId,
             ]);
             $this->removeByIndex($toRemove[$i]);
         }
-    }
-
-    private function rangesOverlap(string $aStart, string $aEnd, string $bStart, string $bEnd): bool
-    {
-        // An empty endKey means the range is unbounded. Ranges that merely
-        // touch (one endKey equals the other startKey) do not overlap.
-        if ($aEnd !== '' && strcmp($aEnd, $bStart) <= 0) {
-            return false;
-        }
-
-        return $bEnd === '' || strcmp($bEnd, $aStart) > 0;
     }
 
     private function binarySearch(string $key): ?int
