@@ -2980,6 +2980,79 @@ class TransactionTest extends TestCase
         $this->assertSame('k2', $lockRequests[2]->getMutations()[0]->getKey());
     }
 
+    public function testPessimisticLockGivesUpAfterTooManyRegroups(): void
+    {
+        // Issue #503 review: each re-group restores a fresh retry budget;
+        // without a cap a pathological repeated split could retry forever.
+        // A PD that always answers with a region that does not cover the
+        // key group must exhaust the re-group cap and fail the transaction.
+        $staleRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+        // Inconsistent answer: claims to cover ''.. 'a', which does not
+        // contain 'k1' — every re-resolve fails the coverage check.
+        $neverCovering = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: '',
+            endKey: 'a',
+            peers: [],
+        );
+
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($neverCovering);
+        $this->pdClient->method('scanRegions')->willReturn([$staleRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $regionError = new \CrazyGoat\Proto\Errorpb\Error();
+        $regionError->setMessage('EpochNotMatch');
+        $regionError->setEpochNotMatch(new \CrazyGoat\Proto\Errorpb\EpochNotMatch());
+
+        $staleResponse = new PessimisticLockResponse();
+        $staleResponse->setRegionError($regionError);
+
+        $lockAttempts = 0;
+        $this->grpc->method('call')
+            ->willReturnCallback(static function (
+                string $addr,
+                string $svc,
+                string $method,
+            ) use (&$lockAttempts, $staleResponse): object {
+                if ($method === 'KvPessimisticLock') {
+                    $lockAttempts++;
+                    return $staleResponse;
+                }
+                throw new \RuntimeException("Unexpected method: $method");
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => true]);
+        $txn->set('k1', 'v1');
+
+        try {
+            $txn->commit();
+            $this->fail('Expected RegionException was not thrown');
+        } catch (RegionException $e) {
+            $this->assertStringContainsString('EpochNotMatch', $e->getMessage());
+        }
+
+        // 1 initial attempt + 2 attempts per re-group cycle, capped at 10
+        // re-groups — not an unbounded retry loop.
+        $this->assertLessThanOrEqual(25, $lockAttempts);
+    }
+
     public function testBatchRollbackRetriesEpochNotMatchWithReResolvedRegion(): void
     {
         // Issue #502: a RegionException (EpochNotMatch) from KvBatchRollback
