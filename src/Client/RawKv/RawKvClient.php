@@ -601,7 +601,7 @@ final class RawKvClient
      * lock users must treat a throw as indeterminate, never as
      * "not acquired" (issue #239).
      *
-     * @return null if the key did not exist and the value was stored; the
+     * @return null|string Null if the key did not exist and the value was stored; the
      *              existing value otherwise
      *
      * @throws ClientClosedException
