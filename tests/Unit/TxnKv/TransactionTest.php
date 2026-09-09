@@ -4025,4 +4025,188 @@ class TransactionTest extends TestCase
             );
         }
     }
+
+    // ========================================================================
+    // handleRollbackError() — key errors returned inside rollback responses
+    // (issue #333, TEST-13)
+    // ========================================================================
+
+    private function setUpRollbackRegionMocking(): void
+    {
+        $this->regionCache->method('getByKey')->willReturn($this->testRegion);
+        $this->regionCache->method('put');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($this->testRegion);
+        $this->pdClient->method('scanRegions')->willReturn([$this->testRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+    }
+
+    public function testRollbackEncounteringLockResolvesItAndRetries(): void
+    {
+        $this->setUpRollbackRegionMocking();
+
+        $lockInfo = new LockInfo();
+        $lockInfo->setKey('key1');
+        $lockInfo->setLockVersion(999);
+
+        $lockedResponse = new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse();
+        $keyError = new KeyError();
+        $keyError->setLocked($lockInfo);
+        $lockedResponse->setError($keyError);
+
+        $checkTxnStatusResponse = new \CrazyGoat\Proto\Kvrpcpb\CheckTxnStatusResponse();
+        // commitVersion=0 means the locking transaction was not committed:
+        // the resolver must roll its lock back via KvResolveLock.
+        $checkTxnStatusResponse->setCommitVersion(0);
+        $checkTxnStatusResponse->setLockTtl(0);
+
+        $resolveLockResponse = new \CrazyGoat\Proto\Kvrpcpb\ResolveLockResponse();
+
+        $methods = [];
+        $batchRollbackCalls = 0;
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+            ) use (
+                &$methods,
+                &$batchRollbackCalls,
+                $lockedResponse,
+                $checkTxnStatusResponse,
+                $resolveLockResponse,
+            ): object {
+                $methods[] = $method;
+                return match ($method) {
+                    'KvBatchRollback' => $batchRollbackCalls++ === 0
+                        ? $lockedResponse
+                        : new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse(),
+                    'KvCheckTxnStatus' => $checkTxnStatusResponse,
+                    'KvResolveLock' => $resolveLockResponse,
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('key1', 'value1');
+
+        // The Locked branch resolves the blocking lock and throws a
+        // TxnRetryableException so the retry executor re-runs the rollback —
+        // the second KvBatchRollback succeeds and rollback() returns cleanly.
+        $txn->rollback();
+
+        $this->assertSame(TransactionStatus::RolledBack, $txn->getStatus());
+        $this->assertSame(2, $batchRollbackCalls);
+        // The lock was resolved between the two rollback attempts: rollback,
+        // then CheckTxnStatus + ResolveLock, then the successful retry.
+        $this->assertSame(
+            ['KvBatchRollback', 'KvCheckTxnStatus', 'KvCheckTxnStatus', 'KvResolveLock', 'KvBatchRollback'],
+            $methods,
+        );
+    }
+
+    public function testRollbackRetryableErrorIsRetried(): void
+    {
+        $this->setUpRollbackRegionMocking();
+
+        $errorResponse = new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse();
+        $keyError = new KeyError();
+        $keyError->setRetryable('simulated rollback failure');
+        $errorResponse->setError($keyError);
+
+        $batchRollbackCalls = 0;
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+            ) use (
+                &$batchRollbackCalls,
+                $errorResponse
+): object {
+                if ($method === 'KvBatchRollback') {
+                    return $batchRollbackCalls++ === 0
+                        ? $errorResponse
+                        : new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse();
+                }
+                throw new \RuntimeException("Unexpected method: $method");
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('key1', 'value1');
+
+        // The Retryable branch throws TxnRetryableException, which the retry
+        // executor backs off on and then re-runs the rollback.
+        $txn->rollback();
+        $this->assertSame(TransactionStatus::RolledBack, $txn->getStatus());
+        $this->assertSame(2, $batchRollbackCalls);
+    }
+
+    public function testRollbackAbortErrorThrowsTransactionConflict(): void
+    {
+        $this->setUpRollbackRegionMocking();
+
+        $errorResponse = new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse();
+        $keyError = new KeyError();
+        $keyError->setAbort('simulated abort');
+        $errorResponse->setError($keyError);
+
+        $this->grpc->method('call')
+            ->willReturnCallback(static fn(string $addr, string $svc, string $method): object => match ($method) {
+                'KvBatchRollback' => $errorResponse,
+                default => throw new \RuntimeException("Unexpected method: $method"),
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('key1', 'value1');
+
+        try {
+            $txn->rollback();
+            $this->fail('Expected TransactionConflictException was not thrown');
+        } catch (TransactionConflictException $e) {
+            $this->assertStringContainsString('Abort during rollback', $e->getMessage());
+        }
+    }
+
+    public function testPessimisticRollbackErrorsAreHandled(): void
+    {
+        $this->setUpRollbackRegionMocking();
+
+        $errorResponse = new \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse();
+        $keyError = new KeyError();
+        $keyError->setRetryable('simulated pessimistic rollback failure');
+        $errorResponse->setErrors([$keyError]);
+
+        $pessimisticRollbackCalls = 0;
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+            ) use (
+                &$pessimisticRollbackCalls,
+                $errorResponse
+): object {
+                if ($method === 'KVPessimisticRollback') {
+                    return $pessimisticRollbackCalls++ === 0
+                        ? $errorResponse
+                        : new \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse();
+                }
+                if ($method === 'KvBatchRollback') {
+                    return new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse();
+                }
+                throw new \RuntimeException("Unexpected method: $method");
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => true]);
+        $txn->set('key1', 'value1');
+
+        // pessimisticRollbackAll() routes per-key errors through
+        // handleRollbackError(); a retryable one is retried and then
+        // succeeds, before the final batch rollback.
+        $txn->rollback();
+
+        $this->assertSame(TransactionStatus::RolledBack, $txn->getStatus());
+        $this->assertSame(2, $pessimisticRollbackCalls);
+    }
 }
