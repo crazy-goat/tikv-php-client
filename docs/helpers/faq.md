@@ -485,6 +485,19 @@ attempt cap. The async batchScan path likewise never tracked exclusions: it
 declared `$excludedStore` with no `DataIsNotReady` catch inside its retry
 closure, so the unused plumbing was removed there too.
 
+## Re-grouping a key batch restores the retry budget — cap the regroups
+
+`pessimisticLockBatch()` re-grouped its keys against the fresh region layout
+after a split (issue #503), but each re-group also reset the per-group
+`$elapsedMs` budget declared inside the group loop — a pathological repeated
+split/region-error loop would retry forever. A cap (`PESSIMISTIC_LOCK_MAX_REGROUPS`,
+10) now bounds the re-groups; exceeding it rethrows the last `RegionException`.
+PHPStan L9 trap hit while adding the cap: a local `$regroupsUsed = 0` counter
+incremented only inside the regroup branch is proven always-0 at the check
+site (single-pass narrowing) → `identical.alwaysFalse` / `alwaysFalse`.
+Workaround: collect regroups into an array and test
+`count($regroups) >= CAP` (same escape hatch as the by-ref-flag lesson above).
+
 ## TxnKV E2E can flake with a one-off empty scan on a fresh CI cluster
 
 PR #506's CI failed once with `TxnKvE2ETest::testScanWithLimitOneReturnsSingleKey`
