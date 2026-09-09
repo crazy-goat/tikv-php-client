@@ -6,6 +6,7 @@ namespace CrazyGoat\TiKV\Tests\Unit\Cache;
 
 use CrazyGoat\TiKV\Client\Cache\RegionCache;
 use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
+use CrazyGoat\TiKV\Client\Cache\RegionEntry;
 use CrazyGoat\TiKV\Client\Region\Dto\PeerInfo;
 use CrazyGoat\TiKV\Client\Region\Dto\RegionInfo;
 use PHPUnit\Framework\TestCase;
@@ -439,6 +440,118 @@ class RegionCacheTest extends TestCase
             ->with('Region leader switched', $this->anything());
 
         $cache->switchLeader(1, 99);
+    }
+
+    public function testPutRemovesSupersededOverlappingEntryOnMerge(): void
+    {
+        $cache = new RegionCache();
+
+        // Pre-merge state: region 5 owns ['a', 'm').
+        $cache->put($this->makeRegion(5, 'a', 'm'));
+        // Region 9 absorbs region 5's range: PD now reports ['a', 'z').
+        $cache->put($this->makeRegion(9, 'a', 'z'));
+
+        $this->assertSame(1, $cache->count());
+        $resolved = $cache->getByKey('b');
+        $this->assertNotNull($resolved);
+        $this->assertSame(9, $resolved->regionId);
+        $this->assertNull($cache->getByKey('zz')); // 'z' is now the end boundary
+    }
+
+    public function testPutRemovesSupersededEntriesOnSplit(): void
+    {
+        $cache = new RegionCache();
+
+        // Pre-split state: region 1 owns ['a', 'z').
+        $cache->put($this->makeRegion(1, 'a', 'z'));
+        // Region 2 splits off the upper half, then region 3 the lower half.
+        $cache->put($this->makeRegion(2, 'm', 'z'));
+        $cache->put($this->makeRegion(3, 'a', 'm'));
+
+        $this->assertSame(2, $cache->count());
+
+        $resolvedLower = $cache->getByKey('a');
+        $this->assertNotNull($resolvedLower);
+        $this->assertSame(3, $resolvedLower->regionId);
+        $resolvedUpper = $cache->getByKey('x');
+        $this->assertNotNull($resolvedUpper);
+        $this->assertSame(2, $resolvedUpper->regionId);
+    }
+
+    public function testPutKeepsTouchingNonOverlappingEntries(): void
+    {
+        $cache = new RegionCache();
+
+        $cache->put($this->makeRegion(1, 'a', 'd'));
+        $cache->put($this->makeRegion(2, 'd', 'h'));
+        $cache->put($this->makeRegion(3, 'h', ''));
+
+        $this->assertSame(3, $cache->count());
+        $this->assertSame(1, $cache->getByKey('a')?->regionId);
+        $this->assertSame(2, $cache->getByKey('d')?->regionId);
+        $this->assertSame(3, $cache->getByKey('h')?->regionId);
+    }
+
+    public function testPutWithEqualStartKeysNewestWins(): void
+    {
+        $cache = new RegionCache();
+
+        $cache->put($this->makeRegion(1, 'a', 'm'));
+        $cache->put($this->makeRegion(2, 'a', 'z'));
+
+        $this->assertSame(1, $cache->count());
+        $resolved = $cache->getByKey('b');
+        $this->assertNotNull($resolved);
+        $this->assertSame(2, $resolved->regionId);
+    }
+
+    public function testPutUnboundedIncomingRegionRemovesAllOverlaps(): void
+    {
+        $cache = new RegionCache();
+
+        $cache->put($this->makeRegion(1, 'a', 'd'));
+        $cache->put($this->makeRegion(2, 'd', 'h'));
+        // Whole keyspace collapses into one region (last key range).
+        $cache->put($this->makeRegion(3, '', ''));
+
+        $this->assertSame(1, $cache->count());
+        $this->assertSame(3, $cache->getByKey('a')?->regionId);
+        $this->assertSame(3, $cache->getByKey('z')?->regionId);
+    }
+
+    public function testOverlappingRemovalKeepsIdToIndexAndLruConsistent(): void
+    {
+        $cache = new TestableRegionCache(1000, 600, null, 10000);
+
+        $cache->put($this->makeRegion(1, 'a', 'z'));
+        $cache->put($this->makeRegion(2, 'b', 'c')); // supersedes region 1
+        $cache->put($this->makeRegion(3, 'e', 'f'));
+        $cache->put($this->makeRegion(4, 'b', 'f')); // supersedes 2 and 3
+
+        $this->assertSame(1, $cache->count());
+
+        // Verify idToIndex integrity via reflection: every mapping points at
+        // the entry holding that regionId, and indices are dense/ordered.
+        $ref = new \ReflectionClass(RegionCache::class);
+        $idToIndex = $ref->getProperty('idToIndex')->getValue($cache);
+        \assert(is_array($idToIndex));
+        $entries = $ref->getProperty('entries')->getValue($cache);
+        \assert(is_array($entries));
+        $lruOrder = $ref->getProperty('lruOrder')->getValue($cache);
+        \assert(is_array($lruOrder));
+
+        $this->assertCount(count($entries), $idToIndex);
+        $this->assertCount(count($entries), $lruOrder);
+        $prev = -1;
+        foreach ($idToIndex as $regionId => $index) {
+            \assert(is_int($regionId) && is_int($index) && isset($entries[$index]));
+            $entry = $entries[$index];
+            \assert($entry instanceof RegionEntry);
+            $this->assertSame($regionId, $entry->region->regionId);
+            $this->assertGreaterThan($prev, $index);
+            $prev = $index;
+            $this->assertArrayHasKey($regionId, $lruOrder);
+        }
     }
 
     public function testSwitchLeaderOnEmptyCacheReturnsFalse(): void

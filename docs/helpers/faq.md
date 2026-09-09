@@ -582,3 +582,29 @@ from an earlier conflict that was "resolved" by keeping both sides. Before
 every push, grep the whole diff for conflict markers:
 `git diff master...HEAD | grep -n ">>>>>>>\|<<<<<<<"`. PHPCS/PHPStan do
 not catch these in Markdown files.
+## RegionCache overlap removal on put() — touching ranges are not overlapping
+
+`RegionCache::put()` (issue #238, REG-07) removes every cached entry whose
+`[startKey, endKey)` range overlaps the incoming range before inserting, and
+recomputes the insert position afterwards. Boundaries: an empty endKey means
+unbounded, and ranges that merely *touch* (`endKey` of one equals `startKey`
+of the other) do NOT overlap — TiKV regions are half-open `[start, end)`, so
+a split `[a,m)` + `[m,z)` over an old `[a,z)` keeps both halves. Two entries
+genuinely sharing a start key cannot coexist: the newest put wins (the
+overlap removal also deletes the equal-startKey stale entry that the
+insert-position/binary-search tie used to prefer). Caveat: the removal does
+not compare epochs (REG-18, still open) — an incoming *older-epoch* region
+will evict a newer one, same as before. When unit-testing the private
+`idToIndex`/`lruOrder` consistency by reflection, PHPStan level 9 needs
+`is_array`/`instanceof` asserts on the `getValue()` results — they are `mixed`.
+
+## A rebase can leave stray conflict markers in docs — grep before finishing
+
+All three of fix/216, fix/237 and fix/238 carried a leftover
+`>>>>>>> <sha> (...)` line right after the new CHANGELOG.md bullet after
+their rebase (and #238 also in `docs/helpers/faq.md`), silently committed
+by the follow-up fix. A squash/fixup during a rebase can resurrect markers
+from an earlier conflict that was "resolved" by keeping both sides. Before
+every push, grep the whole diff for conflict markers:
+`git diff master...HEAD | grep -n ">>>>>>>\|<<<<<<<"`. PHPCS/PHPStan do
+not catch these in Markdown files.

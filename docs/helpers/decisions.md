@@ -50,6 +50,25 @@ informational only.
 The library requires PHP >= 8.2; CI runs unit tests on 8.2, 8.3 and 8.4
 (lint and gRPC tests on 8.4 only).
 
+## RegionCache superseded-range removal emits no `regionInvalidated` metric, and an O(n) scan per `put()` is accepted
+
+Two review decisions on the #238 fix (REG-07) that should not be "corrected" later:
+
+1. **`removeOverlapping()` is deliberately silent metrics-wise.** Dropping a
+   cached entry because the incoming region supersedes its range is a data
+   update, not an error invalidation — the `invalidate()` / "single emission
+   point" rule from issue #474 covers error-driven drops only. Emitting here
+   would double-count eviction-style reasons.
+2. **The overlap scan is a sorted left/right walk from the insert position,
+   not a full O(n) loop over `entries`.** Because the cache maintains a
+   sorted, non-overlapping invariant, every overlapping entry must be
+   adjacent to `findInsertPosition($startKey)`: the walk goes right while the
+   entry's `startKey < $endKey` and left while the entry's `endKey >
+   $startKey`, stopping at the first merely-touching entry on each side —
+   O(log n + k) per `put()` (first review accepted an O(n) scan; commit
+   bbb4ec8 replaced it after the invariant was verified). Only revisit if
+   profiling shows `put()` on a full cache is hot.
+
 ## Tests are delegated / E2E needs Docker
 
 E2E suites (`E2E-RawKV`, `E2E-TxnKV`) spin up real TiKV clusters via docker
