@@ -665,3 +665,16 @@ that distinguishes per-region from shared budgets (`>= 6`) plus a derived upper 
 now tolerate ±1 attempt per jittered exponential step. Also: `1 << $attempt` instead of
 `2 ** $attempt` keeps the exponent math int-typed so Rector's `RecastingRemovalRector`
 doesn't strip a needed `(int)` cast before `intdiv()`.
+
+## Budget carry-over detection becomes probabilistic under jittered backoff
+
+Follow-up to the #242 jitter entry: once every `BackoffType` is jittered, a
+test that detects retry-budget carry-over between `execute()` calls by making
+the second call cross a tight budget can no longer be made deterministic. The
+budget must be ≥ the first call's *worst-case* spend (else the first call
+fails) but < best-case spend + the second call's minimum retry (else the bug
+is undetectable) — with equal jitter the best/worst-case gap is 2x, so these
+constraints are unsatisfiable (`tests/Unit/Retry/RetryExecutorTest.php`
+`testReusedExecutorRetriesNormallyOnSecondCallAfterFirstConsumesBudget`,
+comment documents the math). Accept probabilistic detection: the
+no-carry-over invariant ("second call succeeds") still holds deterministically.
