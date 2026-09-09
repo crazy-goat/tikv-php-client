@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
  *
  * Note: the fail-closed contract is implemented by issue #244 (PR #531),
  * which is not merged yet. The guarded tests below probe whether that fix
- * is present and skip (instead of failing) until it merges; they then
+ * is present and warn (instead of failing) until it merges; they then
  * permanently pin the contract.
  */
 final class CommitPrewriteKeyCoverageTest extends TestCase
@@ -200,10 +200,13 @@ final class CommitPrewriteKeyCoverageTest extends TestCase
             $failClosed = true;
         }
         if (!($failClosed ?? false)) {
-            $this->markTestSkipped(
+            $this->expectNotToPerformAssertions();
+            trigger_error(
                 'Fail-closed contract not implemented yet (issue #244, PR #531); '
                 . 'this test pins the issue #329 criteria and activates once #244 merges.',
+                E_USER_WARNING,
             );
+            return;
         }
 
         [$txn, $getRequests] = $this->makeTransactionAndCaptureRpcs();

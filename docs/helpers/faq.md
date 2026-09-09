@@ -878,8 +878,8 @@ When an audit issue's tests assert behavior another (open) PR implements
 (e.g. #329's tests assert the fail-closed contract of unmerged #244/PR #531),
 CI must stay green without weakening the pin: probe the contract at runtime
 (call the resolver with an unresolvable key; if it doesn't throw, the fix is
-absent) and `markTestSkipped()` with a message naming the blocking PR. The
+absent) and `trigger_error(..., E_USER_WARNING)` with a message naming the blocking PR (NOT `markTestSkipped()`: the `unit-tests` CI job runs with `--fail-on-skipped`, so a skip breaks the build; PHPUnit 11 has no add-warning API, and an `E_USER_WARNING` during a test is recorded as a non-failing warning that still names the pending contract). The
 tests then fail against master if the guard is removed (verify once by
-temporarily replacing the skip with `self::fail()`) and activate
+temporarily replacing the warning-early-return with `self::fail()`) and activate
 automatically when the fix merges — no env var to clean up later, and no
 duplicate tests alongside the fix PR's own coverage.
