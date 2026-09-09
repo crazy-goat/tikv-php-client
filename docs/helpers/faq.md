@@ -697,3 +697,24 @@ so compute the attempt count from the exponential sequence (2+4=6 ≤ 6 allows
 two retries; 6+8=14 > 6 aborts the third), and an operation that "fails twice
 then succeeds" needs a per-call failure counter (a shared `$calls % 3`
 pattern silently gives the second execute() zero retries).
+
+## Equal-jitter randomness can collapse the separating boundary in budget assertions — assert `<=` over more iterations, never strict `<`
+
+`Backoff::exponential()` with equal jitter returns `half + random_int(0, half)`
+(inclusive), so a ServerBusy sleep is `1000–2000 ms` **inclusive of both ends**.
+When a test distinguishes "fresh budget" (one sleep: 1000–2000) from
+"carried-over budget" (sum of N sleeps: 2000–4000) via a threshold, the ranges
+touch at exactly 2000 ms — a strict `<2000` assertion flakes whenever all
+jitter draws are maximal (~1/1001 per draw, `random_int` is inclusive and not
+mockable; `RetryExecutor` is `final readonly`, so it can't be subclassed
+either). The robust pattern (used in `RetryExecutorTest::
+testServerBusyBudgetResetsPerExecuteCall` for issue #243): assert
+`assertLessThanOrEqual(2000)` across **three** sequential `execute()` calls —
+a fresh budget can never exceed 2000 (zero false failures), while a
+carried-over budget exceeds it unless *every* draw is maximal (~1e-9 false
+passes, vanishing with more iterations). General rule: with inclusive random
+ranges, prefer `<=` at the shared boundary plus more samples over a strict
+inequality that can reject a legal value. Bonus: these tests never actually
+sleep, because `RetryExecutor` checks the budget **before** `usleep()`
+(issue #237) — an over-budget ServerBusy error throws without sleeping, so
+budget-exhaustion tests are fast.
