@@ -607,8 +607,12 @@ final readonly class TwoPhaseCommitter
         $pendingKeys = $keys;
         // Each re-group restores a full retry budget for the re-grouped
         // keys; without a cap a pathological repeated split/region-error
-        // loop could retry forever (issue #503 review).
-        $regroupsUsed = 0;
+        // loop could retry forever (issue #503 review). Array + count()
+        // instead of an int counter: PHPStan level 9 proves an int
+        // counter is always 0 at the check site (single-pass narrowing)
+        // and flags the comparison as always-false.
+        /** @var list<true> $regroups */
+        $regroups = [];
 
         while ($pendingKeys !== []) {
             $keysByRegion = $this->groupStringsByRegion($pendingKeys);
@@ -657,13 +661,13 @@ final readonly class TwoPhaseCommitter
                     if ($attempt > 1) {
                         $region = $this->regionResolver->getRegionInfo($regionKeys[0]);
                         if (!$this->regionCoversAllKeys($region, $regionKeys)) {
-                            if ($regroupsUsed >= self::PESSIMISTIC_LOCK_MAX_REGROUPS) {
+                            if (count($regroups) >= self::PESSIMISTIC_LOCK_MAX_REGROUPS) {
                                 throw $lastRegionError ?? new RegionException(
                                     'pessimistic lock',
                                     'Region split repeatedly invalidated the lock group',
                                 );
                             }
-                            $regroupsUsed++;
+                            $regroups[] = true;
                             $regroup = true;
                             break;
                         }
