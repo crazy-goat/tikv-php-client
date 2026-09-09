@@ -529,6 +529,16 @@ containers it depends on; if the cluster was just (re)started the run
 container's DNS can fail with "Name does not resolve tikv1:20160" and the
 whole suite errors — wait ~20 s after `make up` before running E2E.
 
+## `git log master..HEAD --oneline` is the definitive "what's in this PR" check
+
+When asked whether a branch contains an unrelated commit, the commit existing
+somewhere in the repo (`git show <sha>` works) proves nothing: e.g. during
+review of fix/237-region-retry-deadline, commit 144f864 (pdEndpoints
+validation, #51) looked suspicious but was already merged into master, so
+`git log master..HEAD` contained only the one relevant commit. Always diff
+against the merge base (`master...branch`), not against the repo's commit
+graph.
+
 ## Service safe-point E2E tests must assert invariants, never exact values
 
 PD registers its own `gc_worker` service safe point and advances the GC

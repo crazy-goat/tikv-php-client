@@ -203,7 +203,7 @@ final readonly class RetryExecutor
 
     /**
      * Remaining wall-clock budget in ms; PHP_INT_MAX when the deadline is
-     * disabled ($deadlineMs === 0).
+     * disabled ($deadlineMs <= 0).
      */
     private function remainingDeadlineMs(int $startTimeMs): int
     {

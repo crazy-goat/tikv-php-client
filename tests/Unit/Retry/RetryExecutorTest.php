@@ -496,7 +496,15 @@ class RetryExecutorTest extends TestCase
     {
         $constructor = (new \ReflectionClass(RetryExecutor::class))->getConstructor();
         $this->assertNotNull($constructor);
-        $default = $constructor->getParameters()[7]; // $deadlineMs
+        $deadlineParam = null;
+        foreach ($constructor->getParameters() as $parameter) {
+            if ($parameter->getName() === 'deadlineMs') {
+                $deadlineParam = $parameter;
+                break;
+            }
+        }
+        $this->assertNotNull($deadlineParam, 'constructor must have a $deadlineMs parameter');
+        $default = $deadlineParam;
 
         $this->assertSame(RetryExecutor::DEFAULT_RETRY_DEADLINE_MS, $default->getDefaultValue());
         $this->assertGreaterThan(0, RetryExecutor::DEFAULT_RETRY_DEADLINE_MS);
