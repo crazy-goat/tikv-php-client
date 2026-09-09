@@ -50,7 +50,7 @@ final class RegionResolverBinaryKeyTest extends TestCase
             $this->region(2, '100', ''),
         ];
 
-        $this->pdClient->method('scanRegions')->with('0999', '9')->willReturn($regions);
+        $this->pdClient->method('scanRegions')->with('0999', "9\x00")->willReturn($regions);
         $this->regionCache->method('put');
 
         $result = $this->resolver->batchResolveRegions(['9', '0999', '20']);

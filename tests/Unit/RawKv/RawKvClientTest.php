@@ -552,32 +552,32 @@ class RawKvClientTest extends TestCase
         $this->assertSame([], $this->client->batchGet([]));
     }
 
-    public function testBatchGetReturnsOrderedResults(): void
+    public function testBatchGetDispatchesExactlyOneRpcForSameRegionKeys(): void
     {
         $this->requireGrpcExtension();
 
         $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
-        $this->grpc->method('getChannel')->willReturn(new \Grpc\Channel('127.0.0.1:1', [
+        $this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()]);
+
+        // Exactly one RawBatchGet RPC for the two-key single-region batch:
+        // guards against a regression that would silently drop keys before
+        // any RPC (issue #244). A *successful* batchGet response (ordered
+        // results, null for missing keys) cannot be driven end-to-end in
+        // unit tests because RawKvBatch hardcodes `new Call(...)` (see
+        // docs/helpers/faq.md) — that mapping is pinned by the E2E suite
+        // (RawKvE2ETest::testBatchPutAndBatchGet / testBatchGetReturnsKeysInOrder).
+        $this->grpc->expects($this->exactly(1))->method('getChannel')->willReturn(new \Grpc\Channel('127.0.0.1:1', [
             'credentials' => \Grpc\ChannelCredentials::createInsecure(),
         ]));
 
-        $this->assertSame(['k1' => null, 'k2' => null], $this->client->batchGet(['k1', 'k2']));
-    }
+        // No TiKV server in unit tests: the request reaches the transport
+        // layer and fails at connection time (issue #322 pattern).
+        $this->expectException(BatchPartialFailureException::class);
 
-    public function testBatchGetReturnsNullForMissingKeys(): void
-    {
-        $this->requireGrpcExtension();
-
-        $this->regionCache->method('getByKey')->willReturn(null);
-        $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
-        $this->pdClient->method('getStore')->willReturn($this->defaultStore());
-        $this->grpc->method('getChannel')->willReturn(new \Grpc\Channel('127.0.0.1:1', [
-            'credentials' => \Grpc\ChannelCredentials::createInsecure(),
-        ]));
-
-        $this->assertSame(['missing' => null], $this->client->batchGet(['missing']));
+        $this->client->batchGet(['k1', 'k2']);
     }
 
     public function testBatchGetAcceptsNumericStringKeys(): void
@@ -588,17 +588,18 @@ class RawKvClientTest extends TestCase
         $this->regionCache->method('put');
         $this->pdClient->method('getRegion')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+        $this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()]);
         $this->grpc->method('getChannel')->willReturn(new \Grpc\Channel('127.0.0.1:1', [
             'credentials' => \Grpc\ChannelCredentials::createInsecure(),
         ]));
 
         // Pre-fix: int keys from array_keys() hit validateKeyNotEmpty(string)
         // and throw a TypeError. Post-fix the keys are normalized and the
-        // batch reaches the transport layer; with no TiKV server the reads
-        // yield nulls (issue #322).
-        $result = $this->client->batchGet(array_keys(['12345' => 'v1', '0' => 'v2']));
+        // batch reaches the transport layer; with no TiKV server the batch
+        // fails at connection time (issue #322).
+        $this->expectException(BatchPartialFailureException::class);
 
-        $this->assertSame(['12345' => null, '0' => null], $result);
+        $this->client->batchGet(array_keys(['12345' => 'v1', '0' => 'v2']));
     }
 
     public function testBatchGetThrowsOnNonStringKey(): void

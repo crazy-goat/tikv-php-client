@@ -84,6 +84,16 @@ final class RawKvBatchUnresolvedKeyTest extends TestCase
         return false;
     }
 
+    /**
+     * Issue #244 redacts keys in fail-closed messages (KeyRedactor
+     * convention): the unresolvable key is identified by its hex form plus
+     * byte length, never the raw bytes.
+     */
+    private function expectedRedactedKeyFragment(string $key): string
+    {
+        return '"' . bin2hex($key) . '" (' . strlen($key) . ' bytes)';
+    }
+
     private function region(int $id, string $startKey, string $endKey): RegionInfo
     {
         return new RegionInfo(
@@ -128,7 +138,9 @@ final class RawKvBatchUnresolvedKeyTest extends TestCase
         $this->grpc->expects($this->never())->method('getChannel');
 
         $this->expectException(TiKvException::class);
-        $this->expectExceptionMessage('"z"');
+        $this->expectExceptionMessage(
+            $this->expectedRedactedKeyFragment('z') . '; refusing to silently drop',
+        );
 
         $this->batch->batchPut(
             ['a' => '1', 'z' => '2'],
@@ -159,8 +171,12 @@ final class RawKvBatchUnresolvedKeyTest extends TestCase
             trigger_error('batchPut() must not return normally with an unresolvable key', E_USER_WARNING);
             return;
         } catch (TiKvException $e) {
-            // expected under the fail-closed contract
-            self::assertStringContainsString('z', $e->getMessage());
+            // expected under the fail-closed contract; #244 redacts the key
+            // (hex form) while still identifying the dropped key
+            self::assertStringContainsString(
+                $this->expectedRedactedKeyFragment('z'),
+                $e->getMessage(),
+            );
         }
         $this->addToAssertionCount(1);
     }
