@@ -93,8 +93,9 @@ final class RawKvClient
 
     /**
      * options[] key for the maximum number of simultaneously in-flight
-     * requests used by the fanned-out range operations (deleteRange,
-     * checksum, batchScan, SST ingest mode switches) — issue #295.
+     * requests used by the fanned-out batch and range operations (batchGet,
+     * batchPut, batchDelete, deleteRange, checksum, batchScan, SST ingest
+     * mode switches) — issues #295 and #264.
      */
     public const OPT_MAX_CONCURRENCY = 'maxConcurrency';
 
@@ -107,7 +108,7 @@ final class RawKvClient
      */
     public const OPT_REPLICA_READ = 'replicaRead';
 
-    /** Default bound on in-flight requests for fanned-out range operations. */
+    /** Default bound on in-flight requests for fanned-out batch and range operations. */
     public const DEFAULT_MAX_CONCURRENCY = BatchAsyncExecutor::DEFAULT_MAX_CONCURRENCY;
 
     private bool $closed = false;
@@ -124,7 +125,7 @@ final class RawKvClient
     private readonly SstIngestor $ingestor;
         /** Wall-clock deadline (ms) applied to every RetryExecutor this client builds. */
     private readonly int $retryDeadlineMs;
-    /** Max in-flight requests for fanned-out range operations (issue #295). */
+    /** Max in-flight requests for fanned-out batch and range operations (#295, #264). */
     private readonly int $maxConcurrency;
 
     /**
@@ -235,6 +236,7 @@ final class RawKvClient
             $this->logger,
             $this->slowLogConfig,
             $this->replicaReadPolicy,
+            $this->maxConcurrency,
         );
         $this->scanner = $scanner ?? new RawKvScanner(
             $pdClient,
@@ -409,7 +411,8 @@ final class RawKvClient
     /**
      * Resolve options['maxConcurrency'] (see OPT_MAX_CONCURRENCY) for
      * create(): the bound on simultaneously in-flight requests used by the
-     * fanned-out range operations. Must be >= 1 (issue #295).
+     * fanned-out batch and range operations (issues #295 and #264). Must
+     * be >= 1.
      *
      * @param array<string, mixed> $options
      */

@@ -45,6 +45,12 @@ final readonly class RawKvBatch
         private ?SlowLogConfig $slowLogConfig = null,
         /** Read preference for reads (issue #421); writes always target the leader. */
         private ReplicaReadPolicy $replicaReadPolicy = new ReplicaReadPolicy(),
+        /**
+         * Upper bound on simultaneously in-flight batch sub-requests (issue
+         * #264): batchGet/batchPut/batchDelete fan out one RPC per sub-batch
+         * and the fan-out is dispatched in windows of at most this size.
+         */
+        private int $maxConcurrency = BatchAsyncExecutor::DEFAULT_MAX_CONCURRENCY,
     ) {
     }
 
@@ -79,7 +85,7 @@ final readonly class RawKvBatch
             }
         }
 
-        $regionResults = $batchExecutor->executeParallel($regionCalls);
+        $regionResults = $batchExecutor->executeParallelCapped($regionCalls, $this->maxConcurrency);
 
         $results = [];
         foreach ($regionResults as $response) {
@@ -181,7 +187,7 @@ final readonly class RawKvBatch
             }
         }
 
-        $batchExecutor->executeParallel($regionCalls);
+        $batchExecutor->executeParallelCapped($regionCalls, $this->maxConcurrency);
     }
 
     /**
@@ -219,7 +225,7 @@ final readonly class RawKvBatch
             }
         }
 
-        $batchExecutor->executeParallel($regionCalls);
+        $batchExecutor->executeParallelCapped($regionCalls, $this->maxConcurrency);
     }
 
     // ========================================================================
