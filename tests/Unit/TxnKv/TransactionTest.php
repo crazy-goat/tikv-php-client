@@ -3229,4 +3229,296 @@ class TransactionTest extends TestCase
         $this->assertNotNull($retriedContext->getRegionEpoch());
         $this->assertSame(5, $retriedContext->getRegionEpoch()->getVersion());
     }
+
+    public function testBatchRollbackRegroupsKeysAfterRegionSplit(): void
+    {
+        // Issue #505: after a region split the re-resolved region no longer
+        // covers the whole key group; before the fix the server kept
+        // returning region errors until the retry budget was exhausted. The
+        // group must instead be re-grouped against the fresh region layout
+        // and rolled back per-region.
+        $staleRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+        // After the split: region 1 covers ['', 'k2'), region 2 ['k2', '']
+        $splitRegion1 = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: '',
+            endKey: 'k2',
+            peers: [],
+        );
+        $splitRegion2 = new RegionInfo(
+            regionId: 2,
+            leaderPeerId: 2,
+            leaderStoreId: 2,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: 'k2',
+            endKey: '',
+            peers: [],
+        );
+
+        // Always miss the cache: every resolve goes to PD.
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturnCallback(
+            static fn(string $key): RegionInfo => $key >= 'k2' ? $splitRegion2 : $splitRegion1,
+        );
+        // First scanRegions (initial grouping): pre-split region covering
+        // both keys. Second scanRegions (re-group after the split): the two
+        // split regions.
+        $this->pdClient->method('scanRegions')
+            ->willReturnOnConsecutiveCalls(
+                [$staleRegion],
+                [$splitRegion1, $splitRegion2],
+                [$splitRegion1, $splitRegion2],
+                [$splitRegion1, $splitRegion2],
+            );
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $rollbackRequests = [];
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+                object $request,
+            ) use (
+                &$rollbackRequests,
+            ): object {
+                if ($method === 'KvBatchRollback') {
+                    $rollbackRequests[] = $request;
+                    return new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse();
+                }
+                throw new \RuntimeException("Unexpected method: $method");
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('k1', 'v1');
+        $txn->set('k2', 'v2');
+        $txn->rollback();
+
+        $this->assertSame(TransactionStatus::RolledBack, $txn->getStatus());
+        // 2 rollback RPCs: one per split region after the re-group.
+        $this->assertCount(2, $rollbackRequests);
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\BatchRollbackRequest::class, $rollbackRequests[0]);
+        $this->assertSame(1, $rollbackRequests[0]->getContext()?->getRegionId());
+        $this->assertCount(1, $rollbackRequests[0]->getKeys());
+        $this->assertSame('k1', $rollbackRequests[0]->getKeys()[0]);
+
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\BatchRollbackRequest::class, $rollbackRequests[1]);
+        $this->assertSame(2, $rollbackRequests[1]->getContext()?->getRegionId());
+        $this->assertCount(1, $rollbackRequests[1]->getKeys());
+        $this->assertSame('k2', $rollbackRequests[1]->getKeys()[0]);
+    }
+
+    public function testBatchRollbackGivesUpAfterTooManyRegroups(): void
+    {
+        // Issue #505 review: each re-group restores a fresh retry budget;
+        // without a cap a pathological repeated split could retry forever.
+        $staleRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+        // Inconsistent answer: claims to cover ''..'a', which does not
+        // contain 'k1' — every resolve fails the coverage check.
+        $neverCovering = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: '',
+            endKey: 'a',
+            peers: [],
+        );
+
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($neverCovering);
+        $this->pdClient->method('scanRegions')->willReturn([$staleRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $this->grpc->method('call')
+            ->willReturnCallback(static fn(): object => new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse());
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('k1', 'v1');
+
+        try {
+            $txn->rollback();
+            $this->fail('Expected RegionException was not thrown');
+        } catch (\CrazyGoat\TiKV\Client\Exception\RegionException $e) {
+            $this->assertStringContainsString(
+                'Region split repeatedly invalidated the rollback group',
+                $e->getMessage(),
+            );
+        }
+    }
+
+    public function testPessimisticRollbackRegroupsKeysAfterRegionSplit(): void
+    {
+        // Issue #505: the same split-regroup recovery as batchRollback(),
+        // exercised through pessimisticRollbackAll().
+        $staleRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+        $splitRegion1 = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: '',
+            endKey: 'k2',
+            peers: [],
+        );
+        $splitRegion2 = new RegionInfo(
+            regionId: 2,
+            leaderPeerId: 2,
+            leaderStoreId: 2,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: 'k2',
+            endKey: '',
+            peers: [],
+        );
+
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturnCallback(
+            static fn(string $key): RegionInfo => $key >= 'k2' ? $splitRegion2 : $splitRegion1,
+        );
+        $this->pdClient->method('scanRegions')
+            ->willReturnOnConsecutiveCalls(
+                [$staleRegion],
+                [$splitRegion1, $splitRegion2],
+                [$splitRegion1, $splitRegion2],
+                [$splitRegion1, $splitRegion2],
+            );
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $rollbackRequests = [];
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+                object $request,
+            ) use (
+                &$rollbackRequests,
+            ): object {
+                if ($method === 'KVPessimisticRollback') {
+                    $rollbackRequests[] = $request;
+                    return new \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse();
+                }
+                return match ($method) {
+                    'KvBatchRollback' => new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse(),
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => true]);
+        $txn->set('k1', 'v1');
+        $txn->set('k2', 'v2');
+        $txn->rollback();
+
+        $this->assertSame(TransactionStatus::RolledBack, $txn->getStatus());
+        // 2 pessimistic rollback RPCs: one per split region after the
+        // re-group.
+        $this->assertCount(2, $rollbackRequests);
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackRequest::class, $rollbackRequests[0]);
+        $this->assertSame(1, $rollbackRequests[0]->getContext()?->getRegionId());
+        $this->assertCount(1, $rollbackRequests[0]->getKeys());
+        $this->assertSame('k1', $rollbackRequests[0]->getKeys()[0]);
+
+        $this->assertInstanceOf(\CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackRequest::class, $rollbackRequests[1]);
+        $this->assertSame(2, $rollbackRequests[1]->getContext()?->getRegionId());
+        $this->assertCount(1, $rollbackRequests[1]->getKeys());
+        $this->assertSame('k2', $rollbackRequests[1]->getKeys()[0]);
+    }
+
+    public function testPessimisticRollbackGivesUpAfterTooManyRegroups(): void
+    {
+        // Issue #505: the regroup cap applies to pessimisticRollbackAll()
+        // too.
+        $staleRegion = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 1,
+            startKey: '',
+            endKey: '',
+            peers: [],
+        );
+        $neverCovering = new RegionInfo(
+            regionId: 1,
+            leaderPeerId: 1,
+            leaderStoreId: 1,
+            epochConfVer: 1,
+            epochVersion: 5,
+            startKey: '',
+            endKey: 'a',
+            peers: [],
+        );
+
+        $this->regionCache->method('getByKey')->willReturn(null);
+        $this->regionCache->method('put');
+        $this->regionCache->method('invalidate');
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+        $this->pdClient->method('getRegion')->willReturn($neverCovering);
+        $this->pdClient->method('scanRegions')->willReturn([$staleRegion]);
+        $this->pdClient->method('getTimestamp')->willReturn(3000);
+
+        $this->grpc->method('call')
+            ->willReturnCallback(static fn(string $addr, string $svc, string $method): object => match ($method) {
+                'KVPessimisticRollback' => new \CrazyGoat\Proto\Kvrpcpb\PessimisticRollbackResponse(),
+                'KvBatchRollback' => new \CrazyGoat\Proto\Kvrpcpb\BatchRollbackResponse(),
+                default => throw new \RuntimeException("Unexpected method: $method"),
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => true]);
+        $txn->set('k1', 'v1');
+
+        try {
+            $txn->rollback();
+            $this->fail('Expected RegionException was not thrown');
+        } catch (\CrazyGoat\TiKV\Client\Exception\RegionException $e) {
+            $this->assertStringContainsString(
+                'Region split repeatedly invalidated the rollback group',
+                $e->getMessage(),
+            );
+        }
+    }
 }

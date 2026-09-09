@@ -59,6 +59,7 @@ final readonly class TwoPhaseCommitter
     private const PESSIMISTIC_LOCK_TTL_MS = 30000;
     private const PESSIMISTIC_LOCK_RETRY_DELAY_MS = 100;
     private const PESSIMISTIC_LOCK_MAX_REGROUPS = 10;
+    private const ROLLBACK_MAX_REGROUPS = 10;
 
     public function __construct(
         private int $startTs,
@@ -507,55 +508,105 @@ final readonly class TwoPhaseCommitter
         RetryExecutor $retryExecutor,
         callable $classifier,
     ): void {
-        $keysByRegion = $this->groupStringsByRegion($keys);
+        // Array + count() instead of an int counter: PHPStan level 9 proves
+        // an int counter incremented only inside the regroup branch is
+        // always 0 at the check site (single-pass narrowing) — same trap as
+        // PESSIMISTIC_LOCK_MAX_REGROUPS (issue #503 review).
+        /** @var list<true> $regroups */
+        $regroups = [];
+        $pendingKeys = $keys;
 
-        foreach ($keysByRegion as $regionData) {
-            $regionKeys = $regionData['keys'];
-            $firstKey = $regionKeys[0] ?? '';
+        while ($pendingKeys !== []) {
+            $keysByRegion = $this->groupStringsByRegion($pendingKeys);
+            $pendingKeys = [];
 
-            $retryExecutor->execute($firstKey, function () use ($firstKey, $regionKeys): null {
-                // Resolve the region on every attempt so cache invalidation
-                // and leader switching performed by the retry executor take
-                // effect (issue #502): a stale captured region would
-                // otherwise reproduce the original error on each retry —
-                // the same stale-capture class as the scan retry fix
-                // (#267, GRPC-08) and the pessimistic lock fix (#500).
-                // groupStringsByRegion() populated the cache via
-                // batchResolveRegions(), so the first attempt is a cache
-                // hit. Note: after a region split, the re-resolved region
-                // may no longer cover the whole key group (known
-                // limitation — re-grouping would be a future improvement).
-                $region = $this->regionResolver->getRegionInfo($firstKey);
-                $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
+            foreach ($keysByRegion as $groupIndex => $regionData) {
+                $regionKeys = $regionData['keys'];
+                $firstKey = $regionKeys[0] ?? '';
 
-                $request = new BatchRollbackRequest();
-                $request->setContext(RegionContextFactory::fromRegionInfo($region));
-                $request->setStartVersion($this->startTs);
-                $request->setKeys($regionKeys);
+                try {
+                    $retryExecutor->execute($firstKey, function () use ($firstKey, $regionKeys): null {
+                        // Resolve the region on every attempt so cache
+                        // invalidation and leader switching performed by the
+                        // retry executor take effect (issue #502): a stale
+                        // captured region would otherwise reproduce the
+                        // original error on each retry — the same
+                        // stale-capture class as the scan retry fix (#267,
+                        // GRPC-08) and the pessimistic lock fix (#500).
+                        // groupStringsByRegion() populated the cache via
+                        // batchResolveRegions(), so the first attempt is a
+                        // cache hit. If the re-resolved region no longer
+                        // covers the whole key group (a split happened since
+                        // grouping, issue #505), signal the caller to
+                        // re-group instead of retrying a request the server
+                        // will keep rejecting with region errors until the
+                        // budget runs out — the same recovery idea as the
+                        // scan re-clipping in #267.
+                        $region = $this->regionResolver->getRegionInfo($firstKey);
+                        if (!$this->regionCoversAllKeys($region, $regionKeys)) {
+                            throw new RollbackRegroupSignal(
+                                'Re-resolved region no longer covers the rollback key group',
+                            );
+                        }
+                        $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
 
-                $this->logger->debug('BatchRollback', [
-                    'regionId' => $region->regionId,
-                    'keyCount' => count($regionKeys),
-                ]);
+                        $request = new BatchRollbackRequest();
+                        $request->setContext(RegionContextFactory::fromRegionInfo($region));
+                        $request->setStartVersion($this->startTs);
+                        $request->setKeys($regionKeys);
 
-                /** @var BatchRollbackResponse $response */
-                $response = $this->grpc->call(
-                    $address,
-                    'tikvpb.Tikv',
-                    'KvBatchRollback',
-                    $request,
-                    BatchRollbackResponse::class,
-                    $this->timeoutMs('write'),
-                );
-                RegionErrorHandler::check($response, $this->regionCache, $region->regionId);
+                        $this->logger->debug('BatchRollback', [
+                            'regionId' => $region->regionId,
+                            'keyCount' => count($regionKeys),
+                        ]);
 
-                $error = $response->getError();
-                if ($error !== null) {
-                    $this->handleRollbackError($error);
+                        /** @var BatchRollbackResponse $response */
+                        $response = $this->grpc->call(
+                            $address,
+                            'tikvpb.Tikv',
+                            'KvBatchRollback',
+                            $request,
+                            BatchRollbackResponse::class,
+                            $this->timeoutMs('write'),
+                        );
+                        RegionErrorHandler::check($response, $this->regionCache, $region->regionId);
+
+                        $error = $response->getError();
+                        if ($error !== null) {
+                            $this->handleRollbackError($error);
+                        }
+
+                        return null;
+                    }, $classifier);
+                } catch (RollbackRegroupSignal) {
+                    // The re-resolved region does not cover the whole key
+                    // group (a split happened since grouping, issue #505):
+                    // re-group this group's keys together with all
+                    // not-yet-processed groups' keys against the fresh
+                    // region layout and continue. Rolling back keys of
+                    // already-processed groups again would be idempotent,
+                    // but they are not re-sent (mirrors the #503 pattern).
+                    if (count($regroups) >= self::ROLLBACK_MAX_REGROUPS) {
+                        throw new RegionException(
+                            'rollback',
+                            'Region split repeatedly invalidated the rollback group',
+                        );
+                    }
+                    $regroups[] = true;
+                    $regroupKeys = $regionKeys;
+                    foreach ($keysByRegion as $laterIndex => $laterData) {
+                        if ($laterIndex > $groupIndex) {
+                            $regroupKeys = array_merge($regroupKeys, $laterData['keys']);
+                        }
+                    }
+                    $pendingKeys = array_values(array_unique($regroupKeys));
+                    $this->logger->debug('Rollback re-grouping keys after region split', [
+                        'regionId' => $regionData['region']->regionId,
+                        'keyCount' => count($pendingKeys),
+                    ]);
+                    break;
                 }
-
-                return null;
-            }, $classifier);
+            }
         }
     }
 
@@ -887,50 +938,92 @@ final readonly class TwoPhaseCommitter
             return;
         }
 
-        $keysByRegion = $this->groupStringsByRegion($pessimisticKeys);
-
         $forUpdateTs = $state->getMaxForUpdateTs() ?? $this->startTs;
 
-        foreach ($keysByRegion as $regionData) {
-            $regionKeys = $regionData['keys'];
-            $firstKey = $regionKeys[0] ?? '';
+        // Array + count() instead of an int counter: PHPStan level 9 proves
+        // an int counter incremented only inside the regroup branch is
+        // always 0 at the check site (single-pass narrowing) — same trap as
+        // PESSIMISTIC_LOCK_MAX_REGROUPS (issue #503 review).
+        /** @var list<true> $regroups */
+        $regroups = [];
+        $pendingKeys = $pessimisticKeys;
 
-            $retryExecutor->execute($firstKey, function () use ($firstKey, $regionKeys, $forUpdateTs): null {
-                // Resolve the region on every attempt so cache invalidation
-                // and leader switching performed by the retry executor take
-                // effect (issue #502) — see batchRollback() for the full
-                // stale-capture rationale (#267/#500 pattern).
-                $region = $this->regionResolver->getRegionInfo($firstKey);
-                $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
+        while ($pendingKeys !== []) {
+            $keysByRegion = $this->groupStringsByRegion($pendingKeys);
+            $pendingKeys = [];
 
-                $request = new PessimisticRollbackRequest();
-                $request->setContext(RegionContextFactory::fromRegionInfo($region));
-                $request->setStartVersion($this->startTs);
-                $request->setForUpdateTs($forUpdateTs);
-                $request->setKeys($regionKeys);
+            foreach ($keysByRegion as $groupIndex => $regionData) {
+                $regionKeys = $regionData['keys'];
+                $firstKey = $regionKeys[0] ?? '';
 
-                $this->logger->debug('PessimisticRollback', [
-                    'regionId' => $region->regionId,
-                ]);
+                try {
+                    $retryExecutor->execute($firstKey, function () use ($firstKey, $regionKeys, $forUpdateTs): null {
+                        // Resolve the region on every attempt so cache
+                        // invalidation and leader switching performed by the
+                        // retry executor take effect (issue #502) — see
+                        // batchRollback() for the full stale-capture
+                        // rationale (#267/#500 pattern) and the #505
+                        // regroup-on-split rationale.
+                        $region = $this->regionResolver->getRegionInfo($firstKey);
+                        if (!$this->regionCoversAllKeys($region, $regionKeys)) {
+                            throw new RollbackRegroupSignal(
+                                'Re-resolved region no longer covers the rollback key group',
+                            );
+                        }
+                        $address = $this->regionResolver->resolveStoreAddress($region->leaderStoreId);
 
-                /** @var PessimisticRollbackResponse $response */
-                $response = $this->grpc->call(
-                    $address,
-                    'tikvpb.Tikv',
-                    'KVPessimisticRollback',
-                    $request,
-                    PessimisticRollbackResponse::class,
-                    $this->timeoutMs('write'),
-                );
-                RegionErrorHandler::check($response, $this->regionCache, $region->regionId);
+                        $request = new PessimisticRollbackRequest();
+                        $request->setContext(RegionContextFactory::fromRegionInfo($region));
+                        $request->setStartVersion($this->startTs);
+                        $request->setForUpdateTs($forUpdateTs);
+                        $request->setKeys($regionKeys);
 
-                $errors = $response->getErrors();
-                foreach ($errors as $keyError) {
-                    $this->handleRollbackError($keyError);
+                        $this->logger->debug('PessimisticRollback', [
+                            'regionId' => $region->regionId,
+                        ]);
+
+                        /** @var PessimisticRollbackResponse $response */
+                        $response = $this->grpc->call(
+                            $address,
+                            'tikvpb.Tikv',
+                            'KVPessimisticRollback',
+                            $request,
+                            PessimisticRollbackResponse::class,
+                            $this->timeoutMs('write'),
+                        );
+                        RegionErrorHandler::check($response, $this->regionCache, $region->regionId);
+
+                        $errors = $response->getErrors();
+                        foreach ($errors as $keyError) {
+                            $this->handleRollbackError($keyError);
+                        }
+
+                        return null;
+                    }, $classifier);
+                } catch (RollbackRegroupSignal) {
+                    // Same regroup-on-split recovery as batchRollback()
+                    // above (issue #505).
+                    if (count($regroups) >= self::ROLLBACK_MAX_REGROUPS) {
+                        throw new RegionException(
+                            'pessimistic rollback',
+                            'Region split repeatedly invalidated the rollback group',
+                        );
+                    }
+                    $regroups[] = true;
+                    $regroupKeys = $regionKeys;
+                    foreach ($keysByRegion as $laterIndex => $laterData) {
+                        if ($laterIndex > $groupIndex) {
+                            $regroupKeys = array_merge($regroupKeys, $laterData['keys']);
+                        }
+                    }
+                    $pendingKeys = array_values(array_unique($regroupKeys));
+                    $this->logger->debug('Pessimistic rollback re-grouping keys after region split', [
+                        'regionId' => $regionData['region']->regionId,
+                        'keyCount' => count($pendingKeys),
+                    ]);
+                    break;
                 }
-
-                return null;
-            }, $classifier);
+            }
         }
     }
 
