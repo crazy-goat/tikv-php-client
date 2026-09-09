@@ -114,9 +114,14 @@ class RawKvBatchTest extends TestCase
 
         $this->regionCache->method('getByKey')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+        $this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()]);
         $this->grpc->method('getChannel')->willReturn(new \Grpc\Channel('127.0.0.1:1', [
             'credentials' => \Grpc\ChannelCredentials::createInsecure(),
         ]));
+
+        // No TiKV server in unit tests: the request reaches the transport layer
+        // and fails at connection time (issue #322 pattern).
+        $this->expectException(BatchPartialFailureException::class);
 
         $retryExecutor = $this->createRetryExecutor();
         $this->batch->batchPut(['k1' => 'v1', 'k2' => 'v2'], 60, $retryExecutor);
@@ -129,9 +134,14 @@ class RawKvBatchTest extends TestCase
 
         $this->regionCache->method('getByKey')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+        $this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()]);
         $this->grpc->method('getChannel')->willReturn(new \Grpc\Channel('127.0.0.1:1', [
             'credentials' => \Grpc\ChannelCredentials::createInsecure(),
         ]));
+
+        // No TiKV server in unit tests: the request reaches the transport layer
+        // and fails at connection time (issue #322 pattern).
+        $this->expectException(BatchPartialFailureException::class);
 
         $retryExecutor = $this->createRetryExecutor();
         $this->batch->batchPut(['k1' => 'v1', 'k2' => 'v2'], ['k1' => 60, 'k2' => 120], $retryExecutor);
@@ -191,9 +201,14 @@ class RawKvBatchTest extends TestCase
 
         $this->regionCache->method('getByKey')->willReturn($this->defaultRegion());
         $this->pdClient->method('getStore')->willReturn($this->defaultStore());
+        $this->pdClient->method('scanRegions')->willReturn([$this->defaultRegion()]);
         $this->grpc->method('getChannel')->willReturn(new \Grpc\Channel('127.0.0.1:1', [
             'credentials' => \Grpc\ChannelCredentials::createInsecure(),
         ]));
+
+        // No TiKV server in unit tests: the request reaches the transport layer
+        // and fails at connection time (issue #322 pattern).
+        $this->expectException(BatchPartialFailureException::class);
 
         $retryExecutor = $this->createRetryExecutor();
         // 3 keys with scalar TTL - old code would send a 1-element ttls array

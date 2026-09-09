@@ -406,6 +406,12 @@ class SstIngestorTest extends TestCase
         // No regions resolved, so no write/ingest calls either.
         $this->grpc->expects($this->never())->method('callStreaming');
 
+        // Since #244 the grouper fails closed: the key cannot be resolved to
+        // a region (PD returns nothing resolvable), so ingest() must throw
+        // instead of silently doing nothing. The empty-address skip itself is
+        // exercised by the SwitchMode path above (no `call` expected).
+        $this->expectException(\CrazyGoat\TiKV\Client\Exception\TiKvException::class);
+
         $this->ingestor->ingest(['key1' => 'value1']);
     }
 
