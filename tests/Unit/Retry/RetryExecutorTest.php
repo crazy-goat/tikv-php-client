@@ -180,7 +180,13 @@ class RetryExecutorTest extends TestCase
      * jitter (1000 + random_int(0, 1000) ms), so the reset is asserted via
      * the logged 'serverBusyBackoffMs' of each exhaustion: after a reset it
      * is one sleep (1000–2000 ms), with a carried-over budget it would be
-     * the sum of two sleeps (2000–4000 ms).
+     * the sum of two sleeps (2000–4000 ms). The two ranges touch at exactly
+     * 2000 ms (a fresh budget CAN be 2000 when both jitter draws are maximal),
+     * so a strict <2000 assertion would flake. Instead we run three
+     * executions and assert each logged budget is <= 2000: a carried-over
+     * budget (2000–4000 for the 2nd, 3000–6000 for the 3rd) exceeds 2000
+     * unless every jitter draw is maximal (~1e-9), while a fresh budget can
+     * never exceed it — no false failures, negligible false passes.
      */
     public function testServerBusyBudgetResetsPerExecuteCall(): void
     {
@@ -205,7 +211,7 @@ class RetryExecutorTest extends TestCase
             throw new TiKvException('server busy');
         };
 
-        for ($i = 0; $i < 2; $i++) {
+        for ($i = 0; $i < 3; $i++) {
             try {
                 // The never-returning operation always throws; the budget
                 // check then rethrows it after one ServerBusy sleep.
@@ -215,13 +221,14 @@ class RetryExecutorTest extends TestCase
             }
         }
 
-        // Both exhaustions must see a fresh (single-sleep) ServerBusy budget.
-        $this->assertCount(2, $loggedBudgets);
+        // Each exhaustion must see a fresh (single-sleep) ServerBusy budget;
+        // see the docblock for why this is <= 2000 rather than < 2000.
+        $this->assertCount(3, $loggedBudgets);
         foreach ($loggedBudgets as $serverBusyBackoffMs) {
-            $this->assertLessThan(
+            $this->assertLessThanOrEqual(
                 2000,
                 $serverBusyBackoffMs,
-                'Second execute() must start the ServerBusy budget from 0, not carry over the first sleep',
+                'Later execute() calls must start the ServerBusy budget from 0, not carry over earlier sleeps',
             );
         }
     }
