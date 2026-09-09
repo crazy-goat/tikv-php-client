@@ -105,6 +105,32 @@ class RetryDeadlineTest extends TestCase
         }
     }
 
+    public function testPutFailsWithinConfiguredDeadlineWhenServerAlwaysBusy(): void
+    {
+        // Issue #237 acceptance criterion: a persistently ServerIsBusy
+        // cluster must make a *write* fail within the deadline too.
+        $client = new RawKvClient(
+            $this->pdClient,
+            $this->grpc,
+            $this->regionCache,
+            maxBackoffMs: 0,
+            retryDeadlineMs: 50,
+        );
+        $this->alwaysServerBusy();
+
+        $startMs = (int) (microtime(true) * 1000);
+
+        $this->expectException(RetryBudgetExhaustedException::class);
+        $this->expectExceptionMessage('Retry deadline');
+
+        try {
+            $client->put('key', 'value');
+        } finally {
+            $elapsedMs = (int) (microtime(true) * 1000) - $startMs;
+            $this->assertLessThanOrEqual(50 + self::ELAPSED_TOLERANCE_MS, $elapsedMs);
+        }
+    }
+
     public function testGetThrowsRetryBudgetExhaustedUnderSustainedServerBusy(): void
     {
         $client = new RawKvClient(

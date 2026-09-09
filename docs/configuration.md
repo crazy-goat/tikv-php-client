@@ -461,10 +461,11 @@ The client automatically retries failed operations:
 $client = RawKvClient::create(['127.0.0.1:2379']);
 // - Max backoff: 20 seconds (non-ServerBusy errors, cumulative)
 // - Server busy budget: 60 seconds (cumulative ServerBusy sleep)
-// - Retry deadline: 30 seconds (checked before each retry attempt; occupancy
-//   can exceed it by one final backoff sleep plus the duration of the last
-//   in-flight RPC, which is bounded only by the gRPC timeout option
-//   (options['timeout']), not by the retry deadline)
+// - Retry deadline: 30 seconds (checked before each retry attempt AND before
+//   each backoff sleep, which is clamped to the remaining budget; occupancy
+//   can still exceed it by the duration of the last in-flight RPC, which is
+//   bounded only by the gRPC timeout option (options['timeout']), not by the
+//   retry deadline)
 
 // Custom retry deadline (issue #294) — bounds the blocking backoff loop so a
 // sustained ServerIsBusy episode cannot pin a PHP-FPM worker for minutes:
@@ -473,11 +474,11 @@ $client = RawKvClient::create(['127.0.0.1:2379'], [
 ]);
 ```
 
-> **Occupancy note:** the deadline is a per-attempt check, not a hard cutoff —
-> an operation may occupy the worker for the deadline plus one final backoff
-> sleep (up to ~10 s under ServerIsBusy) plus the full wall time of the last
-> in-flight RPC. Example: `retryDeadlineMs => 1000` with a gRPC call that
-> runs 5 s ⇒ real occupancy ≈ 6 s + sleep, despite the 1 s deadline.
+> **Occupancy note:** the deadline is checked before every attempt AND
+> before every backoff sleep (which is clamped to the remaining budget), so
+> sleeping cannot overshoot it — but an in-flight RPC cannot be interrupted.
+> Example: `retryDeadlineMs => 1000` with a gRPC call that runs 5 s ⇒ real
+> occupancy ≈ 6 s (the deadline is enforced when that RPC returns).
 
 > **Worker occupancy note:** `serverBusyBudgetMs` is effectively a
 > worker-occupancy setting — it caps how long ONE operation may block a PHP
@@ -541,7 +542,7 @@ infinite busy loops when the underlying error has zero backoff delay
 | Bound | Default | Description |
 |-------|---------|-------------|
 | `maxAttempts` | `30` | Maximum number of times the operation is invoked before the executor gives up. |
-| `deadlineMs` | `0` (disabled) | Optional wall-clock deadline from the start of the call. When set, the executor terminates if the deadline is reached, regardless of `sleepMs`. |
+| `deadlineMs` | `30000` (`RetryExecutor::DEFAULT_RETRY_DEADLINE_MS`; `0` disables) | Wall-clock deadline from the start of the call. Checked before each attempt and before each backoff sleep (the sleep is clamped to the remaining budget); the executor terminates when it is reached, regardless of `sleepMs`. |
 
 When either bound is reached the executor throws
 `RetryBudgetExhaustedException` (extends `TiKvException`). This exception
