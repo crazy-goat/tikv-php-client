@@ -651,3 +651,17 @@ to match `str_contains($message, 'NotLeader')`-style rules;
 tests run with `php -n` (no ext-grpc). Deadlines: DEADLINE_EXCEEDED stays
 retryable because the outcome is indeterminate; the idempotency split is
 REG-08's job, not the classifier's.
+
+
+## Jittered backoff makes "exact retry count" budget tests flaky — assert ranges with a shared-budget lower bound
+
+When all `BackoffType`s became jittered (issue #242, equal jitter `[expo/2, expo]`), unit
+tests that asserted an **exact** retry/call count against a `maxBackoffMs` budget broke:
+randomly halved sleeps can squeeze one extra attempt into the same budget
+(`tests/Unit/RawKv/RetryBudgetSharedAcrossRegionsTest.php` went from always 6 calls to
+6–8). Fix pattern: assert the invariant the test actually cares about — the *lower* bound
+that distinguishes per-region from shared budgets (`>= 6`) plus a derived upper bound
+(`<= 8`) — not the exact count. Anything comparing budget-exhaustion attempt counts must
+now tolerate ±1 attempt per jittered exponential step. Also: `1 << $attempt` instead of
+`2 ** $attempt` keeps the exponent math int-typed so Rector's `RecastingRemovalRector`
+doesn't strip a needed `(int)` cast before `intdiv()`.

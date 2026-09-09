@@ -69,13 +69,16 @@ enum BackoffType
         };
     }
 
+    /**
+     * All backoff types use equal jitter. Errors such as NotLeader and
+     * RegionMiss are fleet-correlated (a leader transfer or region split is
+     * observed by every client at nearly the same instant), so a deterministic
+     * delay would make all clients retry in lockstep against the node that
+     * most needs to be left alone (issue #242, REG-11).
+     */
     public function equalJitter(): bool
     {
-        return match ($this) {
-            self::ServerBusy, self::TiKvRpc, self::RecoveryInProgress, self::IsWitness,
-            self::TxnLock => true,
-            default => false,
-        };
+        return true;
     }
 
     public function sleepMs(int $attempt): int
