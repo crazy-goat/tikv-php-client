@@ -10,6 +10,7 @@ use CrazyGoat\TiKV\Client\Cache\RegionCacheInterface;
 use CrazyGoat\TiKV\Client\Connection\PdClientInterface;
 use CrazyGoat\TiKV\Client\Exception\InvalidStoreAddressException;
 use CrazyGoat\TiKV\Client\Exception\StoreNotFoundException;
+use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Observability\MetricsInterface;
 use CrazyGoat\TiKV\Client\Observability\NoOpMetrics;
 use CrazyGoat\TiKV\Client\Region\Dto\RegionInfo;
@@ -93,8 +94,16 @@ final readonly class RegionResolver
      * Resolve regions for a batch of keys using a single scanRegions() call
      * instead of one getRegion() per key. Populates the cache as a side effect.
      *
+     * Every key must be assigned to a region: an unresolvable key is a bug
+     * or a transient PD inconsistency, never an expected condition, and
+     * silently dropping it would lose the key from the batch (batchPut()
+     * would report success without writing it). This method therefore
+     * fails closed and throws naming the first unresolvable key — callers
+     * that group keys via {@see RegionGrouper} get the same guarantee.
+     *
      * @param string[] $keys
      * @return array<string, RegionInfo> key => region mapping
+     * @throws TiKvException when any key cannot be mapped to a region
      */
     public function batchResolveRegions(array $keys): array
     {
@@ -108,13 +117,31 @@ final readonly class RegionResolver
         $minKey = $sorted[0];
         $maxKey = end($sorted);
 
-        $regions = $this->pdClient->scanRegions($minKey, $maxKey);
+        // scanRegions(start, end) is half-open and stops before the first
+        // region whose startKey >= end. Passing the maximum key verbatim
+        // excluded the region that begins exactly at the maximum key, so
+        // that key found no region and was silently dropped from the batch
+        // (issue #244). Appending "\x00" yields the smallest key strictly
+        // greater than $maxKey, making the scan inclusive of the region
+        // owning the maximum key (client-go resolves the last key
+        // inclusively).
+        $regions = $this->pdClient->scanRegions($minKey, $maxKey . "\x00");
 
         foreach ($regions as $region) {
             $this->regionCache->put($region);
         }
 
-        return $this->assignKeysToRegions($keys, $regions);
+        $resolved = $this->assignKeysToRegions($keys, $regions);
+        foreach ($keys as $key) {
+            if (!isset($resolved[$key])) {
+                throw new TiKvException(sprintf(
+                    'PD could not resolve the region for key "%s"; refusing to silently drop it from the batch',
+                    $key,
+                ));
+            }
+        }
+
+        return $resolved;
     }
 
     /**
