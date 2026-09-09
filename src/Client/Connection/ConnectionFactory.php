@@ -60,7 +60,13 @@ final class ConnectionFactory
 
         $grpc = new GrpcClient($resolvedLogger, $tlsConfig, metrics: $metrics);
         $storeCache = new StoreCache(logger: $resolvedLogger);
-        $pdClient = new PdClient($grpc, $pdEndpoints[0], $resolvedLogger, $storeCache);
+        $pdClient = new PdClient(
+            $grpc,
+            $pdEndpoints[0],
+            $resolvedLogger,
+            $storeCache,
+            self::resolveLowResMaxStalenessMs($options),
+        );
 
         $timeoutConfig = self::buildTimeoutConfig($options);
         $slowLogConfig = self::buildSlowLogConfig($options);
@@ -152,6 +158,29 @@ final class ConnectionFactory
             'storeHostPolicy' => $storeHostPolicy,
             'allowedStorePorts' => $allowedStorePorts,
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private static function resolveLowResMaxStalenessMs(array $options): ?int
+    {
+        if (!array_key_exists('lowResTimestampMaxStalenessMs', $options)) {
+            return null;
+        }
+
+        $stalenessMs = $options['lowResTimestampMaxStalenessMs'];
+        if (!is_int($stalenessMs)) {
+            throw new InvalidArgumentException(sprintf(
+                "options['lowResTimestampMaxStalenessMs'] must be an int (milliseconds), %s given",
+                get_debug_type($stalenessMs),
+            ));
+        }
+        if ($stalenessMs < 0) {
+            throw new InvalidArgumentException("options['lowResTimestampMaxStalenessMs'] must be >= 0");
+        }
+
+        return $stalenessMs;
     }
 
     /**

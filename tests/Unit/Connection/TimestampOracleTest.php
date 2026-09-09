@@ -13,6 +13,7 @@ use CrazyGoat\TiKV\Client\Connection\TimestampOracle;
 use CrazyGoat\TiKV\Client\Exception\GrpcException;
 use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -322,5 +323,211 @@ class TimestampOracleTest extends TestCase
         $this->expectException(TiKvException::class);
         $this->expectExceptionMessage('TSO request failed');
         $oracle->getTimestamp();
+    }
+
+    // ==================================================================
+    // Batch TSO (issue #420, GAP-06)
+    // ==================================================================
+
+    private function makeTsoResponse(int $physical, int $logical, int $count): TsoResponse
+    {
+        $ts = new Timestamp();
+        $ts->setPhysical($physical);
+        $ts->setLogical($logical);
+
+        $response = new TsoResponse();
+        $response->setTimestamp($ts);
+        $response->setCount($count);
+
+        return $response;
+    }
+
+    private function makeOracle(
+        GrpcClientInterface&MockObject $grpc,
+        ?int $stalenessMs = null,
+        ?\Closure $clock = null,
+    ): TimestampOracle {
+        $pdClient = $this->createMock(PdClientInterface::class);
+        $pdClient->method('getClusterId')->willReturn(1);
+
+        return new TimestampOracle(
+            $grpc,
+            '127.0.0.1:2379',
+            fn() => $pdClient->getClusterId(),
+            fn(int $id) => $pdClient->setClusterId($id),
+            new NullLogger(),
+            $stalenessMs,
+            $clock,
+        );
+    }
+
+    public function testGetTimestampBatchSendsCountOnWireAndHandsOutConsecutiveTimestamps(): void
+    {
+        $grpc = $this->createMock(GrpcClientInterface::class);
+
+        // Logical counter near the 18-bit wrap: the handout must cross
+        // into the next physical millisecond while staying monotonic.
+        $grpc->expects($this->once())
+            ->method('call')
+            ->with(
+                '127.0.0.1:2379',
+                'pdpb.PD',
+                'Tso',
+                $this->callback(fn (TsoRequest $request): bool => $request->getCount() === 64),
+                TsoResponse::class,
+                null,
+            )
+            ->willReturn($this->makeTsoResponse(1715000000000, (1 << 18) - 2, 64));
+
+        $oracle = $this->makeOracle($grpc);
+        $range = $oracle->getTimestampBatch(64);
+
+        $this->assertCount(64, $range);
+        $this->assertSame(((1715000000000 << 18) + ((1 << 18) - 2)), $range[0]);
+        // Monotonic and consecutive.
+        for ($i = 1; $i < 64; $i++) {
+            $this->assertSame($range[$i - 1] + 1, $range[$i], "element $i");
+        }
+        // Crossing the logical wrap lands in the next physical ms.
+        $this->assertSame(1715000000001 << 18, $range[2]);
+        $this->assertSame(((1715000000001 << 18) + 61), $range[63]);
+    }
+
+    public function testGetTimestampBatchRejectsCountBelowOne(): void
+    {
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->expects($this->never())->method('call');
+
+        $oracle = $this->makeOracle($grpc);
+
+        $this->expectException(\CrazyGoat\TiKV\Client\Exception\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Timestamp batch count must be >= 1');
+        $oracle->getTimestampBatch(0);
+    }
+
+    public function testGetTimestampBatchNeverExceedsGrantedCount(): void
+    {
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        // PD grants fewer timestamps than requested (count=2 for count=64).
+        $grpc->method('call')->willReturn($this->makeTsoResponse(1715000000000, 7, 2));
+
+        $oracle = $this->makeOracle($grpc);
+        $range = $oracle->getTimestampBatch(64);
+
+        $this->assertCount(2, $range);
+        $this->assertSame(((1715000000000 << 18) + 7), $range[0]);
+        $this->assertSame(((1715000000000 << 18) + 8), $range[1]);
+    }
+
+    public function testGetTimestampDelegatesToBatchWithCountOne(): void
+    {
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->expects($this->once())
+            ->method('call')
+            ->with(
+                '127.0.0.1:2379',
+                'pdpb.PD',
+                'Tso',
+                $this->callback(fn (TsoRequest $request): bool => $request->getCount() === 1),
+                TsoResponse::class,
+                null,
+            )
+            ->willReturn($this->makeTsoResponse(1715000000000, 5, 1));
+
+        $oracle = $this->makeOracle($grpc);
+        $this->assertSame(((1715000000000 << 18) + 5), $oracle->getTimestamp());
+    }
+
+    // ==================================================================
+    // Low-resolution timestamp cache (issue #420, GAP-06)
+    // ==================================================================
+
+    public function testLowResolutionTimestampReusesCacheWithinStalenessBound(): void
+    {
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        // Exactly one TSO RPC: the second call inside the staleness
+        // window must be served from the cache.
+        $grpc->expects($this->once())
+            ->method('call')
+            ->willReturn($this->makeTsoResponse(1715000000000, 9, 1));
+
+        $nowMs = 1_000_000;
+        $clock = function () use (&$nowMs): int {
+            return $nowMs;
+        };
+        $oracle = $this->makeOracle($grpc, stalenessMs: 100, clock: $clock);
+
+        $this->assertSame(((1715000000000 << 18) + 9), $oracle->getLowResolutionTimestamp());
+        $nowMs = 1_000_100; // exactly at the bound: still fresh
+        $this->assertSame(((1715000000000 << 18) + 9), $oracle->getLowResolutionTimestamp());
+    }
+
+    public function testLowResolutionTimestampRefetchesWhenStalenessBoundExceeded(): void
+    {
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->method('call')->willReturnOnConsecutiveCalls(
+            $this->makeTsoResponse(1715000000000, 9, 1),
+            $this->makeTsoResponse(1715000000001, 10, 1),
+        );
+
+        $nowMs = 1_000_000;
+        $clock = function () use (&$nowMs): int {
+            return $nowMs;
+        };
+        $oracle = $this->makeOracle($grpc, stalenessMs: 100, clock: $clock);
+
+        $this->assertSame(((1715000000000 << 18) + 9), $oracle->getLowResolutionTimestamp());
+        $nowMs = 1_000_101; // one ms past the bound
+        $this->assertSame(((1715000000001 << 18) + 10), $oracle->getLowResolutionTimestamp());
+    }
+
+    public function testLowResolutionTimestampRefetchesWhenClockMovesBackwards(): void
+    {
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->method('call')->willReturnOnConsecutiveCalls(
+            $this->makeTsoResponse(1715000000000, 9, 1),
+            $this->makeTsoResponse(1715000000001, 10, 1),
+        );
+
+        $nowMs = 1_000_000;
+        $clock = function () use (&$nowMs): int {
+            return $nowMs;
+        };
+        $oracle = $this->makeOracle($grpc, stalenessMs: 100, clock: $clock);
+
+        $this->assertSame(((1715000000000 << 18) + 9), $oracle->getLowResolutionTimestamp());
+        $nowMs = 999_999; // clock jump backwards: negative age must not count as fresh
+        $this->assertSame(((1715000000001 << 18) + 10), $oracle->getLowResolutionTimestamp());
+    }
+
+    public function testLowResolutionTimestampWithoutBoundFetchesFreshEveryCall(): void
+    {
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturn($this->makeTsoResponse(1715000000000, 9, 1));
+
+        $oracle = $this->makeOracle($grpc);
+
+        $oracle->getLowResolutionTimestamp();
+        $oracle->getLowResolutionTimestamp();
+    }
+
+    public function testLowResolutionTimestampZeroStalenessNeverServesCache(): void
+    {
+        $grpc = $this->createMock(GrpcClientInterface::class);
+        $grpc->expects($this->exactly(2))
+            ->method('call')
+            ->willReturn($this->makeTsoResponse(1715000000000, 9, 1));
+
+        $nowMs = 1_000_000;
+        $clock = function () use (&$nowMs): int {
+            return $nowMs;
+        };
+        $oracle = $this->makeOracle($grpc, stalenessMs: 0, clock: $clock);
+
+        $oracle->getLowResolutionTimestamp();
+        $nowMs = 1_000_001; // any elapsed ms exceeds the 0 bound
+        $oracle->getLowResolutionTimestamp();
     }
 }

@@ -58,6 +58,15 @@ $options = [
     // but let begin() accept timestamps up to this much staler; the read
     // itself still fails typed (TxnAbortedByGcException) when GC has passed.
     'gcSafePointRefreshMs' => 30000,
+    // Low-resolution TSO timestamp cache (issue #420): maximum allowed
+    // staleness in milliseconds of the timestamp served by
+    // PdClientInterface::getLowResolutionTimestamp(). TxnKvClient only —
+    // used only by staleness-tolerant consumers (lock resolution
+    // current_ts); start/commit timestamps always come from a fresh TSO
+    // RPC. Default: unset = no caching (each call fetches fresh). 0
+    // bounds staleness but never returns a timestamp cached from an
+    // earlier millisecond.
+    'lowResTimestampMaxStalenessMs' => 200,
     // Replica read preference (issue #421): an instance of
     // ReplicaReadPolicy controlling which peer serves read requests.
     // Default: leader-only (unchanged behaviour). See "Replica Reads".
@@ -95,6 +104,27 @@ $client = RawKvClient::create([
 ```
 
 **Note**: Currently only the first endpoint is used. Future versions will support failover.
+
+### Timestamp Batching and the Low-Resolution Cache (issue #420)
+
+`PdClientInterface::getTimestamp()` performs one PD `Tso` RPC per call,
+exactly as before — transaction start/commit timestamps are never cached
+or reused. Two additive APIs reduce PD traffic where that is safe:
+
+- `getTimestampBatch(int $count)` requests up to `$count` timestamps in
+  a single `Tso` RPC (`TsoRequest.count`) and hands them out in order
+  (consecutive values; the 18-bit logical counter wraps into the next
+  physical millisecond correctly). PD may grant fewer timestamps than
+  requested; the returned list never exceeds the grant.
+- `getLowResolutionTimestamp()` returns a timestamp that is at most
+  `lowResTimestampMaxStalenessMs` old (option below; default unset =
+  fresh fetch, i.e. unchanged behaviour). It is used internally by lock
+  resolution (`CheckTxnStatus.current_ts`) and is safe only for
+  staleness-tolerant consumers — never for start/commit timestamps.
+
+Additionally, the pessimistic-lock path in `TwoPhaseCommitter` acquires
+one `for_update_ts` per locking pass instead of one per region, cutting
+one PD round trip per additional region.
 
 ### Store Address Validation
 

@@ -79,7 +79,7 @@ class LockResolverTest extends TestCase
         $regionResolver = new RegionResolver($this->pdClient, $this->regionCache);
 
         // Fresh TSO for every checkTxnStatus; individual tests override with expects().
-        $this->pdClient->method('getTimestamp')->willReturn(self::TSO_TIMESTAMP);
+        $this->pdClient->method('getLowResolutionTimestamp')->willReturn(self::TSO_TIMESTAMP);
 
         return new LockResolver(
             $this->grpc,
@@ -412,7 +412,7 @@ class LockResolverTest extends TestCase
 
         $freshTso = (1 << 42) | 4242;
         $this->pdClient->expects($this->once())
-            ->method('getTimestamp')
+            ->method('getLowResolutionTimestamp')
             ->with($this->greaterThan(0)) // the TSO call must carry a finite timeout
             ->willReturn($freshTso);
 

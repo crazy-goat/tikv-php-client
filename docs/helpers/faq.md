@@ -805,3 +805,35 @@ site. Explicit `use ($resp)` (by value) or `use (&$queue, &$index)` (by
 reference) behaves correctly. Every existing test in this repo already
 passes captured variables explicitly — keep that style; found while writing
 the #419 one-phase/async-commit tests (see `OnePhaseAsyncCommitTest`).
+
+## A constant named "capacity" used as a shift amount shifts away the whole timestamp — name bit counts explicitly
+
+Adding the #420 batch TSO handout, `($physical << self::LOGICAL_CAPACITY)` with
+`LOGICAL_CAPACITY = 1 << 18` shifted by **262144** bits instead of 18, silently
+zeroing the physical part (`1715000000000 << 262144 === 0`) — and the whole
+existing composed-timestamp test suite failed at once, which is the only reason
+it was caught. Rule: constants feeding `<<`/`>>` must be named `*_SHIFT` (bit
+count) or `*_CAPACITY` (value used with `&`/`+`), never interchangeably; when a
+constant is used as a shift amount, prefer an arithmetic identity the tests
+can check (`base = physical * capacity + logical` would have been shift-free).
+A failed-by-zero composition looks like "PD returned physical=0" — hard to
+attribute to the constant, easy to blame the mock.
+
+## TSO batching / low-res cache semantics (#420)
+
+Facts fixed by the implementation, worth not re-deriving:
+
+- A `TsoResponse` grant of $count timestamps hands out as consecutive
+  integers `base … base + $count - 1`; plain integer addition wraps the
+  18-bit logical counter into the next physical millisecond correctly
+  (no manual wrap logic needed). PD may grant *fewer* than requested —
+  never hand out beyond the grant (`TsoResponse.count`), and a missing
+  count (0) is treated as a single-timestamp grant with a warning.
+- `getLowResolutionTimestamp()` must treat a **negative clock age** as
+  stale: a backwards clock jump otherwise serves a timestamp that is
+  already older than the bound (the `ageMs >= 0` guard). `0` staleness
+  only ever reuses a timestamp fetched in the same millisecond.
+- `TimestampOracle` dropped `final readonly` → `final` because the
+  low-res cache lazily mutates state; readonly properties cannot be
+  reassigned after construction. Cache-carrying services can't be
+  `readonly` classes.
