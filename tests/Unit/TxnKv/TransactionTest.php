@@ -424,7 +424,7 @@ class TransactionTest extends TestCase
     }
 
     /**
-     * @param array<string, string> $keys
+     * @param array<string|int, string> $keys
      */
     private function makeScanResponse(array $keys): ScanResponse
     {
@@ -432,7 +432,7 @@ class TransactionTest extends TestCase
         $pairs = [];
         foreach ($keys as $k => $v) {
             $pair = new KvPair();
-            $pair->setKey($k);
+            $pair->setKey((string) $k);
             $pair->setValue($v);
             $pairs[] = $pair;
         }
@@ -570,6 +570,115 @@ class TransactionTest extends TestCase
         $this->assertCount(2, $result);
         $this->assertSame('local-v1', $result[0]['value']);
         $this->assertSame('scanned-v2', $result[1]['value']);
+    }
+
+    public function testScanMergesWriteSetInByteOrderNotNumericOrder(): void
+    {
+        // TiKV returns pairs in byte order: '10' < '9' < 'b' (bytewise).
+        // The write set adds '9'. PHP's default sort() compares numeric
+        // strings numerically ('9' < '10'), which would return '9' before
+        // '10' and break pagination on the last returned key (issue #331).
+        $region = $this->makeRegion(1, '', '');
+        $this->pdClient->method('scanRegions')->willReturn([$region]);
+        $this->stubScanRegionLookup([$region]);
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+
+        $scanResponse = $this->makeScanResponse([
+            '10' => 'a',
+            'b' => 'c',
+        ]);
+        $this->grpc->method('call')->willReturn($scanResponse);
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('9', 'z');
+        $result = $txn->scan('', '', 0);
+
+        $this->assertSame(
+            ['10', '9', 'b'],
+            array_column($result, 'key'),
+            'merged results must be in byte order, matching what TiKV returns',
+        );
+        // assertSame() against string literals also proves the keys are
+        // string-typed: an int key (PHP numeric-key coercion) would fail
+        // the identical comparison.
+    }
+
+    public function testScanRangeFilterUsesByteOrderForWriteSetKeys(): void
+    {
+        // Write set has '9'; scan range is ['10', 'b'). Bytewise '9' >= '10'
+        // and '9' < 'b', so '9' is INSIDE the range and must appear after
+        // '10' (byte order). PHP's loose comparison treats '9' < '10'
+        // numerically and would drop it (issue #331).
+        $region = $this->makeRegion(1, '', '');
+        $this->pdClient->method('scanRegions')->willReturn([$region]);
+        $this->stubScanRegionLookup([$region]);
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+
+        $scanResponse = $this->makeScanResponse(['10' => 'a']);
+        $this->grpc->method('call')->willReturn($scanResponse);
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('9', 'z');
+        $result = $txn->scan('10', 'b', 0);
+
+        $this->assertSame(['10', '9'], array_column($result, 'key'));
+    }
+
+    public function testScanRangeFilterExcludesNumericKeyOutOfRangeBytewise(): void
+    {
+        // Write set has '19'; scan range is ['2', '3'). Numerically '19' is
+        // inside [2, 3), but bytewise '19' < '2', so it is OUT of range and
+        // must not appear (issue #331).
+        $region = $this->makeRegion(1, '', '');
+        $this->pdClient->method('scanRegions')->willReturn([$region]);
+        $this->stubScanRegionLookup([$region]);
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+
+        $scanResponse = $this->makeScanResponse(['2' => 'a']);
+        $this->grpc->method('call')->willReturn($scanResponse);
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set('19', 'z');
+        $result = $txn->scan('2', '3', 0);
+
+        $this->assertSame(['2'], array_column($result, 'key'));
+    }
+
+    public function testScanMergeWithBinaryKeys(): void
+    {
+        // Write-set keys "\x00a" (byte 0x00) and "\xffz" (byte 0xFF) sort
+        // before and after the scanned 'b' bytewise; the range filter
+        // ['\x00a', 'b') must exclude "\xffz" (issue #331).
+        $region = $this->makeRegion(1, '', '');
+        $this->pdClient->method('scanRegions')->willReturn([$region]);
+        $this->stubScanRegionLookup([$region]);
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+
+        $scanResponse = $this->makeScanResponse(['b' => 'c']);
+        $emptyResponse = $this->makeScanResponse([]);
+        // The mock has no range filter; the second scan (endKey "\x00b")
+        // gets an empty TiKV batch so only the in-range write-set key shows.
+        $respond = static fn (ScanRequest $request): object => $request->getEndKey() === "\x00b"
+            ? $emptyResponse
+            : $scanResponse;
+        $this->grpc->method('call')->willReturnCallback(
+            static fn (string $addr, string $svc, string $method, ScanRequest $request): object => $respond($request),
+        );
+
+        $txn = $this->createTransaction(['pessimistic' => false]);
+        $txn->set("\x00a", 'low');
+        $txn->set("\xffz", 'high');
+        $result = $txn->scan('', '', 0);
+
+        $this->assertSame(["\x00a", 'b', "\xffz"], array_column($result, 'key'));
+        $this->assertSame(['low', 'c', 'high'], array_column($result, 'value'));
+
+        $limited = $txn->scan('', "\x00b", 0);
+        $this->assertSame(
+            ["\x00a"],
+            array_column($limited, 'key'),
+            '"\xffz" is outside the range in byte order and must be filtered',
+        );
     }
 
     public function testScanNormalizesNumericStringKeysFromTiKv(): void

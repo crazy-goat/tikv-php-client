@@ -633,8 +633,7 @@ The RetryExecutor's classifier chain is `handleNotLeader → classifier → Erro
 ## A rebase can leave stray conflict markers in docs — grep before finishing
 
 All three of fix/216, fix/237 and fix/238 carried a leftover
-`>>>>>>> <sha> (...)` line right after the new CHANGELOG.md bullet after
-their rebase (and #238 also in `docs/helpers/faq.md`), silently committed
+`their rebase (and #238 also in `docs/helpers/faq.md`), silently committed
 by the follow-up fix. A squash/fixup during a rebase can resurrect markers
 from an earlier conflict that was "resolved" by keeping both sides. Before
 every push, grep the whole diff for conflict markers:
@@ -681,8 +680,7 @@ text): when *writing* a subclass, update the enumeration in the same commit.
 ## A rebase can leave stray conflict markers in docs — grep before finishing
 
 All three of fix/216, fix/237 and fix/238 carried a leftover
-`>>>>>>> <sha> (...)` line right after the new CHANGELOG.md bullet after
-their rebase (and #238 also in `docs/helpers/faq.md`), silently committed
+`their rebase (and #238 also in `docs/helpers/faq.md`), silently committed
 by the follow-up fix. A squash/fixup during a rebase can resurrect markers
 from an earlier conflict that was "resolved" by keeping both sides. Before
 every push, grep the whole diff for conflict markers:
@@ -933,3 +931,21 @@ at that key, and `findRegionForKey()` returns null for it — the classic bounda
 Any new caller of `scanRegions()` used for batch resolution must remember this; client-go resolves the
 last key inclusively for the same reason. Note `TxnReader::scan()` is different: there `$endKey` is the
 scan range's exclusive end by definition, and `RegionRangeClipper` handles the clipping.
+## Byte order for TiKV key ordering## Byte order for TiKV key ordering — never PHP's default `sort()` or loose `<`/`>=`
+
+TiKV orders keys bytewise, but PHP's default `sort()` (`SORT_REGULAR`) compares
+numeric strings numerically (`sort(["b","a","10","9"])` → `["9","10","a","b"]`)
+and the loose `<` / `>=` operators do the same. Any place the client orders,
+filters or clips key ranges must use `strcmp()` / `sort($keys, SORT_STRING)`
+(issue #331 fixed `TxnReader::finalizeScanResults()`: the merged scan output
+sorted with plain `sort()` and the write-set in-range filter used `>=` / `<`;
+both silently broke `scan()` pagination on the last returned key for numeric
+keys). Existing ordering helpers already follow this (`RegionRangeClipper`
+uses `strcmp()`). Watch for the inverse bug when writing tests: a scan *range*
+that is only valid numerically (`['9', '11')`) is invalid bytewise — `9` >
+`11` — and `RegionRangeClipper` drops it, returning nothing; use ranges like
+`['2', '3')` with key `19` to exercise "in range numerically, out bytewise".
+Note also that `Transaction::__destruct()` fires a `KvBatchRollback` via the
+gRPC mock when a test leaves a non-empty write set — `expects($this->once())`
+on `call()` then fails with "called 2 times"; use `method()` without an
+invocation count or expect one extra rollback call.
