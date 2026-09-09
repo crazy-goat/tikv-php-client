@@ -27,6 +27,15 @@ final class GrpcClient implements GrpcClientInterface
 
     private const DEFAULT_MAX_CHANNELS = 64;
     private const DEFAULT_IDLE_TTL_MS = 600000; // 10 minutes
+    /**
+     * Defaults large enough for MAX_SCAN_LIMIT (10240 rows) responses — the
+     * gRPC C core's own default receive limit is 4 MB, which a full-limit
+     * scan with average-size values exceeds (issue #265).
+     */
+    public const DEFAULT_MAX_RECEIVE_MESSAGE_BYTES = 67108864; // 64 MB
+    public const DEFAULT_MAX_SEND_MESSAGE_BYTES = 67108864; // 64 MB
+    public const DEFAULT_KEEPALIVE_TIME_MS = 10000;
+    public const DEFAULT_KEEPALIVE_TIMEOUT_MS = 3000;
 
     /**
      * @param bool $allowInsecure When true (default), an insecure (plaintext) gRPC channel
@@ -35,6 +44,16 @@ final class GrpcClient implements GrpcClientInterface
      *                            an InvalidStateException is thrown if no TLS credentials
      *                            are available. Set this to false to ensure all connections
      *                            use TLS.
+     * @param int $maxReceiveMessageBytes grpc.max_receive_message_length channel argument
+     *                                    in bytes (default 64 MB). The gRPC C core default
+     *                                    is 4 MB, which scans/batch reads at MAX_SCAN_LIMIT
+     *                                    can exceed, failing with RESOURCE_EXHAUSTED (issue #265).
+     * @param int $maxSendMessageBytes grpc.max_send_message_length channel argument in bytes
+     *                                 (default 64 MB).
+     * @param int $keepaliveTimeMs grpc.keepalive_time_ms channel argument (default 10 s) —
+     *                             how often to ping an idle connection so NAT/firewall-dropped
+     *                             flows are detected instead of silently dead.
+     * @param int $keepaliveTimeoutMs grpc.keepalive_timeout_ms channel argument (default 3 s).
      */
     public function __construct(
         private readonly LoggerInterface $logger = new NullLogger(),
@@ -43,10 +62,34 @@ final class GrpcClient implements GrpcClientInterface
         private readonly int $idleTtlMs = self::DEFAULT_IDLE_TTL_MS,
         private readonly bool $allowInsecure = true,
         private readonly MetricsInterface $metrics = new NoOpMetrics(),
+        private readonly int $maxReceiveMessageBytes = self::DEFAULT_MAX_RECEIVE_MESSAGE_BYTES,
+        private readonly int $maxSendMessageBytes = self::DEFAULT_MAX_SEND_MESSAGE_BYTES,
+        private readonly int $keepaliveTimeMs = self::DEFAULT_KEEPALIVE_TIME_MS,
+        private readonly int $keepaliveTimeoutMs = self::DEFAULT_KEEPALIVE_TIMEOUT_MS,
     ) {
         if ($this->maxChannels < 1) {
             throw new \CrazyGoat\TiKV\Client\Exception\InvalidArgumentException(
                 'maxChannels must be at least 1',
+            );
+        }
+        if ($this->maxReceiveMessageBytes < 1) {
+            throw new \CrazyGoat\TiKV\Client\Exception\InvalidArgumentException(
+                'maxReceiveMessageBytes must be at least 1',
+            );
+        }
+        if ($this->maxSendMessageBytes < 1) {
+            throw new \CrazyGoat\TiKV\Client\Exception\InvalidArgumentException(
+                'maxSendMessageBytes must be at least 1',
+            );
+        }
+        if ($this->keepaliveTimeMs < 1) {
+            throw new \CrazyGoat\TiKV\Client\Exception\InvalidArgumentException(
+                'keepaliveTimeMs must be at least 1',
+            );
+        }
+        if ($this->keepaliveTimeoutMs < 1) {
+            throw new \CrazyGoat\TiKV\Client\Exception\InvalidArgumentException(
+                'keepaliveTimeoutMs must be at least 1',
             );
         }
     }
@@ -432,6 +475,7 @@ final class GrpcClient implements GrpcClientInterface
 
         $channel = new Channel($address, [
             'credentials' => $credentials,
+            ...$this->channelArgs(),
         ]);
 
         $this->channels[$address] = [
@@ -441,6 +485,27 @@ final class GrpcClient implements GrpcClientInterface
         ];
 
         return $channel;
+    }
+
+    /**
+     * gRPC channel arguments applied to every created channel (issue #265).
+     *
+     * Note: adding channel arguments changes ext-grpc's persistent-channel
+     * key, which is desirable — two GrpcClient instances configured
+     * differently get distinct channels.
+     *
+     * @return array<string, int|string|bool>
+     */
+    private function channelArgs(): array
+    {
+        return [
+            'grpc.max_receive_message_length' => $this->maxReceiveMessageBytes,
+            'grpc.max_send_message_length' => $this->maxSendMessageBytes,
+            'grpc.keepalive_time_ms' => $this->keepaliveTimeMs,
+            'grpc.keepalive_timeout_ms' => $this->keepaliveTimeoutMs,
+            'grpc.keepalive_permit_without_calls' => 1,
+            'grpc.http2.max_pings_without_data' => 0,
+        ];
     }
 
     private function now(): float

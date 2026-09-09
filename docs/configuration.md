@@ -6,13 +6,14 @@ Complete guide to configuring the TiKV PHP Client for development and production
 
 1. [Basic Configuration](#basic-configuration)
 2. [Connection Settings](#connection-settings)
-3. [TLS/SSL Configuration](#tlsssl-configuration)
-4. [Logging](#logging)
-5. [Replica Reads](#replica-reads)
-6. [Fast Commit Modes (TxnKV)](#fast-commit-modes-txnkv)
-7. [Retry and Backoff](#retry-and-backoff)
-8. [Caching](#caching)
-9. [Timeouts](#timeouts)
+3. [gRPC Channel Options](#grpc-channel-options)
+4. [TLS/SSL Configuration](#tlsssl-configuration)
+5. [Logging](#logging)
+6. [Replica Reads](#replica-reads)
+7. [Fast Commit Modes (TxnKV)](#fast-commit-modes-txnkv)
+8. [Retry and Backoff](#retry-and-backoff)
+9. [Caching](#caching)
+10. [Timeouts](#timeouts)
 10. [Production Configuration](#production-configuration)
 
 ## Basic Configuration
@@ -237,6 +238,38 @@ list the exact entries you need in `allowedStoreHosts`.
 The format check is unconditional and independent of the host policy. TLS with
 hostname verification remains the stronger control — see the TLS section
 below.
+
+### gRPC Channel Options
+
+The underlying `GrpcClient` sets channel arguments on every created gRPC
+channel. Without them the gRPC C core's default 4 MB receive limit applies,
+and a scan or batch read that returns more than that fails with
+`RESOURCE_EXHAUSTED` (`Received message larger than max (… vs. 4194304)`) —
+deterministically for that data, even though the client's scan limit allows
+10240 rows. The defaults below are large enough for full-limit scan responses.
+
+```php
+$options = [
+    'grpc' => [
+        'maxReceiveMessageBytes' => 67108864, // default: 64 MB (gRPC core default: 4 MB)
+        'maxSendMessageBytes'    => 67108864, // default: 64 MB
+        'keepaliveTimeMs'        => 10000,    // default: 10 s — ping interval on idle connections
+        'keepaliveTimeoutMs'     => 3000,     // default: 3 s
+    ],
+];
+
+$client = RawKvClient::create(
+    pdEndpoints: ['127.0.0.1:2379'],
+    options: $options
+);
+```
+
+All values must be ints `>= 1`. Keepalive pings (sent every `keepaliveTimeMs`,
+even without in-flight calls) keep idle connections alive behind stateful
+firewalls / NAT gateways — which typically drop idle flows after ~5 minutes —
+so a dead connection is detected rather than blocking until TCP retransmission
+gives up. Lowering `maxReceiveMessageBytes` is a valid hardening choice when
+you know your values are small.
 
 ### Environment Variables
 

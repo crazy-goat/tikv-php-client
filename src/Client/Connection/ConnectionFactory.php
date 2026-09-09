@@ -58,7 +58,17 @@ final class ConnectionFactory
 
         $tlsConfig = self::buildTlsConfig($options);
 
-        $grpc = new GrpcClient($resolvedLogger, $tlsConfig, metrics: $metrics);
+        $grpcArgs = self::resolveGrpcChannelArgs($options);
+
+        $grpc = new GrpcClient(
+            $resolvedLogger,
+            $tlsConfig,
+            metrics: $metrics,
+            maxReceiveMessageBytes: $grpcArgs['maxReceiveMessageBytes'],
+            maxSendMessageBytes: $grpcArgs['maxSendMessageBytes'],
+            keepaliveTimeMs: $grpcArgs['keepaliveTimeMs'],
+            keepaliveTimeoutMs: $grpcArgs['keepaliveTimeoutMs'],
+        );
         $storeCache = new StoreCache(logger: $resolvedLogger);
         $pdClient = new PdClient(
             $grpc,
@@ -158,6 +168,48 @@ final class ConnectionFactory
             'storeHostPolicy' => $storeHostPolicy,
             'allowedStorePorts' => $allowedStorePorts,
         ];
+    }
+
+    /**
+     * Resolve gRPC channel options (issue #265): options['grpc'] carries
+     * maxReceiveMessageBytes / maxSendMessageBytes / keepaliveTimeMs /
+     * keepaliveTimeoutMs. Each entry is optional; defaults come from the
+     * GrpcClient constants.
+     *
+     * @param array<string, mixed> $options
+     * @return array{maxReceiveMessageBytes: int, maxSendMessageBytes: int,
+     *               keepaliveTimeMs: int, keepaliveTimeoutMs: int}
+     */
+    private static function resolveGrpcChannelArgs(array $options): array
+    {
+        $defaults = [
+            'maxReceiveMessageBytes' => GrpcClient::DEFAULT_MAX_RECEIVE_MESSAGE_BYTES,
+            'maxSendMessageBytes' => GrpcClient::DEFAULT_MAX_SEND_MESSAGE_BYTES,
+            'keepaliveTimeMs' => GrpcClient::DEFAULT_KEEPALIVE_TIME_MS,
+            'keepaliveTimeoutMs' => GrpcClient::DEFAULT_KEEPALIVE_TIMEOUT_MS,
+        ];
+
+        if (!isset($options['grpc']) || !is_array($options['grpc'])) {
+            return $defaults;
+        }
+
+        $args = $defaults;
+        foreach ($defaults as $key => $default) {
+            if (!array_key_exists($key, $options['grpc'])) {
+                continue;
+            }
+            $value = $options['grpc'][$key];
+            if (!is_int($value) || $value < 1) {
+                throw new InvalidArgumentException(
+                    "options['grpc'][{$key}] must be an int >= 1, "
+                    . 'got ' . get_debug_type($value)
+                    . (is_int($value) ? " ({$value})" : ''),
+                );
+            }
+            $args[$key] = $value;
+        }
+
+        return $args;
     }
 
     /**

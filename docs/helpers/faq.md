@@ -556,6 +556,32 @@ site (single-pass narrowing) → `identical.alwaysFalse` / `alwaysFalse`.
 Workaround: collect regroups into an array and test
 `count($regroups) >= CAP` (same escape hatch as the by-ref-flag lesson above).
 
+## Channel arguments change ext-grpc's persistent-channel key (#265)
+
+`Grpc\Channel` keys its shared-channel cache on the target + the options
+array, so once `GrpcClient` started passing `grpc.*` channel arguments
+(issue #265) two `GrpcClient` instances with different
+`maxReceiveMessageBytes`/keepalive settings get *distinct* underlying
+channels even for the same address. Consequence to remember: any future
+per-instance channel option added to `createChannel()` must flow through
+the same argument array (and its defaults must be deterministic, not
+environment-dependent), otherwise instances that should share a channel
+silently fork extra TCP connections. `GrpcClient::channelArgs()` is the
+single seam — its output is the effective channel key material — and it is
+unit-tested via reflection in the Unit suite (`GrpcClientChannelArgsTest`)
+without ext-grpc, since no real channel is created.
+
+## The issue's suggested fix can silently differ from what the test suite needs — reflection seams over protected methods
+
+Issue #265 suggested asserting channel args "via a seam or a protected
+factory method". `GrpcClient` is `final` and creates `Grpc\Channel`
+directly, so a protected seam was not viable without opening the class;
+the implemented seam is a `private channelArgs()` method inspected with
+`\ReflectionMethod` from a pure-PHP Unit test (no ext-grpc needed —
+`createChannel()` is never invoked). Same reflection style the existing
+`GrpcClientTest` uses for private properties; keeping these tests out of
+the `Grpc` suite means the arg wiring is covered by the no-extension CI job.
+
 ## Escaping a RetryExecutor retry loop for control flow: throw a non-TiKvException
 
 The rollback regroup fix (#505) needed to break out of
