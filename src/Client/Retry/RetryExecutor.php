@@ -45,7 +45,7 @@ final readonly class RetryExecutor
         private RegionResolver $regionResolver,
         private LoggerInterface $logger,
         private int $maxAttempts = self::DEFAULT_MAX_ATTEMPTS,
-        private int $deadlineMs = 0,
+        private int $deadlineMs = self::DEFAULT_RETRY_DEADLINE_MS,
         private MetricsInterface $metrics = new NoOpMetrics(),
     ) {
         if ($maxAttempts < 1) {
@@ -96,23 +96,9 @@ final readonly class RetryExecutor
                 );
             }
 
-            // Enforce wall-clock deadline (if configured).
+            // Enforce wall-clock deadline (if configured) before each attempt.
             if ($this->deadlineMs > 0) {
-                $elapsedMs = (int) (microtime(true) * 1000) - $startTimeMs;
-                if ($elapsedMs >= $this->deadlineMs) {
-                    $this->logger->error('Retry deadline exhausted', [
-                        'key' => KeyRedactor::redact($key),
-                        'attempt' => $attempt,
-                        'elapsedMs' => $elapsedMs,
-                        'deadlineMs' => $this->deadlineMs,
-                    ]);
-                    throw new RetryBudgetExhaustedException(
-                        sprintf('Retry deadline (%d ms) exhausted for key "%s"', $this->deadlineMs, $key),
-                        $attempt,
-                        $elapsedMs,
-                        $lastError,
-                    );
-                }
+                $this->assertDeadlineNotExhausted($key, $startTimeMs, $attempt, $lastError);
             }
 
             try {
@@ -197,12 +183,65 @@ final readonly class RetryExecutor
                 $this->metrics->retryAttempted($backoffType->name);
 
                 if ($sleepMs > 0) {
+                    // Issue #237: the deadline must also be checked (and the
+                    // sleep clamped) BEFORE the backoff usleep(), not only
+                    // before the next attempt — otherwise a single sleep
+                    // (ServerBusy caps at 10 s) can overshoot the configured
+                    // wall-clock budget by one full backoff interval.
+                    $remainingMs = $this->remainingDeadlineMs($startTimeMs);
+                    if ($remainingMs <= 0) {
+                        $this->assertDeadlineNotExhausted($key, $startTimeMs, $attempt, $lastError);
+                    }
+                    $sleepMs = min($sleepMs, $remainingMs);
                     usleep($sleepMs * 1000);
                 }
 
                 $attempt++;
             }
         }
+    }
+
+    /**
+     * Remaining wall-clock budget in ms; PHP_INT_MAX when the deadline is
+     * disabled ($deadlineMs <= 0).
+     */
+    private function remainingDeadlineMs(int $startTimeMs): int
+    {
+        if ($this->deadlineMs <= 0) {
+            return \PHP_INT_MAX;
+        }
+
+        $elapsedMs = (int) (microtime(true) * 1000) - $startTimeMs;
+
+        return $this->deadlineMs - $elapsedMs;
+    }
+
+    /**
+     * @throws RetryBudgetExhaustedException when the wall-clock deadline has
+     * been reached.
+     */
+    private function assertDeadlineNotExhausted(
+        string $key,
+        int $startTimeMs,
+        int $attempt,
+        ?TiKvException $lastError,
+    ): void {
+        $elapsedMs = (int) (microtime(true) * 1000) - $startTimeMs;
+        if ($elapsedMs < $this->deadlineMs) {
+            return;
+        }
+        $this->logger->error('Retry deadline exhausted', [
+            'key' => KeyRedactor::redact($key),
+            'attempt' => $attempt,
+            'elapsedMs' => $elapsedMs,
+            'deadlineMs' => $this->deadlineMs,
+        ]);
+        throw new RetryBudgetExhaustedException(
+            sprintf('Retry deadline (%d ms) exhausted for key "%s"', $this->deadlineMs, $key),
+            $attempt,
+            $elapsedMs,
+            $lastError,
+        );
     }
 
     private function handleNotLeader(TiKvException $e, string $key): ?BackoffType

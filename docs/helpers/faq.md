@@ -529,6 +529,16 @@ containers it depends on; if the cluster was just (re)started the run
 container's DNS can fail with "Name does not resolve tikv1:20160" and the
 whole suite errors — wait ~20 s after `make up` before running E2E.
 
+## `git log master..HEAD --oneline` is the definitive "what's in this PR" check
+
+When asked whether a branch contains an unrelated commit, the commit existing
+somewhere in the repo (`git show <sha>` works) proves nothing: e.g. during
+review of fix/237-region-retry-deadline, commit 144f864 (pdEndpoints
+validation, #51) looked suspicious but was already merged into master, so
+`git log master..HEAD` contained only the one relevant commit. Always diff
+against the merge base (`master...branch`), not against the repo's commit
+graph.
+
 ## Service safe-point E2E tests must assert invariants, never exact values
 
 PD registers its own `gc_worker` service safe point and advances the GC
@@ -561,3 +571,14 @@ exactly one timestamp is minted.
 ## The issue's suggested classifier fix would silently fall back to the default classifier — return a decision or rethrow
 
 The RetryExecutor's classifier chain is `handleNotLeader → classifier → ErrorClassifier`; a classifier that returns `null` is NOT a "do not retry" verdict — the executor falls through to the default `ErrorClassifier::classify()`, which retries every `GrpcException` as `TiKvRpc`. Issue #239's suggested snippet (`if ($e instanceof GrpcException) { return null; }`) would therefore have retried CAS exactly as before. To make an exception non-retriable from a custom classifier without changing `RetryExecutor`'s signature, **rethrow** it inside the classifier (the throw escapes the executor's catch and propagates with the original type/trace) — that is what `RawKvAtomic::compareAndSwap()` now does for `GrpcException` (#239). Side effect: the executor's fatal path (`'Fatal error, not retrying'` log) and its post-classification region invalidation + `closeChannel()` on `GrpcException` are skipped for the rethrown error; if a CAS transport error needs channel cleanup, that logic would have to move. If this pattern recurs, consider promoting it: a classifier result type with an explicit `Rethrow`/`Fatal` variant instead of the throw-from-classifier trick.
+
+## A rebase can leave stray conflict markers in docs — grep before finishing
+
+All three of fix/216, fix/237 and fix/238 carried a leftover
+`>>>>>>> <sha> (...)` line right after the new CHANGELOG.md bullet after
+their rebase (and #238 also in `docs/helpers/faq.md`), silently committed
+by the follow-up fix. A squash/fixup during a rebase can resurrect markers
+from an earlier conflict that was "resolved" by keeping both sides. Before
+every push, grep the whole diff for conflict markers:
+`git diff master...HEAD | grep -n ">>>>>>>\|<<<<<<<"`. PHPCS/PHPStan do
+not catch these in Markdown files.

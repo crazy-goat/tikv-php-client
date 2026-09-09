@@ -487,4 +487,54 @@ class RetryExecutorTest extends TestCase
         $this->assertSame(5, $outerCalls, 'Outer loop must hit its own attempt cap; nested calls must not reset it');
         $this->assertSame(5, $nestedCalls, 'Inner execute() should have succeeded once per outer attempt');
     }
+
+    // ========================================================================
+    // Wall-clock deadline (issue #237, REG-06)
+    // ========================================================================
+
+    public function testDeadlineParameterDefaultsToNonZeroConstant(): void
+    {
+        $constructor = (new \ReflectionClass(RetryExecutor::class))->getConstructor();
+        $this->assertNotNull($constructor);
+        $deadlineParam = null;
+        foreach ($constructor->getParameters() as $parameter) {
+            if ($parameter->getName() === 'deadlineMs') {
+                $deadlineParam = $parameter;
+                break;
+            }
+        }
+        $this->assertNotNull($deadlineParam, 'constructor must have a $deadlineMs parameter');
+
+        $this->assertSame(RetryExecutor::DEFAULT_RETRY_DEADLINE_MS, $deadlineParam->getDefaultValue());
+        $this->assertGreaterThan(0, RetryExecutor::DEFAULT_RETRY_DEADLINE_MS);
+    }
+
+    public function testBackoffSleepIsClampedToRemainingDeadline(): void
+    {
+        // ServerIsBusy classifies as BackoffType::ServerBusy whose first
+        // sleep is ~1000-2000 ms (equal jitter). With a 50 ms deadline the
+        // sleep must be clamped to the remaining budget instead of running
+        // the full interval — before the #237 fix the loop overshot the
+        // deadline by up to one whole ServerBusy sleep (~2 s).
+        $executor = $this->createExecutor(
+            maxBackoffMs: 0,           // disable the non-ServerBusy budget
+            serverBusyBudgetMs: 10000, // cannot bind within the deadline
+            deadlineMs: 50,
+        );
+
+        $startMs = (int) (microtime(true) * 1000);
+
+        try {
+            $executor->execute('key', function (): string {
+                throw new TiKvException('ServerIsBusy');
+            });
+        } catch (RetryBudgetExhaustedException $e) {
+            $this->assertStringContainsString('deadline', $e->getMessage());
+        } finally {
+            $elapsedMs = (int) (microtime(true) * 1000) - $startMs;
+            // Clamp + pre-sleep deadline check must keep the loop far below
+            // one full ServerBusy sleep; 900 ms gives CI generous margin.
+            $this->assertLessThan(900, $elapsedMs, 'Backoff sleep must be clamped to the remaining deadline');
+        }
+    }
 }

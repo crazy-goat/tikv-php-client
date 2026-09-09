@@ -394,7 +394,7 @@ enum BackoffType
 **Retry Budgets**:
 - **General**: 20 seconds total backoff
 - **ServerBusy**: 60 seconds separate budget
-- **Wall-clock deadline**: 30 seconds per operation (configurable via `options['retryDeadlineMs']`; issue #294). Checked before each attempt, so worst case is ≈ deadline + one final backoff sleep (ServerBusy caps at 10 s) + the duration of the last in-flight RPC (bounded only by the gRPC timeout option, not by the retry deadline).
+- **Wall-clock deadline**: 30 seconds per operation (configurable via `options['retryDeadlineMs']`; issues #294, #237). Checked before each attempt and before each backoff sleep (the sleep is clamped to the remaining budget), so the worst case is ≈ deadline + the duration of the last in-flight RPC (bounded only by the gRPC timeout option, not by the retry deadline).
 
 ## Data Flow
 
