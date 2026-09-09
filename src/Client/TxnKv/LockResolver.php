@@ -159,7 +159,11 @@ final readonly class LockResolver
         // Both fields must be PD TSO MVCC timestamps: a monotonic-clock value
         // breaks TiKV's TTL expiry and min-commit-ts logic (see issue #270).
         $request->setCallerStartTs($this->callerStartTs);
-        $request->setCurrentTs($this->pdClient->getTimestamp($this->timeoutConfig->writeTimeoutMs));
+        // Low-resolution timestamp (issue #420, GAP-06 / DIV-02): lock
+        // resolution is staleness-tolerant — with a configured staleness
+        // bound it reuses the cached TSO timestamp and saves a PD round
+        // trip. Without a bound this is a fresh TSO fetch, unchanged.
+        $request->setCurrentTs($this->pdClient->getLowResolutionTimestamp($this->timeoutConfig->writeTimeoutMs));
         $request->setRollbackIfNotExist(true);
 
         $this->logger->debug('CheckTxnStatus', [

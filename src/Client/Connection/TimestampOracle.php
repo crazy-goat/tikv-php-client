@@ -8,24 +8,55 @@ use CrazyGoat\Proto\Pdpb\RequestHeader;
 use CrazyGoat\Proto\Pdpb\TsoRequest;
 use CrazyGoat\Proto\Pdpb\TsoResponse;
 use CrazyGoat\TiKV\Client\Exception\GrpcException;
+use CrazyGoat\TiKV\Client\Exception\InvalidArgumentException;
 use CrazyGoat\TiKV\Client\Exception\TiKvException;
 use CrazyGoat\TiKV\Client\Grpc\GrpcClientInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-final readonly class TimestampOracle
+/**
+ * PD TSO oracle: batching and low-resolution caching of PD timestamps.
+ *
+ * TSO timestamps carry an 18-bit logical counter inside one physical
+ * millisecond; a single TSO grant of $count timestamps covers the
+ * consecutive values base - $count + 1 … base (PD's response timestamp
+ * is the highest of the grant — see client-rust's `allocate_timestamps`).
+ * Plain integer addition/subtraction composes/wraps the logical part
+ * correctly.
+ */
+final class TimestampOracle
 {
+    /** Cached low-resolution timestamp, or null when not populated. */
+    private ?int $lowResCachedTs = null;
+    /** Wall-clock milliseconds (per {@see $clock}) at which the cache was filled. */
+    private ?int $lowResCachedAtMs = null;
+    /** Wall-clock milliseconds source for the low-resolution cache. */
+    private readonly \Closure $clock;
+
+    /** Number of logical bits inside one physical millisecond (issue #420). */
+    private const LOGICAL_SHIFT = 18;
+
     /**
      * @param \Closure(): ?int $getClusterId
      * @param \Closure(int): void $setClusterId
+     * @param int|null $lowResMaxStalenessMs maximum allowed staleness (ms) of the
+     *                                       low-resolution timestamp cache;
+     *                                       null = no caching (default), 0 = a
+     *                                       cached value may be reused only
+     *                                       within the same wall-clock
+     *                                       millisecond (never stale data)
+     * @param \Closure(): int $clock wall-clock milliseconds; injectable for tests
      */
     public function __construct(
-        private GrpcClientInterface $grpc,
-        private string $pdAddress,
-        private \Closure $getClusterId,
-        private \Closure $setClusterId,
-        private LoggerInterface $logger = new NullLogger(),
+        private readonly GrpcClientInterface $grpc,
+        private readonly string $pdAddress,
+        private readonly \Closure $getClusterId,
+        private readonly \Closure $setClusterId,
+        private readonly LoggerInterface $logger = new NullLogger(),
+        private readonly ?int $lowResMaxStalenessMs = null,
+        ?\Closure $clock = null,
     ) {
+        $this->clock = $clock ?? static fn (): int => (int) (microtime(true) * 1000);
     }
 
     /**
@@ -42,14 +73,44 @@ final readonly class TimestampOracle
      */
     public function getTimestamp(?int $timeoutMs = null): int
     {
+        return $this->getTimestampBatch(1, $timeoutMs)[0];
+    }
+
+    /**
+     * Request a batch of monotonically increasing timestamps from PD's
+     * TSO service in a single RPC (issue #420, GAP-06).
+     *
+     * A single `Tso` request with `count = $count` costs one round trip
+     * and yields a consecutive range of timestamps; PD's response
+     * timestamp is the highest of the granted range, so the range is
+     * handed out in ascending order as
+     * `base - (n - 1) … base` (plain integer arithmetic composes and
+     * wraps the 18-bit logical counter inside the physical millisecond
+     * correctly).
+     *
+     * @param int $count number of timestamps to request (>= 1)
+     * @param int|null $timeoutMs Optional gRPC call timeout in milliseconds (null = no timeout)
+     *
+     * @return list<int> at most $count monotonically increasing timestamps
+     *                   (PD may grant fewer than requested; never fewer than 1)
+     *
+     * @throws InvalidArgumentException when $count is < 1
+     * @throws TiKvException when the TSO RPC fails or returns an invalid response
+     */
+    public function getTimestampBatch(int $count, ?int $timeoutMs = null): array
+    {
+        if ($count < 1) {
+            throw new InvalidArgumentException('Timestamp batch count must be >= 1');
+        }
+
         $request = new TsoRequest();
         $request->setHeader($this->createHeader());
-        $request->setCount(1);
+        $request->setCount($count);
 
         try {
             $response = $this->callTso($request, $timeoutMs);
 
-            return $this->extractTimestamp($response);
+            return $this->extractTimestampRange($response, $count);
         } catch (GrpcException $e) {
             $this->logger->error('TSO request failed; refusing to fabricate a local timestamp', [
                 'error' => $e->getMessage(),
@@ -62,6 +123,43 @@ final readonly class TimestampOracle
                 $e,
             );
         }
+    }
+
+    /**
+     * Return a timestamp that is at most $lowResMaxStalenessMs old
+     * (issue #420, GAP-06 low-resolution cache).
+     *
+     * With no staleness bound configured (default) this is equivalent to
+     * {@see getTimestamp()}: every call performs a fresh TSO RPC. With a
+     * bound set, repeated calls within the bound reuse the cached
+     * timestamp and save the PD round trip — suitable for
+     * staleness-tolerant consumers such as lock resolution
+     * (`CheckTxnStatus.current_ts`), never for start/commit timestamps.
+     *
+     * @param int|null $timeoutMs Optional gRPC call timeout in milliseconds (null = no timeout)
+     *
+     * @throws TiKvException when the TSO RPC fails or returns an invalid response
+     */
+    public function getLowResolutionTimestamp(?int $timeoutMs = null): int
+    {
+        if ($this->lowResMaxStalenessMs === null) {
+            return $this->getTimestamp($timeoutMs);
+        }
+
+        $cachedTs = $this->lowResCachedTs;
+        $cachedAtMs = $this->lowResCachedAtMs;
+        if ($cachedTs !== null && $cachedAtMs !== null) {
+            $ageMs = ($this->clock)() - $cachedAtMs;
+            if ($ageMs >= 0 && $ageMs <= $this->lowResMaxStalenessMs) {
+                return $cachedTs;
+            }
+        }
+
+        $ts = $this->getTimestamp($timeoutMs);
+        $this->lowResCachedTs = $ts;
+        $this->lowResCachedAtMs = ($this->clock)();
+
+        return $ts;
     }
 
     private function createHeader(): RequestHeader
@@ -152,7 +250,18 @@ final readonly class TimestampOracle
         return null;
     }
 
-    private function extractTimestamp(TsoResponse $response): int
+    /**
+     * Turn a TSO grant into exactly $count consecutive timestamps.
+     *
+     * PD's response timestamp is the highest of the granted range
+     * (client-rust `allocate_timestamps`); the handout is therefore
+     * `base - (n - 1) … base` in ascending order, where
+     * $n = min(granted, requested). The handout never exceeds the
+     * granted count so we never fabricate timestamps outside the grant.
+     *
+     * @return list<int>
+     */
+    private function extractTimestampRange(TsoResponse $response, int $requested): array
     {
         $ts = $response->getTimestamp();
         if ($ts === null) {
@@ -161,12 +270,30 @@ final readonly class TimestampOracle
 
         $physical = (int) $ts->getPhysical();
         $logical = (int) $ts->getLogical();
+        $base = ($physical << self::LOGICAL_SHIFT) + $logical;
 
-        return $this->composeTs($physical, $logical);
-    }
+        $granted = (int) $response->getCount();
+        if ($granted < 1) {
+            $this->logger->warning('TSO response missing count, assuming single timestamp', [
+                'count' => $granted,
+            ]);
+            $granted = 1;
+        }
+        if ($granted < $requested) {
+            $this->logger->warning('TSO grant smaller than requested', [
+                'requested' => $requested,
+                'granted' => $granted,
+            ]);
+        }
 
-    private function composeTs(int $physical, int $logical): int
-    {
-        return ($physical << 18) | $logical;
+        $n = min($granted, $requested);
+        $start = $base - ($n - 1);
+
+        $range = [];
+        for ($i = 0; $i < $n; $i++) {
+            $range[] = $start + $i;
+        }
+
+        return $range;
     }
 }

@@ -63,6 +63,37 @@ interface PdClientInterface
     public function getTimestamp(?int $timeoutMs = null): int;
 
     /**
+     * Get a batch of monotonically increasing timestamps from PD in a
+     * single TSO RPC (issue #420).
+     *
+     * @param int $count number of timestamps to request (>= 1)
+     * @param int|null $timeoutMs Optional gRPC call timeout in milliseconds (null = no timeout)
+     *
+     * @return list<int> at most $count monotonically increasing timestamps
+     *
+     * @throws GrpcException On transport error
+     * @throws TiKvException On PD error
+     */
+    public function getTimestampBatch(int $count, ?int $timeoutMs = null): array;
+
+    /**
+     * Get a timestamp that is at most the configured
+     * lowResTimestampMaxStalenessMs old (issue #420).
+     *
+     * With no staleness bound configured this is equivalent to
+     * {@see getTimestamp()} (a fresh TSO RPC per call), so the default
+     * behavior of existing callers is unchanged. Intended for
+     * staleness-tolerant consumers such as lock resolution — never for
+     * start/commit timestamps.
+     *
+     * @param int|null $timeoutMs Optional gRPC call timeout in milliseconds (null = no timeout)
+     *
+     * @throws GrpcException On transport error
+     * @throws TiKvException On PD error
+     */
+    public function getLowResolutionTimestamp(?int $timeoutMs = null): int;
+
+    /**
      * Fetch the cluster's current GC safe point.
      *
      * Issues a `GetGCSafePoint` RPC and returns the safe point timestamp:

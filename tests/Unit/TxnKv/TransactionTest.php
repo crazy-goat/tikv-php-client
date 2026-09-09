@@ -9,6 +9,7 @@ use CrazyGoat\Proto\Kvrpcpb\GetResponse;
 use CrazyGoat\Proto\Kvrpcpb\KeyError;
 use CrazyGoat\Proto\Kvrpcpb\KvPair;
 use CrazyGoat\Proto\Kvrpcpb\LockInfo;
+use CrazyGoat\Proto\Kvrpcpb\PessimisticLockRequest;
 use CrazyGoat\Proto\Kvrpcpb\PessimisticLockResponse;
 use CrazyGoat\Proto\Kvrpcpb\ScanRequest;
 use CrazyGoat\Proto\Kvrpcpb\ScanResponse;
@@ -981,6 +982,71 @@ class TransactionTest extends TestCase
             $this->assertSame(42, $e->getDeadlockKeyHash());
             $this->assertSame(777, $e->getLockTs());
         }
+    }
+
+    /**
+     * Issue #420 (GAP-06): pessimisticLockBatch() must acquire exactly ONE
+     * for_update_ts per locking pass, not one per region. Lock two keys
+     * living in two different regions and assert both PessimisticLock RPCs
+     * carry the same for_update_ts, and that only one extra getTimestamp()
+     * call is spent on the lock pass (the second mints the commit ts).
+     */
+    public function testCommitPessimisticLockTwoRegionsSharesForUpdateTsPerPass(): void
+    {
+        $region1 = $this->makeRegion(1, '', 'k2'); // holds the primary 'k1'
+        $region2 = $this->makeRegion(2, 'k2', ''); // holds 'k2'
+        $this->pdClient->method('scanRegions')->willReturn([$region1, $region2]);
+        $this->stubScanRegionLookup([$region1, $region2]);
+        $this->pdClient->method('getStore')->willReturn($this->makeStore());
+
+        $tsCalls = 0;
+        $this->pdClient->method('getTimestamp')
+            ->willReturnCallback(static function () use (&$tsCalls): int {
+                ++$tsCalls;
+                return 3000 * $tsCalls; // lock pass: 3000, commit ts: 6000
+            });
+
+        $lockResponse = new PessimisticLockResponse();
+        $prewriteResponse = new \CrazyGoat\Proto\Kvrpcpb\PrewriteResponse();
+        $commitResponse = new \CrazyGoat\Proto\Kvrpcpb\CommitResponse();
+
+        $forUpdateTsList = [];
+        $this->grpc->method('call')
+            ->willReturnCallback(function (
+                string $addr,
+                string $svc,
+                string $method,
+                \CrazyGoat\Proto\Kvrpcpb\PessimisticLockRequest
+                |\CrazyGoat\Proto\Kvrpcpb\PrewriteRequest
+                |\CrazyGoat\Proto\Kvrpcpb\CommitRequest $request,
+            ) use (
+                &$forUpdateTsList,
+                $lockResponse,
+                $prewriteResponse,
+                $commitResponse,
+            ): object {
+                if ($method === 'KvPessimisticLock' && $request instanceof PessimisticLockRequest) {
+                    $forUpdateTsList[] = $request->getForUpdateTs();
+                    return $lockResponse;
+                }
+                return match ($method) {
+                    'KvPrewrite' => $prewriteResponse,
+                    'KvCommit' => $commitResponse,
+                    default => throw new \RuntimeException("Unexpected method: $method"),
+                };
+            });
+
+        $txn = $this->createTransaction(['pessimistic' => true]);
+        $txn->set('k1', 'v1');
+        $txn->set('k2', 'v2');
+        $txn->commit();
+
+        $this->assertSame(TransactionStatus::Committed, $txn->getStatus());
+        $this->assertSame(6000, $txn->getCommitTs());
+        // One TSO call for the whole locking pass + one for the commit ts.
+        $this->assertSame(2, $tsCalls);
+        $this->assertCount(2, $forUpdateTsList, 'both regions were locked');
+        $this->assertSame([3000, 3000], $forUpdateTsList, 'one for_update_ts shared by the locking pass');
     }
 
     public function testCommitPessimisticLockBudgetExhaustedThrowsLockWaitTimeout(): void

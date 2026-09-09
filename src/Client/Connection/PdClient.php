@@ -41,10 +41,26 @@ final class PdClient implements PdClientInterface
         private readonly string $pdAddress,
         private readonly LoggerInterface $logger = new NullLogger(),
         private readonly ?StoreCacheInterface $storeCache = null,
+        private readonly ?int $lowResMaxStalenessMs = null,
     ) {
     }
 
     public function getTimestamp(?int $timeoutMs = null): int
+    {
+        return $this->oracle()->getTimestamp($timeoutMs);
+    }
+
+    public function getTimestampBatch(int $count, ?int $timeoutMs = null): array
+    {
+        return $this->oracle()->getTimestampBatch($count, $timeoutMs);
+    }
+
+    public function getLowResolutionTimestamp(?int $timeoutMs = null): int
+    {
+        return $this->oracle()->getLowResolutionTimestamp($timeoutMs);
+    }
+
+    private function oracle(): TimestampOracle
     {
         if (!$this->tso instanceof TimestampOracle) {
             $this->tso = new TimestampOracle(
@@ -53,10 +69,11 @@ final class PdClient implements PdClientInterface
                 $this->getClusterId(...),
                 $this->setClusterId(...),
                 $this->logger,
+                $this->lowResMaxStalenessMs,
             );
         }
 
-        return $this->tso->getTimestamp($timeoutMs);
+        return $this->tso;
     }
 
     public function getRegion(string $key): RegionInfo

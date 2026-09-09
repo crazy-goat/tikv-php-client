@@ -77,6 +77,16 @@ final class TxnKvClient
     public const OPT_ENABLE_ASYNC_COMMIT = 'enableAsyncCommit';
 
     /**
+     * options[] key for the maximum staleness (ms) of the low-resolution
+     * TSO timestamp cache (issue #420, GAP-06). Used only by
+     * staleness-tolerant consumers (lock resolution `current_ts`); start
+     * and commit timestamps always come from a fresh TSO RPC. Default:
+     * unset = no caching (getLowResolutionTimestamp() fetches fresh).
+     * Must be >= 0; 0 bounds staleness but never returns stale data.
+     */
+    public const OPT_LOW_RES_TIMESTAMP_MAX_STALENESS_MS = 'lowResTimestampMaxStalenessMs';
+
+    /**
      * Default service ID used by {@see TxnKvClient::holdGcSafePoint()} and
      * {@see TxnKvClient::releaseGcSafePoint()}. Distinct per client instance
      * so two clients never overwrite each other's registration.

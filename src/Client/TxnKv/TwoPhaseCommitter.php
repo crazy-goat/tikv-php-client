@@ -873,6 +873,15 @@ final readonly class TwoPhaseCommitter
             $keysByRegion = $this->groupStringsByRegion($pendingKeys);
             $pendingKeys = [];
 
+            // One for_update_ts per locking pass (issue #420, GAP-06):
+            // hoisting the TSO call out of the per-region loop saves one
+            // PD round trip per additional region. Using the same
+            // for_update_ts across regions is safe — TiKV only compares
+            // it against lock timestamps, and updateMaxForUpdateTs()
+            // tracks the maximum. Retries still refresh it below.
+            $forUpdateTs = $this->pdClient->getTimestamp();
+            $state->updateMaxForUpdateTs($forUpdateTs);
+
             foreach ($keysByRegion as $groupIndex => $regionData) {
                 $region = $regionData['region'];
                 $regionKeys = $regionData['keys'];
@@ -884,10 +893,6 @@ final readonly class TwoPhaseCommitter
                     $mutation->setKey($key);
                     $mutations[] = $mutation;
                 }
-
-                // Get a fresh PD timestamp for for_update_ts.
-                $forUpdateTs = $this->pdClient->getTimestamp();
-                $state->updateMaxForUpdateTs($forUpdateTs);
 
                 $elapsedMs = 0;
                 $attempt = 0;
